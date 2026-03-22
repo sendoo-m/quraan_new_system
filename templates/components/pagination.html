@@ -1,0 +1,173 @@
+{% if page_obj.has_other_pages %}
+
+{% comment %}
+  الاستخدام:
+  {% include 'includes/_pagination.html' with page_obj=page_obj %}
+{% endcomment %}
+
+<!-- بناء query string محفوظ بدون page -->
+{% with request.GET.urlencode as qs %}
+
+<nav class="mt-4" aria-label="التنقل بين الصفحات">
+
+    <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
+
+        <!-- ◀◀ الأولى -->
+        <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page=1"
+               aria-label="الصفحة الأولى" title="الأولى">
+                <i class="fas fa-angles-right"></i>
+            </a>
+        </li>
+
+        <!-- ◀ السابقة -->
+        <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}"
+               aria-label="السابقة">
+                <i class="fas fa-angle-right"></i>
+            </a>
+        </li>
+
+        <!-- نقاط البداية -->
+        {% if page_obj.number > 4 %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page=1">
+                1
+            </a>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link px-2">…</span>
+        </li>
+        {% endif %}
+
+        <!-- أرقام الصفحات -->
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link fw-bold">{{ num }}</span>
+            </li>
+            {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ num }}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- نقاط النهاية -->
+        {% if page_obj.number < page_obj.paginator.num_pages|add:"-3" %}
+        <li class="page-item disabled">
+            <span class="page-link px-2">…</span>
+        </li>
+        <li class="page-item">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">
+                {{ page_obj.paginator.num_pages }}
+            </a>
+        </li>
+        {% endif %}
+
+        <!-- ▶ التالية -->
+        <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}"
+               aria-label="التالية">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        </li>
+
+        <!-- ▶▶ الأخيرة -->
+        <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}"
+               aria-label="الصفحة الأخيرة" title="الأخيرة">
+                <i class="fas fa-angles-left"></i>
+            </a>
+        </li>
+
+    </ul>
+
+    <!-- معلومة الصفحة -->
+    <div class="text-center mt-2">
+        <span class="badge bg-secondary bg-opacity-75 px-3 py-2 small">
+            صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+            &nbsp;•&nbsp;
+            إجمالي: {{ page_obj.paginator.count }} سجل
+        </span>
+    </div>
+
+</nav>
+
+{% endwith %}
+{% endif %}
+
+{% comment %} {% if page_obj.has_other_pages %}
+<nav class="mt-4" aria-label="التنقل بين الصفحات">
+    <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
+
+        <!-- الأولى -->
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page=1"
+               title="الصفحة الأولى">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        </li>
+        <!-- السابقة -->
+        <li class="page-item">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">
+                <i class="fas fa-angle-right"></i>
+            </a>
+        </li>
+        {% endif %}
+
+        <!-- أرقام الصفحات -->
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ num }}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- التالية -->
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        </li>
+        <!-- الأخيرة -->
+        <li class="page-item">
+            <a class="page-link"
+               href="?{% for key, val in request.GET.items %}{% if key != 'page' %}{{ key }}={{ val }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}"
+               title="الصفحة الأخيرة">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+        </li>
+        {% endif %}
+
+    </ul>
+
+    <!-- معلومة الصفحة الحالية -->
+    <p class="text-center text-muted small mt-2 mb-0">
+        صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+        — إجمالي: {{ page_obj.paginator.count }} سجل
+    </p>
+</nav>
+{% endif %} {% endcomment %}

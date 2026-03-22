@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% block page_title %}تسجيل حضور — {{ hall.name }}{% endblock %}
+
+{% block content %}
+
+<!-- هيدر القاعة -->
+<div class="card stat-card mb-4">
+    <div class="card-body d-flex align-items-center justify-content-between
+                flex-wrap gap-2 py-3">
+        <div>
+            <div class="fw-bold">
+                <i class="fas fa-clipboard-list text-primary me-2"></i>
+                {{ hall.name }}
+            </div>
+            <div class="text-muted small mt-1">
+                <i class="far fa-calendar-alt me-1"></i>{{ today }}
+                {% if hall.age_group %}
+                <span class="mx-2">•</span>
+                <i class="fas fa-users me-1"></i>{{ hall.age_group.name }}
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if already_taken %}
+            <span class="badge bg-info px-3 py-2">
+                <i class="fas fa-edit me-1"></i>
+                تم التسجيل — يمكن التعديل
+            </span>
+            {% endif %}
+            <span class="badge bg-primary px-3 py-2">
+                {{ students_data|length }} طالب
+            </span>
+        </div>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <!-- زر الكل حاضر -->
+    {% if students_data %}
+    <div class="mb-3">
+        <button type="button" id="markAllPresent"
+                class="btn btn-outline-success btn-sm">
+            <i class="fas fa-check-double me-1"></i>
+            تحديد الكل حاضر
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Desktop Table -->
+    <div class="card stat-card d-none d-md-block">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>الطالب</th>
+                            {% for status_val, status_label in statuses %}
+                            <th class="text-center">{{ status_label }}</th>
+                            {% endfor %}
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_data %}
+                        <tr class="student-row">
+                            <td class="text-muted small">{{ forloop.counter }}</td>
+                            <td class="fw-bold">{{ item.student.get_full_name }}</td>
+                            {% for status_val, status_label in statuses %}
+                            <td class="text-center">
+                                <input type="radio"
+                                       name="status_{{ item.student.id }}"
+                                       value="{{ status_val }}"
+                                       class="form-check-input status-radio"
+                                       {% if item.status == status_val %}checked{% endif %}>
+                            </td>
+                            {% endfor %}
+                            <td>
+                                <input type="text"
+                                       name="notes_{{ item.student.id }}"
+                                       class="form-control form-control-sm"
+                                       placeholder="ملاحظة"
+                                       style="min-width:140px">
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="fas fa-user-slash fa-2x mb-2 d-block"></i>
+                                لا يوجد طلاب نشطون في هذه القاعة
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="d-md-none">
+        {% for item in students_data %}
+        <div class="card stat-card mb-3 student-row">
+            <div class="card-body">
+
+                <!-- اسم الطالب -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center bg-primary bg-opacity-10
+                                flex-shrink-0"
+                         style="width:44px;height:44px;">
+                        <i class="fas fa-user-graduate text-primary"></i>
+                    </div>
+                    <div class="fw-bold">{{ item.student.get_full_name }}</div>
+                </div>
+
+                <!-- أزرار الحالة -->
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    {% for status_val, status_label in statuses %}
+                    <label class="status-label flex-grow-1 text-center">
+                        <input type="radio"
+                               name="status_{{ item.student.id }}"
+                               value="{{ status_val }}"
+                               class="d-none status-radio"
+                               {% if item.status == status_val %}checked{% endif %}>
+                        <span class="btn btn-sm w-100
+                            {% if status_val == 'present' %}btn-outline-success
+                            {% elif status_val == 'absent' %}btn-outline-danger
+                            {% elif status_val == 'late' %}btn-outline-warning
+                            {% else %}btn-outline-info{% endif %}
+                            status-btn"
+                            data-val="{{ status_val }}">
+                            {{ status_label }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <!-- ملاحظات -->
+                <input type="text"
+                       name="notes_{{ item.student.id }}"
+                       class="form-control form-control-sm"
+                       placeholder="ملاحظة اختيارية">
+            </div>
+        </div>
+        {% empty %}
+        <div class="card stat-card">
+            <div class="card-body text-center text-muted py-5">
+                <i class="fas fa-user-slash fa-2x mb-2 d-block"></i>
+                لا يوجد طلاب نشطون في هذه القاعة
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- أزرار الحفظ -->
+    {% if students_data %}
+    <div class="card stat-card mt-3">
+        <div class="card-body d-flex justify-content-between align-items-center
+                    flex-wrap gap-2">
+            <span class="text-muted small">
+                إجمالي: {{ students_data|length }} طالب
+            </span>
+            <div class="d-flex gap-2">
+                <a href="{% url 'attendance:students' %}"
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                </a>
+                <button type="submit" class="btn btn-primary px-4 fw-bold">
+                    <i class="fas fa-save me-1"></i> حفظ الحضور
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// تلوين صفوف الجدول
+function colorRow(radio) {
+    const row = radio.closest('.student-row');
+    row.classList.remove('table-success','table-warning','table-danger','table-info');
+    const map = {
+        present: 'table-success',
+        late:    'table-warning',
+        absent:  'table-danger',
+        excused: 'table-info',
+    };
+    if (map[radio.value]) row.classList.add(map[radio.value]);
+}
+
+// تفعيل الألوان عند التحميل والتغيير
+document.querySelectorAll('.status-radio').forEach(radio => {
+    if (radio.checked) colorRow(radio);
+    radio.addEventListener('change', () => colorRow(radio));
+});
+
+// أزرار الموبايل — تلوين الزر المحدد
+document.querySelectorAll('.status-label').forEach(label => {
+    const radio = label.querySelector('input[type=radio]');
+    const btn   = label.querySelector('.status-btn');
+
+    function activateBtn() {
+        const name = radio.name;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+            const b = r.closest('.status-label')?.querySelector('.status-btn');
+            if (b) b.classList.remove('active','text-white');
+        });
+        btn.classList.add('active','text-white');
+        colorRow(radio);
+    }
+
+    if (radio.checked) activateBtn();
+    label.addEventListener('click', () => {
+        radio.checked = true;
+        activateBtn();
+    });
+});
+
+// الكل حاضر
+document.getElementById('markAllPresent')?.addEventListener('click', () => {
+    document.querySelectorAll('input[value="present"]').forEach(r => {
+        r.checked = true;
+        colorRow(r);
+        // تفعيل زر الموبايل
+        const label = r.closest('.status-label');
+        if (label) label.click();
+    });
+});
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}تسجيل حضور — {{ hall.name }}{% endblock %}
+
+{% block content %}
+<div class="card stat-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">
+            <i class="fas fa-clipboard-list text-primary me-2"></i>
+            حضور {{ hall.name }} — {{ today }}
+        </span>
+        {% if already_taken %}
+        <span class="badge bg-info">تم التسجيل مسبقاً — يمكن التعديل</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>الطالب</th>
+                            <th>حاضر</th>
+                            <th>غائب</th>
+                            <th>متأخر</th>
+                            <th>بعذر</th>
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_data %}
+                        <tr>
+                            <td class="text-muted">{{ forloop.counter }}</td>
+                            <td class="fw-bold">{{ item.student.get_full_name }}</td>
+                            {% for status_val, status_label in statuses %}
+                            <td class="text-center">
+                                <input type="radio"
+                                       name="status_{{ item.student.id }}"
+                                       value="{{ status_val }}"
+                                       class="form-check-input"
+                                       {% if item.status == status_val %}checked{% endif %}>
+                            </td>
+                            {% endfor %}
+                            <td>
+                                <input type="text"
+                                       name="notes_{{ item.student.id }}"
+                                       class="form-control form-control-sm"
+                                       placeholder="ملاحظة">
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                لا يوجد طلاب في هذه القاعة
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if students_data %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    إجمالي: {{ students_data|length }} طالب
+                </span>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'attendance:students' %}"
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-right"></i> رجوع
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-1"></i> حفظ الحضور
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // تحديد الكل حاضر بزر واحد
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-sm btn-outline-success mb-3';
+        btn.innerHTML = '<i class="fas fa-check-double me-1"></i> تحديد الكل حاضر';
+        btn.onclick = function() {
+            document.querySelectorAll('input[value="present"]').forEach(r => r.checked = true);
+        };
+        document.querySelector('.table-responsive').before(btn);
+    });
+</script>
+{% endblock %} {% endcomment %}

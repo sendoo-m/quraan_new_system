@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block page_title %}لوحة مشرف القاعة{% endblock %}
+
+{% block content %}
+
+<!-- هيدر الصفحة -->
+<div class="card stat-card mb-4">
+    <div class="card-body d-flex align-items-center justify-content-between
+                flex-wrap gap-2 py-3">
+        <div>
+            <div class="fw-bold fs-6">
+                <i class="fas fa-chalkboard-teacher text-primary me-2"></i>
+                لوحة مشرف القاعة
+            </div>
+            <div class="text-muted small mt-1">
+                <i class="far fa-calendar-alt me-1"></i>
+                {% now "Y/m/d" %}
+            </div>
+        </div>
+        <span class="badge bg-primary px-3 py-2">
+            {{ my_halls|length }} قاعة
+        </span>
+    </div>
+</div>
+
+{% if my_halls %}
+
+<!-- كروت القاعات -->
+<div class="row g-4">
+    {% for hall in my_halls %}
+    {% with count=hall.get_current_students_count seats=hall.get_available_seats %}
+    <div class="col-12 col-md-6">
+        <div class="card stat-card h-100">
+
+            <!-- هيدر القاعة -->
+            <div class="card-header d-flex align-items-center
+                        justify-content-between gap-2">
+                <div class="fw-bold d-flex align-items-center gap-2">
+                    <i class="fas fa-door-open text-primary"></i>
+                    {{ hall.name }}
+                </div>
+                <span class="badge bg-info bg-opacity-75">
+                    {{ hall.get_age_group_display }}
+                </span>
+            </div>
+
+            <div class="card-body d-flex flex-column gap-3">
+
+                <!-- إحصائيات الطلاب -->
+                <div class="row g-2">
+                    <div class="col-4">
+                        <div class="rounded-3 bg-primary bg-opacity-10
+                                    py-2 text-center">
+                            <div class="fs-4 fw-bold lh-1 text-primary">
+                                {{ count }}
+                            </div>
+                            <div class="small text-muted mt-1">طالب</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded-3 bg-success bg-opacity-10
+                                    py-2 text-center">
+                            <div class="fs-4 fw-bold lh-1 text-success">
+                                {{ seats }}
+                            </div>
+                            <div class="small text-muted mt-1">متاح</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded-3 bg-secondary bg-opacity-10
+                                    py-2 text-center">
+                            <div class="fs-4 fw-bold lh-1 text-secondary">
+                                {{ hall.max_students }}
+                            </div>
+                            <div class="small text-muted mt-1">الطاقة</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- شريط الامتلاء -->
+                <div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">نسبة الامتلاء</span>
+                        <span class="fw-bold
+                            {% if count >= hall.max_students %}text-danger
+                            {% elif seats <= 2 %}text-warning
+                            {% else %}text-success{% endif %}">
+                            {% widthratio count hall.max_students 100 %}%
+                        </span>
+                    </div>
+                    <div class="progress" style="height:8px;border-radius:4px;">
+                        <div class="progress-bar
+                            {% if count >= hall.max_students %}bg-danger
+                            {% elif seats <= 2 %}bg-warning
+                            {% else %}bg-success{% endif %}"
+                             style="width:{% widthratio count hall.max_students 100 %}%">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- معلم القاعة -->
+                {% if hall.teacher %}
+                <div class="d-flex align-items-center gap-2 small
+                            border rounded-3 px-3 py-2">
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center bg-success bg-opacity-10
+                                flex-shrink-0"
+                         style="width:32px;height:32px;">
+                        <i class="fas fa-chalkboard-teacher text-success"
+                           style="font-size:.75rem;"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size:.7rem;">المعلم</div>
+                        <div class="fw-bold">{{ hall.teacher.get_full_name }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- أزرار الإجراءات -->
+                <div class="d-grid gap-2 mt-auto">
+                    <a href="{% url 'attendance:take' hall.pk %}"
+                       class="btn btn-primary">
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        تسجيل الحضور
+                    </a>
+                    <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}"
+                       class="btn btn-outline-info">
+                        <i class="fas fa-tasks me-1"></i>
+                        المتابعة اليومية
+                    </a>
+                    <a href="{% url 'evaluations:hall_followups' hall.pk %}"
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-history me-1"></i>
+                        سجل المتابعات
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+
+{% else %}
+
+<!-- حالة فارغة -->
+<div class="card stat-card">
+    <div class="card-body text-center py-5 text-muted">
+        <div class="rounded-circle d-inline-flex align-items-center
+                    justify-content-center bg-secondary bg-opacity-10 mb-3"
+             style="width:72px;height:72px;">
+            <i class="fas fa-door-closed fa-2x text-secondary"></i>
+        </div>
+        <div class="fw-bold mb-1">لم يتم تخصيص قاعات لك بعد</div>
+        <div class="small">تواصل مع المشرف العام لتخصيص قاعة</div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}لوحة مشرف القاعة{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    {% for hall in my_halls %}
+    <div class="col-md-6">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-door-open text-primary me-2"></i>
+                {{ hall.name }}
+                <span class="badge bg-info me-2">
+                    {{ hall.get_age_group_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="bg-light rounded p-2 text-center">
+                            <div class="fs-4 fw-bold text-primary">
+                                {{ hall.get_current_students_count }}
+                            </div>
+                            <div class="small text-muted">طالب</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-light rounded p-2 text-center">
+                            <div class="fs-4 fw-bold text-success">
+                                {{ hall.get_available_seats }}
+                            </div>
+                            <div class="small text-muted">مقعد متاح</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'attendance:take' hall.pk %}"
+                       class="btn btn-primary">
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        تسجيل الحضور
+                    </a>
+                    <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}"
+                       class="btn btn-outline-info">
+                        <i class="fas fa-tasks me-1"></i>
+                        المتابعة اليومية
+                    </a>
+                    <a href="{% url 'evaluations:hall_followups' hall.pk %}"
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-history me-1"></i>
+                        سجل المتابعات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="fas fa-door-open fa-3x mb-3 d-block"></i>
+        لم يتم تخصيص قاعات لك بعد
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} {% endcomment %}

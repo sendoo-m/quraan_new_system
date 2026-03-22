@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+{% block page_title %}متابعة أبنائي{% endblock %}
+
+{% block content %}
+
+{% if children_data %}
+
+<!-- هيدر الصفحة -->
+<div class="card stat-card mb-4">
+    <div class="card-body d-flex align-items-center justify-content-between
+                flex-wrap gap-2 py-3">
+        <div>
+            <div class="fw-bold">
+                <i class="fas fa-heart text-danger me-2"></i>
+                متابعة أبنائي
+            </div>
+            <div class="text-muted small mt-1">
+                <i class="far fa-calendar-alt me-1"></i>
+                {% now "Y/m/d" %}
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary px-3 py-2">
+                {{ children_data|length }} طالب
+            </span>
+            <a href="{% url 'students:register' %}"
+               class="btn btn-sm btn-outline-success">
+                <i class="fas fa-plus me-1"></i> تسجيل طالب
+            </a>
+        </div>
+    </div>
+</div>
+
+{% for item in children_data %}
+<div class="card stat-card mb-4">
+
+    <!-- هيدر الطالب -->
+    <div class="card-header">
+        <div class="d-flex align-items-center justify-content-between
+                    flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center
+                            justify-content-center bg-primary bg-opacity-10
+                            flex-shrink-0"
+                     style="width:46px;height:46px;">
+                    <i class="fas fa-child text-primary"></i>
+                </div>
+                <div>
+                    <div class="fw-bold fs-6">{{ item.student.get_full_name }}</div>
+                    <div class="d-flex flex-wrap gap-1 mt-1">
+                        <span class="badge bg-info bg-opacity-75">
+                            {{ item.student.calculate_age }} سنة
+                        </span>
+                        <span class="badge
+                            {% if item.student.hall %}bg-secondary
+                            {% else %}bg-warning text-dark{% endif %}">
+                            <i class="fas fa-door-open me-1"
+                               style="font-size:.65rem;"></i>
+                            {{ item.student.hall.name|default:"لم يُسكَّن بعد" }}
+                        </span>
+                        {% if item.surahs_count %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-book-open me-1"
+                               style="font-size:.65rem;"></i>
+                            {{ item.surahs_count }} سورة
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'students:detail' item.student.pk %}"
+               class="btn btn-sm btn-outline-primary flex-shrink-0">
+                <i class="fas fa-eye me-1"></i>
+                الملف الكامل
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body d-flex flex-column gap-4">
+
+        <!-- حضور اليوم + آخر تقييم -->
+        <div class="row g-3">
+
+            <!-- حضور اليوم -->
+            <div class="col-12 col-md-3">
+                <div class="rounded-3 text-center py-3 h-100 d-flex flex-column
+                            align-items-center justify-content-center
+                    {% if item.today_attend %}
+                        {% if item.today_attend.status == 'present' %}bg-success bg-opacity-10
+                        {% elif item.today_attend.status == 'absent' %}bg-danger bg-opacity-10
+                        {% elif item.today_attend.status == 'late' %}bg-warning bg-opacity-10
+                        {% else %}bg-info bg-opacity-10{% endif %}
+                    {% else %}bg-light{% endif %}">
+                    <div class="fs-1 mb-1">
+                        {% if item.today_attend %}
+                            {% if item.today_attend.status == 'present' %}✅
+                            {% elif item.today_attend.status == 'absent' %}❌
+                            {% elif item.today_attend.status == 'late' %}⏰
+                            {% else %}📋{% endif %}
+                        {% else %}❓{% endif %}
+                    </div>
+                    <div class="fw-bold small">حضور اليوم</div>
+                    <div class="small
+                        {% if item.today_attend %}
+                            {% if item.today_attend.status == 'present' %}text-success
+                            {% elif item.today_attend.status == 'absent' %}text-danger
+                            {% elif item.today_attend.status == 'late' %}text-warning
+                            {% else %}text-info{% endif %}
+                        {% else %}text-muted{% endif %}">
+                        {% if item.today_attend %}
+                            {{ item.today_attend.get_status_display }}
+                            {% if item.today_attend.check_in %}
+                            <div class="mt-1" style="font-size:.7rem;">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ item.today_attend.check_in }}
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            لم يُسجَّل بعد
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- آخر تقييم -->
+            <div class="col-12 col-md-9">
+                {% if item.last_eval %}
+                <div class="rounded-3 bg-light p-3 h-100">
+                    <div class="fw-bold mb-3 d-flex align-items-center
+                                justify-content-between flex-wrap gap-2">
+                        <span>
+                            <i class="fas fa-star text-warning me-1"></i>
+                            آخر تقييم
+                        </span>
+                        <span class="badge bg-secondary bg-opacity-75 fw-normal">
+                            {{ item.last_eval.date }}
+                        </span>
+                    </div>
+
+                    <!-- تقييمات -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="rounded-3 bg-white text-center py-2 px-1">
+                                <div class="text-muted" style="font-size:.7rem;">الحفظ</div>
+                                <span class="badge bg-primary mt-1 d-block">
+                                    {{ item.last_eval.get_memorization_rating_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="rounded-3 bg-white text-center py-2 px-1">
+                                <div class="text-muted" style="font-size:.7rem;">السلوك</div>
+                                <span class="badge bg-info mt-1 d-block">
+                                    {{ item.last_eval.get_behavior_rating_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="rounded-3 bg-white text-center py-2 px-1">
+                                <div class="text-muted" style="font-size:.7rem;">الالتزام</div>
+                                <span class="badge bg-secondary mt-1 d-block">
+                                    {{ item.last_eval.get_commitment_rating_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تمييز + تنبيه -->
+                    {% if item.last_eval.is_distinguished or item.last_eval.needs_attention %}
+                    <div class="d-flex gap-2 flex-wrap mb-3">
+                        {% if item.last_eval.is_distinguished %}
+                        <span class="badge bg-warning text-dark px-3 py-2">
+                            ⭐ طالب متميز
+                        </span>
+                        {% endif %}
+                        {% if item.last_eval.needs_attention %}
+                        <span class="badge bg-danger px-3 py-2">
+                            ⚠️ يحتاج متابعة
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- رسالة المعلم -->
+                    {% if item.last_eval.general_notes %}
+                    <div class="alert alert-info py-2 mb-0 small d-flex gap-2">
+                        <i class="fas fa-comment-dots text-info flex-shrink-0 mt-1"></i>
+                        <div>
+                            <strong>رسالة المعلم: </strong>
+                            {{ item.last_eval.general_notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="rounded-3 bg-light h-100 d-flex flex-column
+                            align-items-center justify-content-center
+                            text-muted text-center py-4">
+                    <i class="fas fa-star fa-2x mb-2 opacity-25"></i>
+                    <div class="small">لا يوجد تقييم حتى الآن</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- المتابعات والواجبات -->
+        {% if item.followups %}
+        <div>
+            <div class="fw-bold mb-3 d-flex align-items-center
+                        justify-content-between">
+                <span>
+                    <i class="fas fa-tasks text-primary me-2"></i>
+                    المتابعات والواجبات
+                </span>
+                <span class="badge bg-primary bg-opacity-75">
+                    {{ item.followups|length }}
+                </span>
+            </div>
+            <div class="row g-2">
+                {% for followup in item.followups %}
+                <div class="col-12 col-md-6">
+                    <div class="card border h-100" style="border-radius:10px;">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="fas fa-calendar-day text-primary"
+                                   style="font-size:.8rem;"></i>
+                                <span class="fw-bold small text-primary">
+                                    {{ followup.date }}
+                                </span>
+                            </div>
+                            <div class="small mb-1">
+                                <i class="fas fa-book text-secondary me-1"></i>
+                                <strong>الواجب: </strong>
+                                {{ followup.homework }}
+                            </div>
+                            {% if followup.memorization_task %}
+                            <div class="small text-success mb-0">
+                                <i class="fas fa-book-open me-1"></i>
+                                <strong>الحفظ: </strong>
+                                {{ followup.memorization_task }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+
+<!-- حالة فارغة -->
+<div class="card stat-card">
+    <div class="card-body text-center py-5">
+        <div class="rounded-circle d-inline-flex align-items-center
+                    justify-content-center bg-primary bg-opacity-10 mb-3"
+             style="width:80px;height:80px;">
+            <i class="fas fa-child fa-2x text-primary"></i>
+        </div>
+        <h5 class="fw-bold mb-1">لم يتم تسجيل أي طالب بعد</h5>
+        <p class="text-muted small mb-4">
+            سجّل ابنك للانضمام إلى مقرأتنا والمتابعة المستمرة
+        </p>
+        <a href="{% url 'students:register' %}" class="btn btn-primary px-4">
+            <i class="fas fa-plus me-1"></i> تسجيل طالب جديد
+        </a>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}متابعة أبنائي{% endblock %}
+
+{% block content %}
+{% for item in children_data %}
+<div class="card stat-card mb-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold fs-5">
+                <i class="fas fa-child text-primary me-2"></i>
+                {{ item.student.get_full_name }}
+            </span>
+            <div class="d-flex gap-2">
+                <span class="badge bg-info">{{ item.student.calculate_age }} سنة</span>
+                <span class="badge bg-secondary">
+                    {{ item.student.hall.name|default:"لم يُسكَّن بعد" }}
+                </span>
+                <span class="badge bg-success">
+                    {{ item.surahs_count }} سورة محفوظة
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+
+            <!-- حضور اليوم -->
+            <div class="col-md-3">
+                <div class="card text-center border-0 bg-light">
+                    <div class="card-body py-3">
+                        <div class="fs-2 mb-1">
+                            {% if item.today_attend %}
+                                {% if item.today_attend.status == 'present' %}✅
+                                {% elif item.today_attend.status == 'absent' %}❌
+                                {% elif item.today_attend.status == 'late' %}⏰
+                                {% else %}📋{% endif %}
+                            {% else %}❓{% endif %}
+                        </div>
+                        <div class="fw-bold small">حضور اليوم</div>
+                        <div class="text-muted small">
+                            {% if item.today_attend %}
+                                {{ item.today_attend.get_status_display }}
+                            {% else %}
+                                لم يُسجَّل بعد
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- آخر تقييم -->
+            {% if item.last_eval %}
+            <div class="col-md-9">
+                <div class="card border-0 bg-light">
+                    <div class="card-body py-3">
+                        <div class="fw-bold mb-2">
+                            <i class="fas fa-star text-warning me-1"></i>
+                            آخر تقييم — {{ item.last_eval.date }}
+                        </div>
+                        <div class="d-flex gap-3 flex-wrap mb-2">
+                            <span>
+                                الحفظ:
+                                <span class="badge bg-primary">
+                                    {{ item.last_eval.get_memorization_rating_display }}
+                                </span>
+                            </span>
+                            <span>
+                                السلوك:
+                                <span class="badge bg-info">
+                                    {{ item.last_eval.get_behavior_rating_display }}
+                                </span>
+                            </span>
+                            <span>
+                                الالتزام:
+                                <span class="badge bg-secondary">
+                                    {{ item.last_eval.get_commitment_rating_display }}
+                                </span>
+                            </span>
+                            {% if item.last_eval.is_distinguished %}
+                            <span class="badge bg-warning text-dark">
+                                ⭐ طالب متميز
+                            </span>
+                            {% endif %}
+                            {% if item.last_eval.needs_attention %}
+                            <span class="badge bg-danger">
+                                ⚠️ يحتاج متابعة
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if item.last_eval.general_notes %}
+                        <div class="alert alert-info py-2 mb-0 small">
+                            <i class="fas fa-comment me-1"></i>
+                            <strong>رسالة المعلم:</strong>
+                            {{ item.last_eval.general_notes }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- المتابعات اليومية -->
+        {% if item.followups %}
+        <hr>
+        <h6 class="fw-bold mb-3">
+            <i class="fas fa-tasks text-primary me-1"></i>
+            المتابعات والواجبات
+        </h6>
+        <div class="row g-2">
+            {% for followup in item.followups %}
+            <div class="col-md-6">
+                <div class="card border-0 bg-light rounded">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold small text-primary">
+                                {{ followup.date }}
+                            </span>
+                        </div>
+                        <p class="mb-1 small">
+                            <strong>📚 الواجب:</strong> {{ followup.homework }}
+                        </p>
+                        {% if followup.memorization_task %}
+                        <p class="mb-0 small text-success">
+                            <strong>📖 الحفظ:</strong> {{ followup.memorization_task }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- زر عرض التفاصيل الكاملة -->
+        <div class="mt-3 text-end">
+            <a href="{% url 'students:detail' item.student.pk %}"
+               class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-eye me-1"></i> عرض الملف الكامل
+            </a>
+        </div>
+
+    </div>
+</div>
+{% empty %}
+<div class="text-center py-5 text-muted">
+    <i class="fas fa-child fa-3x mb-3 d-block"></i>
+    <h5>لم يتم تسجيل أي طالب بعد</h5>
+    <p class="small">يمكنك تسجيل ابنك والانضمام للمقرأة</p>
+    <a href="{% url 'students:register' %}" class="btn btn-primary mt-2">
+        <i class="fas fa-plus me-1"></i> تسجيل طالب جديد
+    </a>
+</div>
+{% endfor %}
+{% endblock %} {% endcomment %}

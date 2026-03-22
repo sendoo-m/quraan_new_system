@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% block page_title %}{{ action }} قاعة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+
+        <!-- هيدر الصفحة -->
+        <div class="card stat-card mb-4">
+            <div class="card-body d-flex align-items-center justify-content-between
+                        flex-wrap gap-2 py-3">
+                <div>
+                    <div class="fw-bold">
+                        <i class="fas fa-door-open text-primary me-2"></i>
+                        {{ action }} قاعة
+                    </div>
+                    <div class="text-muted small mt-1">
+                        {% if action == 'تعديل' %}
+                        تعديل بيانات القاعة الدراسية
+                        {% else %}
+                        إضافة قاعة دراسية جديدة
+                        {% endif %}
+                    </div>
+                </div>
+                {% if action == 'تعديل' %}
+                <span class="badge bg-info px-3 py-2">
+                    <i class="fas fa-edit me-1"></i> تعديل
+                </span>
+                {% else %}
+                <span class="badge bg-success px-3 py-2">
+                    <i class="fas fa-plus me-1"></i> جديد
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الفورم -->
+        <div class="card stat-card">
+            <div class="card-header fw-bold d-flex align-items-center
+                        justify-content-between">
+                <span>
+                    <i class="fas fa-pen-to-square text-primary me-2"></i>
+                    بيانات القاعة
+                </span>
+                <span class="text-muted small fw-normal">
+                    الحقول المطلوبة مُعلَّمة بـ
+                    <span class="text-danger">*</span>
+                </span>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-4">
+
+                        <!-- ① المعلومات الأساسية -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3">
+                                <div class="fw-bold mb-3 small text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    المعلومات الأساسية
+                                </div>
+                                <div class="row g-3">
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-tag text-primary me-1"></i>
+                                            اسم القاعة
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.name }}
+                                        {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.name.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            الموقع
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.location }}
+                                        {% if form.location.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.location.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-users text-info me-1"></i>
+                                            الفئة العمرية
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.age_group }}
+                                        {% if form.age_group.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.age_group.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-chair text-warning me-1"></i>
+                                            أقصى عدد للطلاب
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.max_students }}
+                                        {% if form.max_students.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.max_students.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ② الكادر التعليمي -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3">
+                                <div class="fw-bold mb-3 small text-muted">
+                                    <i class="fas fa-chalkboard-teacher me-1"></i>
+                                    الكادر التعليمي
+                                </div>
+                                <div class="row g-3">
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-chalkboard-teacher
+                                                      text-success me-1"></i>
+                                            المعلم
+                                        </label>
+                                        {{ form.teacher }}
+                                        {% if form.teacher.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.teacher.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-user-shield
+                                                      text-info me-1"></i>
+                                            مشرف القاعة
+                                        </label>
+                                        {{ form.supervisor }}
+                                        {% if form.supervisor.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.supervisor.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ③ الحالة -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3 d-flex
+                                        align-items-center gap-3"
+                                 id="active-box">
+                                <div class="form-check form-switch mb-0">
+                                    {{ form.is_active }}
+                                </div>
+                                <label class="form-check-label fw-bold mb-0
+                                              flex-grow-1"
+                                       for="{{ form.is_active.id_for_label }}"
+                                       style="cursor:pointer;">
+                                    <i class="fas fa-toggle-on text-success me-1"></i>
+                                    القاعة نشطة
+                                </label>
+                                <span id="active-badge">
+                                    {% if form.is_active.value %}
+                                    <span class="badge bg-success">نشطة</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">معطّلة</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="form-text mt-2">
+                                <i class="fas fa-info-circle me-1 text-muted"></i>
+                                القاعات غير النشطة لن تظهر في قوائم التسكين
+                            </div>
+                        </div>
+
+                        <!-- أزرار -->
+                        <div class="col-12">
+                            <div class="d-flex gap-2 justify-content-between
+                                        flex-wrap">
+                                <a href="{% url 'halls:list' %}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-primary px-4 fw-bold">
+                                    <i class="fas fa-save me-1"></i>
+                                    {% if action == 'تعديل' %}تحديث{% else %}حفظ{% endif %}
+                                    القاعة
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const activeCheckbox = document.getElementById(
+    '{{ form.is_active.id_for_label }}'
+);
+const activeBox   = document.getElementById('active-box');
+const activeBadge = document.getElementById('active-badge');
+
+function updateActive() {
+    const on = activeCheckbox?.checked;
+    activeBox.classList.toggle('bg-success',     on);
+    activeBox.classList.toggle('bg-opacity-10',  on);
+    activeBox.classList.toggle('border-success', on);
+    activeBadge.innerHTML = on
+        ? '<span class="badge bg-success">نشطة</span>'
+        : '<span class="badge bg-secondary">معطّلة</span>';
+}
+
+activeCheckbox?.addEventListener('change', updateActive);
+updateActive();
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}{{ action }} قاعة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-door-open text-primary me-2"></i>
+                {{ action }} قاعة
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">اسم القاعة *</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">الموقع *</label>
+                            {{ form.location }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">الفئة العمرية *</label>
+                            {{ form.age_group }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">أقصى عدد للطلاب *</label>
+                            {{ form.max_students }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">المعلم</label>
+                            {{ form.teacher }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">مشرف القاعة</label>
+                            {{ form.supervisor }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label fw-bold me-2">
+                                    القاعة نشطة
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex gap-2 justify-content-end">
+                            <a href="{% url 'halls:list' %}"
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-1"></i> حفظ
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

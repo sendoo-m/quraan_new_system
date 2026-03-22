@@ -1,0 +1,466 @@
+{% extends 'base_public.html' %}
+{% block title %}تسجيل طالب جديد — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center py-5"
+     style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
+    <div class="container">
+
+        <!-- هيدر -->
+        <div class="text-center text-white mb-4">
+            <div class="rounded-circle d-inline-flex align-items-center
+                        justify-content-center bg-warning bg-opacity-10 mb-3"
+                 style="width:72px;height:72px;">
+                <i class="fas fa-mosque fa-2x text-warning"></i>
+            </div>
+            <h4 class="fw-bold mb-1">{{ SITE_NAME }}</h4>
+            <p class="text-white-50 small mb-0">
+                <i class="fas fa-user-plus me-1"></i>
+                تسجيل طالب جديد
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="row g-4 justify-content-center">
+
+                <!-- ① بيانات ولي الأمر -->
+                <div class="col-12 col-lg-5">
+                    <div class="card stat-card h-100">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-user text-primary me-2"></i>
+                            بيانات ولي الأمر
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-user text-primary me-1"></i>
+                                        الاسم الأول
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ parent_form.first_name }}
+                                    {% if parent_form.first_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.first_name.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-user text-primary me-1"></i>
+                                        اسم العائلة
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ parent_form.last_name }}
+                                    {% if parent_form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.last_name.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-at text-warning me-1"></i>
+                                        اسم المستخدم
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ parent_form.username }}
+                                    {% if parent_form.username.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.username.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-phone text-success me-1"></i>
+                                        رقم الهاتف
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ parent_form.phone }}
+                                    {% if parent_form.phone.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.phone.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-lock text-secondary me-1"></i>
+                                        كلمة المرور
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ parent_form.password }}
+                                    {% if parent_form.password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.password.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-lock text-secondary me-1"></i>
+                                        تأكيد كلمة المرور
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ parent_form.password_confirm }}
+                                    {% if parent_form.password_confirm.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.password_confirm.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if parent_form.non_field_errors %}
+                                <div class="col-12">
+                                    <div class="alert alert-danger py-2 small mb-0">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ parent_form.non_field_errors|join:", " }}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ② بيانات الطالب -->
+                <div class="col-12 col-lg-5">
+                    <div class="card stat-card h-100">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-user-graduate text-success me-2"></i>
+                            بيانات الطالب
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-user text-success me-1"></i>
+                                        الاسم الأول
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ student_form.first_name }}
+                                    {% if student_form.first_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ student_form.first_name.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-user text-success me-1"></i>
+                                        اسم العائلة
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ student_form.last_name }}
+                                    {% if student_form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ student_form.last_name.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-calendar text-info me-1"></i>
+                                        تاريخ الميلاد
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ student_form.date_of_birth }}
+                                    {% if student_form.date_of_birth.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ student_form.date_of_birth.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-image text-secondary me-1"></i>
+                                        صورة الطالب
+                                    </label>
+                                    {{ student_form.profile_picture }}
+                                    {% if student_form.profile_picture.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ student_form.profile_picture.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- باص toggle -->
+                                <div class="col-12">
+                                    <div class="rounded-3 border p-3 d-flex
+                                                align-items-center gap-3"
+                                         id="bus-box">
+                                        <div class="form-check form-switch mb-0">
+                                            {{ student_form.uses_bus }}
+                                        </div>
+                                        <label class="form-check-label fw-bold
+                                                      small mb-0 flex-grow-1"
+                                               for="{{ student_form.uses_bus.id_for_label }}"
+                                               style="cursor:pointer;">
+                                            <i class="fas fa-bus text-warning me-1"></i>
+                                            الاشتراك في خدمة الباص
+                                        </label>
+                                        <span id="bus-badge">
+                                            {% if student_form.uses_bus.value %}
+                                            <span class="badge bg-warning text-dark">
+                                                مشترك
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                غير مشترك
+                                            </span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- السور المحفوظة -->
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-book-open text-success me-1"></i>
+                                        السور المحفوظة
+                                    </label>
+                                    <div class="border rounded-3 p-2"
+                                         style="max-height:200px;overflow-y:auto;">
+                                        <div class="row row-cols-2 g-1">
+                                            {% for surah in student_form.memorized_surahs %}
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    {{ surah.tag }}
+                                                    <label class="form-check-label small"
+                                                           for="{{ surah.id_for_label }}">
+                                                        {{ surah.choice_label }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1 text-muted"></i>
+                                        اختياري — يمكن تحديثه لاحقاً
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ③ أزرار التسجيل -->
+                <div class="col-12 col-lg-10">
+                    <div class="d-flex gap-3 justify-content-between
+                                align-items-center flex-wrap">
+                        <a href="{% url 'accounts:login' %}"
+                           class="text-white-50 small">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            لديك حساب بالفعل؟
+                            <span class="text-warning">تسجيل الدخول</span>
+                        </a>
+                        <button type="submit"
+                                class="btn btn-warning px-5 fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            تسجيل الطالب
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const busCb    = document.getElementById(
+    '{{ student_form.uses_bus.id_for_label }}'
+);
+const busBox   = document.getElementById('bus-box');
+const busBadge = document.getElementById('bus-badge');
+
+function updateBus() {
+    const on = busCb?.checked;
+    busBox.classList.toggle('bg-warning',    on);
+    busBox.classList.toggle('bg-opacity-10', on);
+    busBox.classList.toggle('border-warning',on);
+    busBadge.innerHTML = on
+        ? '<span class="badge bg-warning text-dark">مشترك</span>'
+        : '<span class="badge bg-secondary">غير مشترك</span>';
+}
+
+busCb?.addEventListener('change', updateBus);
+updateBus();
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base_public.html' %}
+{% block title %}تسجيل طالب جديد — {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center py-5"
+     style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="text-center text-white mb-4">
+            <i class="fas fa-mosque fa-3x text-warning mb-3"></i>
+            <h3 class="fw-bold">{{ SITE_NAME }}</h3>
+            <p class="text-muted">تسجيل طالب جديد</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-4 justify-content-center">
+
+                <!-- بيانات ولي الأمر -->
+                <div class="col-lg-5">
+                    <div class="card stat-card">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-user text-primary me-2"></i>
+                            بيانات ولي الأمر
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">الاسم الأول *</label>
+                                    {{ parent_form.first_name }}
+                                    {% if parent_form.first_name.errors %}
+                                    <div class="text-danger small">{{ parent_form.first_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">اسم العائلة *</label>
+                                    {{ parent_form.last_name }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">اسم المستخدم *</label>
+                                    {{ parent_form.username }}
+                                    {% if parent_form.username.errors %}
+                                    <div class="text-danger small">{{ parent_form.username.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">رقم الهاتف *</label>
+                                    {{ parent_form.phone }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">كلمة المرور *</label>
+                                    {{ parent_form.password }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">تأكيد كلمة المرور *</label>
+                                    {{ parent_form.password_confirm }}
+                                </div>
+                                {% if parent_form.non_field_errors %}
+                                <div class="col-12">
+                                    <div class="alert alert-danger py-2 small">
+                                        {{ parent_form.non_field_errors }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- بيانات الطالب -->
+                <div class="col-lg-5">
+                    <div class="card stat-card">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-user-graduate text-success me-2"></i>
+                            بيانات الطالب
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">الاسم الأول *</label>
+                                    {{ student_form.first_name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">اسم العائلة *</label>
+                                    {{ student_form.last_name }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">تاريخ الميلاد *</label>
+                                    {{ student_form.date_of_birth }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">صورة الطالب</label>
+                                    {{ student_form.profile_picture }}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        {{ student_form.uses_bus }}
+                                        <label class="form-check-label fw-bold me-2">
+                                            الاشتراك في خدمة الباص
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">
+                                        السور المحفوظة
+                                    </label>
+                                    <div class="border rounded p-2"
+                                         style="max-height:200px;overflow-y:auto;">
+                                        <div class="row row-cols-2 g-1">
+                                            {% for surah in student_form.memorized_surahs %}
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    {{ surah.tag }}
+                                                    <label class="form-check-label small"
+                                                           for="{{ surah.id_for_label }}">
+                                                        {{ surah.choice_label }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- زر التسجيل -->
+                <div class="col-lg-10">
+                    <div class="d-flex gap-3 justify-content-between align-items-center">
+                        <a href="{% url 'accounts:login' %}" class="text-white small">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            لديك حساب بالفعل؟ تسجيل الدخول
+                        </a>
+                        <button type="submit" class="btn btn-warning px-5 fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            تسجيل الطالب
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

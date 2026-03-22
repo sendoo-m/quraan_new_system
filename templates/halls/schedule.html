@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% block page_title %}جدول {{ hall.name }}{% endblock %}
+
+{% block content %}
+
+<!-- هيدر القاعة -->
+<div class="card stat-card mb-4">
+    <div class="card-body d-flex align-items-center justify-content-between
+                flex-wrap gap-2 py-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center
+                        justify-content-center bg-primary bg-opacity-10
+                        flex-shrink-0"
+                 style="width:48px;height:48px;">
+                <i class="fas fa-calendar text-primary fa-lg"></i>
+            </div>
+            <div>
+                <div class="fw-bold">جدول {{ hall.name }}</div>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    {% if hall.get_age_group_display %}
+                    <span class="badge bg-info bg-opacity-75">
+                        {{ hall.get_age_group_display }}
+                    </span>
+                    {% endif %}
+                    <span class="badge bg-primary bg-opacity-75">
+                        {{ schedules|length }} حصة
+                    </span>
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'halls:detail' hall.pk %}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-right me-1"></i> رجوع
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- ══════ فورم إضافة حصة ══════ -->
+    <div class="col-12 col-md-4">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-plus text-success me-2"></i>
+                إضافة حصة جديدة
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="d-flex flex-column gap-3">
+
+                        <!-- المادة -->
+                        <div>
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-book text-primary me-1"></i>
+                                المادة
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.subject.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- اليوم -->
+                        <div>
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-calendar-day text-info me-1"></i>
+                                اليوم
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.day }}
+                            {% if form.day.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.day.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- وقت البداية + النهاية -->
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">
+                                    <i class="far fa-clock text-success me-1"></i>
+                                    من
+                                </label>
+                                {{ form.start_time }}
+                                {% if form.start_time.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.start_time.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">
+                                    <i class="far fa-clock text-danger me-1"></i>
+                                    إلى
+                                </label>
+                                {{ form.end_time }}
+                                {% if form.end_time.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.end_time.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold">
+                            <i class="fas fa-plus me-1"></i> إضافة الحصة
+                        </button>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ الجدول الحالي ══════ -->
+    <div class="col-12 col-md-8">
+        <div class="card stat-card">
+            <div class="card-header d-flex align-items-center
+                        justify-content-between fw-bold flex-wrap gap-2">
+                <span>
+                    <i class="fas fa-calendar-check text-primary me-2"></i>
+                    الجدول الحالي
+                </span>
+                {% if schedules %}
+                <span class="badge bg-primary px-3 py-2">
+                    {{ schedules|length }} حصة
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+
+                {% if schedules %}
+
+                <!-- Desktop Table -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>اليوم</th>
+                                <th>المادة</th>
+                                <th class="text-center">من</th>
+                                <th class="text-center">إلى</th>
+                                <th class="text-center">حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for schedule in schedules %}
+                            <tr>
+                                <td class="fw-bold">
+                                    {{ schedule.get_day_display }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ schedule.subject.name }}
+                                    </span>
+                                </td>
+                                <td class="text-center small">
+                                    {{ schedule.start_time|time:"H:i" }}
+                                </td>
+                                <td class="text-center small">
+                                    {{ schedule.end_time|time:"H:i" }}
+                                </td>
+                                <td class="text-center">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delete_id"
+                                               value="{{ schedule.pk }}">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger px-2"
+                                                onclick="return confirm('حذف الحصة؟')">
+                                            <i class="fas fa-trash"
+                                               style="font-size:.75rem;"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <div class="d-md-none p-3">
+                    <div class="d-flex flex-column gap-2">
+                        {% for schedule in schedules %}
+                        <div class="rounded-3 border px-3 py-2 d-flex
+                                    align-items-center justify-content-between gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle d-flex align-items-center
+                                            justify-content-center bg-primary
+                                            bg-opacity-10 flex-shrink-0"
+                                     style="width:38px;height:38px;">
+                                    <i class="fas fa-book text-primary"
+                                       style="font-size:.75rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold small">
+                                        {{ schedule.get_day_display }}
+                                        <span class="badge bg-primary ms-1"
+                                              style="font-size:.65rem;">
+                                            {{ schedule.subject.name }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <span class="badge bg-light text-dark"
+                                              style="font-size:.7rem;">
+                                            <i class="far fa-clock me-1"></i>
+                                            {{ schedule.start_time|time:"H:i" }}
+                                            —
+                                            {{ schedule.end_time|time:"H:i" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <form method="post" class="flex-shrink-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="delete_id"
+                                       value="{{ schedule.pk }}">
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger px-2"
+                                        onclick="return confirm('حذف الحصة؟')">
+                                    <i class="fas fa-trash"
+                                       style="font-size:.75rem;"></i>
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% else %}
+
+                <!-- حالة فارغة -->
+                <div class="text-center text-muted py-5">
+                    <div class="rounded-circle d-inline-flex align-items-center
+                                justify-content-center bg-primary bg-opacity-10
+                                mb-3"
+                         style="width:72px;height:72px;">
+                        <i class="fas fa-calendar-times fa-2x text-primary"></i>
+                    </div>
+                    <div class="fw-bold mb-1">لا يوجد جدول بعد</div>
+                    <div class="small">أضف أول حصة من الفورم المجاور</div>
+                </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}جدول {{ hall.name }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- إضافة حصة -->
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-plus text-success me-2"></i>
+                إضافة حصة
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">المادة</label>
+                        {{ form.subject }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">اليوم</label>
+                        {{ form.day }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">وقت البداية</label>
+                        {{ form.start_time }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">وقت النهاية</label>
+                        {{ form.end_time }}
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-plus me-1"></i> إضافة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- الجدول الحالي -->
+    <div class="col-md-8">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-calendar text-primary me-2"></i>
+                الجدول الحالي
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>اليوم</th>
+                                <th>المادة</th>
+                                <th>من</th>
+                                <th>إلى</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for schedule in schedules %}
+                            <tr>
+                                <td class="fw-bold">{{ schedule.get_day_display }}</td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ schedule.subject.name }}
+                                    </span>
+                                </td>
+                                <td>{{ schedule.start_time }}</td>
+                                <td>{{ schedule.end_time }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    لا يوجد جدول بعد
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

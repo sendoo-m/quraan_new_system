@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+{% block page_title %}المتابعة اليومية{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+
+        <!-- هيدر الصفحة -->
+        <div class="card stat-card mb-4">
+            <div class="card-body d-flex align-items-center justify-content-between
+                        flex-wrap gap-2 py-3">
+                <div>
+                    <div class="fw-bold">
+                        <i class="fas fa-tasks text-primary me-2"></i>
+                        المتابعة اليومية
+                    </div>
+                    <div class="text-muted small mt-1">
+                        <i class="far fa-calendar-alt me-1"></i>
+                        {{ today }}
+                    </div>
+                </div>
+                {% if existing %}
+                <span class="badge bg-info px-3 py-2">
+                    <i class="fas fa-edit me-1"></i>
+                    تعديل على متابعة موجودة
+                </span>
+                {% else %}
+                <span class="badge bg-success px-3 py-2">
+                    <i class="fas fa-plus me-1"></i>
+                    متابعة جديدة
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- اختيار القاعة -->
+        <div class="card stat-card mb-4">
+            <div class="card-header fw-bold">
+                <i class="fas fa-door-open text-primary me-2"></i>
+                اختيار القاعة
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <label class="form-label fw-bold small text-muted">
+                        <i class="fas fa-chalkboard me-1"></i>
+                        القاعة
+                    </label>
+                    <select name="hall"
+                            class="form-select"
+                            onchange="this.form.submit()">
+                        <option value="">— اختر القاعة —</option>
+                        {% for hall in halls %}
+                        <option value="{{ hall.id }}"
+                            {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>
+                            {{ hall.name }}
+                            {% if hall.get_age_group_display %}
+                            — {{ hall.get_age_group_display }}
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- فورم المتابعة -->
+        {% if hall_id %}
+        <div class="card stat-card">
+            <div class="card-header fw-bold d-flex align-items-center
+                        justify-content-between flex-wrap gap-2">
+                <span>
+                    <i class="fas fa-pen-to-square text-primary me-2"></i>
+                    تفاصيل المتابعة
+                </span>
+                <span class="text-muted small fw-normal">
+                    الحقول المطلوبة مُعلَّمة بـ
+                    <span class="text-danger">*</span>
+                </span>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="hall" value="{{ hall_id }}">
+
+                    <!-- الواجب المطلوب -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-book text-warning me-1"></i>
+                            الواجب المطلوب
+                            <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="homework"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="اكتب الواجب المطلوب من الطلاب..."
+                                  required>{{ existing.homework|default:'' }}</textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1 text-muted"></i>
+                            سيظهر هذا الواجب لأولياء الأمور في لوحتهم
+                        </div>
+                    </div>
+
+                    <!-- المطلوب حفظه -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-book-open text-success me-1"></i>
+                            المطلوب حفظه
+                        </label>
+                        <textarea name="memorization_task"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="السور أو الآيات المطلوب حفظها...">{{ existing.memorization_task|default:'' }}</textarea>
+                    </div>
+
+                    <!-- ملاحظات إضافية -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-sticky-note text-info me-1"></i>
+                            ملاحظات إضافية
+                        </label>
+                        <textarea name="extra_notes"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="أي ملاحظات أخرى لأولياء الأمور...">{{ existing.extra_notes|default:'' }}</textarea>
+                    </div>
+
+                    <!-- معاينة قبل الحفظ -->
+                    <div id="preview-box"
+                         class="alert alert-light border d-none mb-4"
+                         style="border-radius:10px;">
+                        <div class="fw-bold mb-2 text-primary">
+                            <i class="fas fa-eye me-1"></i>
+                            معاينة ما سيراه ولي الأمر
+                        </div>
+                        <div class="small mb-1">
+                            <i class="fas fa-book text-warning me-1"></i>
+                            <strong>الواجب: </strong>
+                            <span id="preview-homework" class="text-muted">—</span>
+                        </div>
+                        <div class="small mb-1">
+                            <i class="fas fa-book-open text-success me-1"></i>
+                            <strong>الحفظ: </strong>
+                            <span id="preview-memorization" class="text-muted">—</span>
+                        </div>
+                        <div class="small">
+                            <i class="fas fa-sticky-note text-info me-1"></i>
+                            <strong>ملاحظات: </strong>
+                            <span id="preview-notes" class="text-muted">—</span>
+                        </div>
+                    </div>
+
+                    <!-- أزرار -->
+                    <div class="d-flex gap-2 justify-content-between flex-wrap">
+                        <a href="{% url 'dashboard:hall_supervisor' %}"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button type="button"
+                                    id="previewBtn"
+                                    class="btn btn-outline-info">
+                                <i class="fas fa-eye me-1"></i> معاينة
+                            </button>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                <i class="fas fa-save me-1"></i>
+                                {% if existing %}تحديث{% else %}نشر{% endif %} المتابعة
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        {% else %}
+
+        <!-- حالة لم تُختر قاعة -->
+        <div class="card stat-card">
+            <div class="card-body text-center py-5 text-muted">
+                <div class="rounded-circle d-inline-flex align-items-center
+                            justify-content-center bg-primary bg-opacity-10 mb-3"
+                     style="width:72px;height:72px;">
+                    <i class="fas fa-door-open fa-2x text-primary"></i>
+                </div>
+                <div class="fw-bold mb-1">اختر قاعة أولاً</div>
+                <div class="small">اختر القاعة من القائمة بالأعلى لبدء تسجيل المتابعة</div>
+            </div>
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const homeworkEl      = document.querySelector('textarea[name="homework"]');
+const memorizationEl  = document.querySelector('textarea[name="memorization_task"]');
+const notesEl         = document.querySelector('textarea[name="extra_notes"]');
+const previewBox      = document.getElementById('preview-box');
+const previewBtn      = document.getElementById('previewBtn');
+
+function updatePreview() {
+    document.getElementById('preview-homework').textContent =
+        homeworkEl?.value.trim()     || '—';
+    document.getElementById('preview-memorization').textContent =
+        memorizationEl?.value.trim() || '—';
+    document.getElementById('preview-notes').textContent =
+        notesEl?.value.trim()        || '—';
+}
+
+previewBtn?.addEventListener('click', () => {
+    updatePreview();
+    previewBox.classList.toggle('d-none');
+    const showing = !previewBox.classList.contains('d-none');
+    previewBtn.innerHTML = showing
+        ? '<i class="fas fa-eye-slash me-1"></i> إخفاء'
+        : '<i class="fas fa-eye me-1"></i> معاينة';
+});
+
+[homeworkEl, memorizationEl, notesEl].forEach(el => {
+    el?.addEventListener('input', () => {
+        if (!previewBox.classList.contains('d-none')) updatePreview();
+    });
+});
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}المتابعة اليومية{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        <!-- اختيار القاعة -->
+        <div class="card stat-card mb-4">
+            <div class="card-body">
+                <form method="get" class="d-flex gap-3 align-items-end">
+                    <div class="flex-grow-1">
+                        <label class="form-label fw-bold">اختر القاعة</label>
+                        <select name="hall" class="form-select"
+                                onchange="this.form.submit()">
+                            <option value="">— اختر القاعة —</option>
+                            {% for hall in halls %}
+                            <option value="{{ hall.id }}"
+                                {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>
+                                {{ hall.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- فورم المتابعة -->
+        {% if hall_id %}
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-tasks text-primary me-2"></i>
+                متابعة يوم {{ today }}
+                {% if existing %}
+                <span class="badge bg-info me-2">تعديل على متابعة موجودة</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="hall" value="{{ hall_id }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-book text-warning me-1"></i>
+                            الواجب المطلوب *
+                        </label>
+                        <textarea name="homework" class="form-control" rows="3"
+                                  placeholder="اكتب الواجب المطلوب من الطلاب..."
+                                  required>{{ existing.homework|default:'' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-book-open text-success me-1"></i>
+                            المطلوب حفظه
+                        </label>
+                        <textarea name="memorization_task" class="form-control" rows="2"
+                                  placeholder="السور أو الآيات المطلوب حفظها...">{{ existing.memorization_task|default:'' }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-sticky-note text-info me-1"></i>
+                            ملاحظات إضافية
+                        </label>
+                        <textarea name="extra_notes" class="form-control" rows="2"
+                                  placeholder="أي ملاحظات أخرى لأولياء الأمور...">{{ existing.extra_notes|default:'' }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'dashboard:hall_supervisor' %}"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right"></i> رجوع
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-save me-1"></i>
+                            {% if existing %}تحديث{% else %}نشر{% endif %} المتابعة
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} {% endcomment %}

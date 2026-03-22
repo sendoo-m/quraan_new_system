@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center px-3"
+     style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);">
+
+    <div class="w-100" style="max-width: 420px;">
+
+        <!-- Logo -->
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center
+                        rounded-circle bg-warning mb-3"
+                 style="width:72px; height:72px;">
+                <i class="fas fa-mosque fa-2x text-dark"></i>
+            </div>
+            <h4 class="text-white fw-bold mb-1">{{ SITE_NAME }}</h4>
+            <p class="mb-0" style="color:rgba(255,255,255,.5); font-size:.85rem;">
+                نظام إدارة المقرأة
+            </p>
+        </div>
+
+        <!-- Card -->
+        <div class="card border-0 shadow-lg" style="border-radius:16px;">
+            <div class="card-body p-4 p-sm-5">
+
+                <h5 class="fw-bold text-center mb-4">
+                    <i class="fas fa-sign-in-alt text-primary me-2"></i>
+                    تسجيل الدخول
+                </h5>
+
+                <!-- Messages -->
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible
+                            fade show py-2 small rounded-3" role="alert">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close btn-sm"
+                            data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+
+                <form method="post" autocomplete="off">
+                    {% csrf_token %}
+
+                    <!-- اسم المستخدم -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-user text-primary me-1"></i>
+                            اسم المستخدم
+                        </label>
+                        <input type="text"
+                               name="username"
+                               class="form-control form-control-lg"
+                               placeholder="أدخل اسم المستخدم"
+                               required autofocus
+                               style="border-radius:10px;">
+                    </div>
+
+                    <!-- كلمة المرور -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-lock text-primary me-1"></i>
+                            كلمة المرور
+                        </label>
+                        <div class="input-group">
+                            <input type="password"
+                                   name="password"
+                                   id="passwordField"
+                                   class="form-control form-control-lg"
+                                   placeholder="أدخل كلمة المرور"
+                                   required
+                                   style="border-radius:10px 0 0 10px;">
+                            <button type="button"
+                                    class="btn btn-outline-secondary px-3"
+                                    onclick="togglePass()"
+                                    style="border-radius:0 10px 10px 0;">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- زر الدخول -->
+                    <button type="submit"
+                            class="btn btn-primary w-100 py-2 fw-bold fs-6"
+                            style="border-radius:10px;">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        دخول
+                    </button>
+                </form>
+
+                <!-- رابط التسجيل -->
+                {% if ALLOW_REGISTRATION %}
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="text-muted small mb-2">تريد تسجيل طالب جديد؟</p>
+                    <a href="{% url 'home' %}"
+                       class="btn btn-outline-success btn-sm px-4"
+                       style="border-radius:20px;">
+                        <i class="fas fa-user-plus me-1"></i>
+                        تسجيل طالب
+                    </a>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-3"
+             style="color:rgba(255,255,255,.3); font-size:.75rem;">
+            جميع الحقوق محفوظة © {{ SITE_NAME }}
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePass() {
+    const f = document.getElementById('passwordField');
+    const i = document.getElementById('eyeIcon');
+    if (f.type === 'password') {
+        f.type = 'text';
+        i.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        f.type = 'password';
+        i.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="card shadow" style="width: 420px; border-radius: 16px;">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <i class="fas fa-mosque fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold">{{ SITE_NAME }}</h4>
+                <p class="text-muted small">تسجيل الدخول للنظام</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">اسم المستخدم</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text"
+                               name="username"
+                               class="form-control"
+                               placeholder="أدخل اسم المستخدم"
+                               required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">كلمة المرور</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="أدخل كلمة المرور"
+                               required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                    <i class="fas fa-sign-in-alt me-2"></i> دخول
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

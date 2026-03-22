@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+{% block page_title %}لوحة المشرف العام{% endblock %}
+
+{% block content %}
+
+<!-- إحصائيات -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-primary bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-user-graduate text-primary fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-primary">{{ total_students }}</div>
+                    <div class="text-muted small mt-1">الطلاب النشطون</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-warning bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-hourglass-half text-warning fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-warning">{{ pending_students|length }}</div>
+                    <div class="text-muted small mt-1">ينتظرون التسكين</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-4">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-danger bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-user-times text-danger fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-danger">{{ staff_absent_today|length }}</div>
+                    <div class="text-muted small mt-1">غائبون اليوم</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- الطلاب المنتظرون + الغائبون -->
+{% if pending_students or staff_absent_today %}
+<div class="row g-4 mb-4">
+
+    <!-- ينتظرون التسكين -->
+    {% if pending_students %}
+    <div class="col-12 col-md-6">
+        <div class="card stat-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">
+                    <i class="fas fa-hourglass-half text-warning me-2"></i>
+                    ينتظرون التسكين
+                </span>
+                <span class="badge bg-warning text-dark">
+                    {{ pending_students|length }}
+                </span>
+            </div>
+            <div class="list-group list-group-flush" style="max-height:320px;overflow-y:auto;">
+                {% for student in pending_students %}
+                <div class="list-group-item d-flex justify-content-between
+                            align-items-center gap-2 py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center
+                                    justify-content-center bg-warning bg-opacity-10
+                                    flex-shrink-0"
+                             style="width:36px;height:36px;">
+                            <i class="fas fa-child text-warning small"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small">{{ student.get_full_name }}</div>
+                            <div class="text-muted" style="font-size:.75rem;">
+                                {{ student.calculate_age }} سنة
+                            </div>
+                        </div>
+                    </div>
+                    <form method="post"
+                          action="{% url 'students:assign_hall' student.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-sm btn-success flex-shrink-0">
+                            <i class="fas fa-door-open me-1"></i>
+                            تسكين
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الغائبون اليوم -->
+    {% if staff_absent_today %}
+    <div class="col-12 col-md-6">
+        <div class="card stat-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">
+                    <i class="fas fa-user-times text-danger me-2"></i>
+                    الغائبون اليوم
+                </span>
+                <span class="badge bg-danger">
+                    {{ staff_absent_today|length }}
+                </span>
+            </div>
+            <div class="list-group list-group-flush" style="max-height:320px;overflow-y:auto;">
+                {% for att in staff_absent_today %}
+                <div class="list-group-item d-flex justify-content-between
+                            align-items-center gap-2 py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center
+                                    justify-content-center bg-danger bg-opacity-10
+                                    flex-shrink-0"
+                             style="width:36px;height:36px;">
+                            <i class="fas fa-user text-danger small"></i>
+                        </div>
+                        <span class="fw-bold small">{{ att.staff.get_full_name }}</span>
+                    </div>
+                    <span class="badge
+                        {% if att.staff.role == 'teacher' %}bg-success
+                        {% else %}bg-info{% endif %}">
+                        {{ att.staff.get_role_display }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
+
+<!-- حالة القاعات -->
+<div class="card stat-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="fw-bold">
+            <i class="fas fa-door-open text-primary me-2"></i>
+            القاعات
+        </span>
+        <span class="badge bg-primary px-3 py-2">
+            {{ halls|length }} قاعة
+        </span>
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Desktop Table -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>القاعة</th>
+                        <th>الفئة العمرية</th>
+                        <th class="text-center">الطلاب</th>
+                        <th>المعلم</th>
+                        <th>المشرف</th>
+                        <th class="text-center">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall in halls %}
+                    {% with count=hall.get_current_students_count max=hall.max_students %}
+                    <tr>
+                        <td class="fw-bold">{{ hall.name }}</td>
+                        <td>
+                            <span class="badge bg-info bg-opacity-75">
+                                {{ hall.get_age_group_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge
+                                {% if count >= max %}bg-danger
+                                {% elif count >= max|add:"-2" %}bg-warning text-dark
+                                {% else %}bg-success{% endif %}">
+                                {{ count }} / {{ max }}
+                            </span>
+                        </td>
+                        <td class="small">
+                            {{ hall.teacher.get_full_name|default:"—" }}
+                        </td>
+                        <td class="small">
+                            {{ hall.supervisor.get_full_name|default:"—" }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'halls:detail' hall.pk %}"
+                               class="btn btn-sm btn-outline-primary px-3">
+                                <i class="fas fa-eye me-1"></i> عرض
+                            </a>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="fas fa-door-closed fa-2x mb-2 d-block"></i>
+                            لا توجد قاعات مسجّلة
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="d-md-none p-3">
+            {% for hall in halls %}
+            {% with count=hall.get_current_students_count max=hall.max_students %}
+            <div class="card border mb-3" style="border-radius:10px;">
+                <div class="card-body">
+
+                    <!-- اسم + فئة -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="fw-bold">
+                            <i class="fas fa-door-open text-primary me-1"></i>
+                            {{ hall.name }}
+                        </div>
+                        <span class="badge bg-info bg-opacity-75">
+                            {{ hall.get_age_group_display }}
+                        </span>
+                    </div>
+
+                    <!-- طلاب + شريط -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">الطلاب</span>
+                            <span class="fw-bold
+                                {% if count >= max %}text-danger
+                                {% elif count >= max|add:"-2" %}text-warning
+                                {% else %}text-success{% endif %}">
+                                {{ count }} / {{ max }}
+                            </span>
+                        </div>
+                        <div class="progress" style="height:8px;border-radius:4px;">
+                            <div class="progress-bar
+                                {% if count >= max %}bg-danger
+                                {% elif count >= max|add:"-2" %}bg-warning
+                                {% else %}bg-success{% endif %}"
+                                 style="width:{% widthratio count max 100 %}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- معلم + مشرف -->
+                    <div class="row g-2 mb-3 small">
+                        <div class="col-6">
+                            <div class="text-muted">المعلم</div>
+                            <div class="fw-bold">
+                                {{ hall.teacher.get_full_name|default:"—" }}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted">المشرف</div>
+                            <div class="fw-bold">
+                                {{ hall.supervisor.get_full_name|default:"—" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'halls:detail' hall.pk %}"
+                       class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-eye me-1"></i> عرض التفاصيل
+                    </a>
+                </div>
+            </div>
+            {% endwith %}
+            {% empty %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-door-closed fa-2x mb-2 d-block"></i>
+                لا توجد قاعات مسجّلة
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}لوحة المشرف العام{% endblock %}
+
+{% block content %}
+<!-- إحصائيات -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ total_students }}</div>
+                    <div>الطلاب النشطون</div>
+                </div>
+                <i class="fas fa-user-graduate fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ pending_students|length }}</div>
+                    <div>ينتظرون التسكين</div>
+                </div>
+                <i class="fas fa-hourglass-half fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ staff_absent_today|length }}</div>
+                    <div>غائبون اليوم</div>
+                </div>
+                <i class="fas fa-user-times fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- الطلاب المنتظرون -->
+    {% if pending_students %}
+    <div class="col-md-6">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-hourglass-half text-warning me-2"></i>
+                ينتظرون التسكين
+            </div>
+            <div class="list-group list-group-flush">
+                {% for student in pending_students %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">{{ student.get_full_name }}</span>
+                        <span class="text-muted small me-2">
+                            — {{ student.calculate_age }} سنة
+                        </span>
+                    </div>
+                    <form method="post"
+                          action="{% url 'students:assign_hall' student.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="fas fa-door-open"></i> تسكين
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- الغائبون اليوم -->
+    {% if staff_absent_today %}
+    <div class="col-md-6">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-user-times text-danger me-2"></i>
+                الغائبون اليوم
+            </div>
+            <div class="list-group list-group-flush">
+                {% for att in staff_absent_today %}
+                <div class="list-group-item d-flex justify-content-between">
+                    <span class="fw-bold">{{ att.staff.get_full_name }}</span>
+                    <span class="badge bg-secondary">
+                        {{ att.staff.get_role_display }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- حالة القاعات -->
+<div class="card stat-card mt-4">
+    <div class="card-header fw-bold">
+        <i class="fas fa-door-open text-primary me-2"></i>
+        القاعات
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>القاعة</th>
+                        <th>الفئة</th>
+                        <th>الطلاب</th>
+                        <th>المعلم</th>
+                        <th>المشرف</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall in halls %}
+                    <tr>
+                        <td class="fw-bold">{{ hall.name }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ hall.get_age_group_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ hall.get_current_students_count }} / {{ hall.max_students }}
+                            </span>
+                        </td>
+                        <td>{{ hall.teacher.get_full_name|default:"—" }}</td>
+                        <td>{{ hall.supervisor.get_full_name|default:"—" }}</td>
+                        <td>
+                            <a href="{% url 'halls:detail' hall.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

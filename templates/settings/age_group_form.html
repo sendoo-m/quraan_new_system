@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% block page_title %}{{ action }} فئة عمرية{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-6">
+
+        <!-- هيدر الصفحة -->
+        <div class="card stat-card mb-4">
+            <div class="card-body d-flex align-items-center justify-content-between
+                        flex-wrap gap-2 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center flex-shrink-0
+                                {% if action == 'إضافة' %}bg-success bg-opacity-10
+                                {% else %}bg-info bg-opacity-10{% endif %}"
+                         style="width:48px;height:48px;">
+                        <i class="fas fa-child fa-lg
+                            {% if action == 'إضافة' %}text-success
+                            {% else %}text-info{% endif %}"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ action }} فئة عمرية</div>
+                        <div class="text-muted small mt-1">
+                            {% if action == 'إضافة' %}
+                            إضافة فئة عمرية جديدة للنظام
+                            {% else %}
+                            تعديل بيانات الفئة العمرية
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if action == 'إضافة' %}
+                <span class="badge bg-success px-3 py-2">
+                    <i class="fas fa-plus me-1"></i> جديد
+                </span>
+                {% else %}
+                <span class="badge bg-info px-3 py-2">
+                    <i class="fas fa-edit me-1"></i> تعديل
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- الفورم -->
+        <div class="card stat-card">
+            <div class="card-header fw-bold d-flex align-items-center
+                        justify-content-between">
+                <span>
+                    <i class="fas fa-pen-to-square text-warning me-2"></i>
+                    بيانات الفئة
+                </span>
+                <span class="text-muted small fw-normal">
+                    الحقول المطلوبة مُعلَّمة بـ
+                    <span class="text-danger">*</span>
+                </span>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-4">
+
+                        <!-- ① اسم الفئة -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-tag text-warning me-1"></i>
+                                اسم الفئة
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.name.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ② نطاق السن -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3">
+                                <div class="fw-bold mb-3 small text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    نطاق السن
+                                </div>
+                                <div class="row g-3">
+
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-arrow-down
+                                                      text-success me-1"></i>
+                                            السن الأدنى
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.min_age }}
+                                        {% if form.min_age.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.min_age.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-arrow-up
+                                                      text-danger me-1"></i>
+                                            السن الأقصى
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.max_age }}
+                                        {% if form.max_age.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.max_age.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                                <div class="form-text mt-2">
+                                    <i class="fas fa-info-circle me-1 text-muted"></i>
+                                    سيتم تسكين الطلاب تلقائياً حسب هذا النطاق
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ③ الترتيب -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-sort-numeric-up
+                                          text-primary me-1"></i>
+                                الترتيب في القائمة
+                            </label>
+                            {{ form.order }}
+                            {% if form.order.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.order.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1 text-muted"></i>
+                                رقم أصغر = يظهر أولاً في القوائم
+                            </div>
+                        </div>
+
+                        <!-- ④ الحالة -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3 d-flex
+                                        align-items-center gap-3"
+                                 id="active-box">
+                                <div class="form-check form-switch mb-0">
+                                    {{ form.is_active }}
+                                </div>
+                                <label class="form-check-label fw-bold mb-0
+                                              flex-grow-1"
+                                       for="{{ form.is_active.id_for_label }}"
+                                       style="cursor:pointer;">
+                                    <i class="fas fa-toggle-on text-success me-1"></i>
+                                    الفئة نشطة
+                                </label>
+                                <span id="active-badge">
+                                    {% if form.is_active.value %}
+                                    <span class="badge bg-success">نشطة</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">معطّلة</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="form-text mt-2">
+                                <i class="fas fa-info-circle me-1 text-muted"></i>
+                                الفئات غير النشطة لن تظهر عند إنشاء القاعات
+                            </div>
+                        </div>
+
+                        <!-- أزرار -->
+                        <div class="col-12">
+                            <div class="d-flex gap-2 justify-content-between
+                                        flex-wrap">
+                                <a href="{% url 'settings:age_groups' %}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-warning px-4 fw-bold">
+                                    <i class="fas fa-save me-1"></i>
+                                    {% if action == 'إضافة' %}إضافة{% else %}تحديث{% endif %}
+                                    الفئة
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const activeCheckbox = document.getElementById(
+    '{{ form.is_active.id_for_label }}'
+);
+const activeBox   = document.getElementById('active-box');
+const activeBadge = document.getElementById('active-badge');
+
+function updateActive() {
+    const on = activeCheckbox?.checked;
+    activeBox.classList.toggle('bg-success',     on);
+    activeBox.classList.toggle('bg-opacity-10',  on);
+    activeBox.classList.toggle('border-success', on);
+    activeBadge.innerHTML = on
+        ? '<span class="badge bg-success">نشطة</span>'
+        : '<span class="badge bg-secondary">معطّلة</span>';
+}
+
+activeCheckbox?.addEventListener('change', updateActive);
+updateActive();
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}{{ action }} فئة عمرية{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-child text-warning me-2"></i>
+                {{ action }} فئة عمرية
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold">اسم الفئة *</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">السن الأدنى *</label>
+                            {{ form.min_age }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">السن الأقصى *</label>
+                            {{ form.max_age }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">الترتيب</label>
+                            {{ form.order }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label fw-bold me-2">
+                                    الفئة نشطة
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex gap-2 justify-content-end">
+                            <a href="{% url 'settings:age_groups' %}"
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-warning px-4 fw-bold">
+                                <i class="fas fa-save me-1"></i> حفظ
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

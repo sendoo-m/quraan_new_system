@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+{% block page_title %}تعديل بيانات {{ student.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+
+        <!-- هيدر الصفحة -->
+        <div class="card stat-card mb-4">
+            <div class="card-body d-flex align-items-center justify-content-between
+                        flex-wrap gap-2 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    {% if student.profile_picture %}
+                    <img src="{{ student.profile_picture.url }}"
+                         class="rounded-circle flex-shrink-0"
+                         width="48" height="48"
+                         style="object-fit:cover;">
+                    {% else %}
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center bg-warning bg-opacity-10
+                                flex-shrink-0 fw-bold text-warning"
+                         style="width:48px;height:48px;font-size:18px;">
+                        {{ student.first_name|first }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="fw-bold">تعديل بيانات الطالب</div>
+                        <div class="text-muted small mt-1">
+                            {{ student.get_full_name }}
+                        </div>
+                    </div>
+                </div>
+                <span class="badge bg-warning text-dark px-3 py-2">
+                    <i class="fas fa-edit me-1"></i> تعديل
+                </span>
+            </div>
+        </div>
+
+        <!-- الفورم -->
+        <div class="card stat-card">
+            <div class="card-header fw-bold d-flex align-items-center
+                        justify-content-between">
+                <span>
+                    <i class="fas fa-pen-to-square text-warning me-2"></i>
+                    بيانات الطالب
+                </span>
+                <span class="text-muted small fw-normal">
+                    الحقول المطلوبة مُعلَّمة بـ
+                    <span class="text-danger">*</span>
+                </span>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-4">
+
+                        <!-- ① الاسم -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3">
+                                <div class="fw-bold mb-3 small text-muted">
+                                    <i class="fas fa-id-card me-1"></i>
+                                    الاسم
+                                </div>
+                                <div class="row g-3">
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-user text-warning me-1"></i>
+                                            الاسم الأول
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.first_name }}
+                                        {% if form.first_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.first_name.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-user text-warning me-1"></i>
+                                            اسم العائلة
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.last_name }}
+                                        {% if form.last_name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            <i class="fas fa-circle-exclamation me-1"></i>
+                                            {{ form.last_name.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ② تاريخ الميلاد + الحالة -->
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-calendar text-info me-1"></i>
+                                تاريخ الميلاد
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.date_of_birth.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-circle-dot text-primary me-1"></i>
+                                الحالة
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.status.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ③ الصورة -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-image text-secondary me-1"></i>
+                                صورة الطالب
+                            </label>
+                            {% if student.profile_picture %}
+                            <div class="mb-2 d-flex align-items-center gap-2">
+                                <img src="{{ student.profile_picture.url }}"
+                                     class="rounded-circle border"
+                                     width="52" height="52"
+                                     style="object-fit:cover;">
+                                <span class="text-muted small">
+                                    الصورة الحالية
+                                </span>
+                            </div>
+                            {% endif %}
+                            {{ form.profile_picture }}
+                            {% if form.profile_picture.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.profile_picture.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ④ الباص -->
+                        <div class="col-12">
+                            <div class="rounded-3 border p-3 d-flex
+                                        align-items-center gap-3"
+                                 id="bus-box">
+                                <div class="form-check form-switch mb-0">
+                                    {{ form.uses_bus }}
+                                </div>
+                                <label class="form-check-label fw-bold small
+                                              mb-0 flex-grow-1"
+                                       for="{{ form.uses_bus.id_for_label }}"
+                                       style="cursor:pointer;">
+                                    <i class="fas fa-bus text-warning me-1"></i>
+                                    الاشتراك في خدمة الباص
+                                </label>
+                                <span id="bus-badge">
+                                    {% if form.uses_bus.value %}
+                                    <span class="badge bg-warning text-dark">
+                                        مشترك
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">
+                                        غير مشترك
+                                    </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات الباص -->
+                        <div class="col-12" id="bus-notes-div">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-sticky-note text-warning me-1"></i>
+                                ملاحظات الباص
+                            </label>
+                            {{ form.bus_notes }}
+                            {% if form.bus_notes.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.bus_notes.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- ⑤ السور المحفوظة -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-book-open text-success me-1"></i>
+                                السور المحفوظة
+                            </label>
+                            <div class="border rounded-3 p-3"
+                                 style="max-height:280px;overflow-y:auto;">
+                                <div class="row row-cols-2 row-cols-sm-3
+                                            row-cols-md-4 g-1">
+                                    {% for surah in form.memorized_surahs %}
+                                    <div class="col">
+                                        <div class="form-check">
+                                            {{ surah.tag }}
+                                            <label class="form-check-label small"
+                                                   for="{{ surah.id_for_label }}">
+                                                {{ surah.choice_label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ⑥ ملاحظات عامة -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-comment-dots text-secondary me-1"></i>
+                                ملاحظات عامة
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fas fa-circle-exclamation me-1"></i>
+                                {{ form.notes.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- أزرار -->
+                        <div class="col-12">
+                            <div class="d-flex gap-2 justify-content-between
+                                        flex-wrap">
+                                <a href="{% url 'students:detail' student.pk %}"
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-right me-1"></i> رجوع
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-warning px-4 fw-bold">
+                                    <i class="fas fa-save me-1"></i>
+                                    حفظ التعديلات
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const busCb    = document.getElementById('{{ form.uses_bus.id_for_label }}');
+const busBox   = document.getElementById('bus-box');
+const busBadge = document.getElementById('bus-badge');
+const busNotes = document.getElementById('bus-notes-div');
+
+function updateBus() {
+    const on = busCb?.checked;
+
+    busBox.classList.toggle('bg-warning',    on);
+    busBox.classList.toggle('bg-opacity-10', on);
+    busBox.classList.toggle('border-warning',on);
+
+    busBadge.innerHTML = on
+        ? '<span class="badge bg-warning text-dark">مشترك</span>'
+        : '<span class="badge bg-secondary">غير مشترك</span>';
+
+    busNotes.style.display = on ? 'block' : 'none';
+}
+
+busCb?.addEventListener('change', updateBus);
+updateBus();
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}تعديل بيانات {{ student.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card stat-card">
+            <div class="card-header fw-bold">
+                <i class="fas fa-user-edit text-warning me-2"></i>
+                تعديل بيانات {{ student.get_full_name }}
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+
+                        <!-- الاسم -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">الاسم الأول *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger small">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">اسم العائلة *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger small">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- تاريخ الميلاد -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">تاريخ الميلاد *</label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                            <div class="text-danger small">{{ form.date_of_birth.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- الحالة -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">الحالة *</label>
+                            {{ form.status }}
+                        </div>
+
+                        <!-- صورة -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold">صورة الطالب</label>
+                            {% if student.profile_picture %}
+                            <div class="mb-2">
+                                <img src="{{ student.profile_picture.url }}"
+                                     class="rounded-circle"
+                                     width="60" height="60"
+                                     style="object-fit:cover;">
+                                <span class="text-muted small me-2">الصورة الحالية</span>
+                            </div>
+                            {% endif %}
+                            {{ form.profile_picture }}
+                        </div>
+
+                        <!-- الباص -->
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                {{ form.uses_bus }}
+                                <label class="form-check-label fw-bold me-2">
+                                    الاشتراك في خدمة الباص
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12" id="bus_notes_div">
+                            <label class="form-label fw-bold">ملاحظات الباص</label>
+                            {{ form.bus_notes }}
+                        </div>
+
+                        <!-- السور المحفوظة -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-book-open text-success me-1"></i>
+                                السور المحفوظة
+                            </label>
+                            <div class="border rounded p-3"
+                                 style="max-height:300px; overflow-y:auto;">
+                                <div class="row row-cols-2 row-cols-md-4 g-1">
+                                    {% for surah in form.memorized_surahs %}
+                                    <div class="col">
+                                        <div class="form-check">
+                                            {{ surah.tag }}
+                                            <label class="form-check-label small"
+                                                   for="{{ surah.id_for_label }}">
+                                                {{ surah.choice_label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold">ملاحظات عامة</label>
+                            {{ form.notes }}
+                        </div>
+
+                        <!-- أزرار -->
+                        <div class="col-12 d-flex gap-2 justify-content-end mt-2">
+                            <a href="{% url 'students:detail' student.pk %}"
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-warning px-4 fw-bold">
+                                <i class="fas fa-save me-1"></i> حفظ التعديلات
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const busCheck = document.getElementById('{{ form.uses_bus.id_for_label }}');
+    const busNotes = document.getElementById('bus_notes_div');
+
+    function toggleBusNotes() {
+        busNotes.style.display = busCheck.checked ? 'block' : 'none';
+    }
+    busCheck.addEventListener('change', toggleBusNotes);
+    toggleBusNotes();
+</script>
+{% endblock %} {% endcomment %}

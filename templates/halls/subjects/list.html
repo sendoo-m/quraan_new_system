@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block page_title %}المواد الدراسية{% endblock %}
+
+{% block content %}
+
+<!-- هيدر الصفحة -->
+<div class="card stat-card mb-4">
+    <div class="card-body d-flex align-items-center justify-content-between
+                flex-wrap gap-2 py-3">
+        <div>
+            <div class="fw-bold">
+                <i class="fas fa-book text-primary me-2"></i>
+                المواد الدراسية
+            </div>
+            <div class="d-flex flex-wrap gap-1 mt-1">
+                <span class="badge bg-primary bg-opacity-75">
+                    {{ total }} مادة
+                </span>
+                <span class="badge bg-success bg-opacity-75">
+                    {{ active }} نشطة
+                </span>
+                {% if total != active %}
+                <span class="badge bg-secondary bg-opacity-75">
+                    {{ total|add:"-"|add:active }} معطّلة
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% if is_general_supervisor or is_general_manager %}
+        <a href="{% url 'halls:subject_create' %}"
+           class="btn btn-success btn-sm px-3">
+            <i class="fas fa-plus me-1"></i> مادة جديدة
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Desktop Table -->
+<div class="card stat-card d-none d-md-block">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>اسم المادة</th>
+                        <th>الوصف</th>
+                        <th class="text-center">عدد الحصص</th>
+                        <th class="text-center">الحالة</th>
+                        {% if is_general_supervisor or is_general_manager %}
+                        <th class="text-center">إجراءات</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td class="text-muted small">{{ forloop.counter }}</td>
+                        <td class="fw-bold">{{ subject.name }}</td>
+                        <td class="text-muted small">
+                            {{ subject.description|truncatechars:60|default:"—" }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">
+                                {{ subject.hallschedule_set.count }} حصة
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if subject.is_active %}
+                            <span class="badge bg-success">نشطة</span>
+                            {% else %}
+                            <span class="badge bg-secondary">معطّلة</span>
+                            {% endif %}
+                        </td>
+                        {% if is_general_supervisor or is_general_manager %}
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'halls:subject_update' subject.pk %}"
+                                   class="btn btn-sm btn-outline-warning"
+                                   title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post"
+                                      action="{% url 'halls:subject_delete' subject.pk %}"
+                                      onsubmit="return confirm('هل تريد حذف {{ subject.name }}؟')">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="fas fa-book fa-2x mb-2 d-block"></i>
+                            لا توجد مواد دراسية بعد
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Cards -->
+<div class="d-md-none d-flex flex-column gap-3">
+    {% for subject in subjects %}
+    <div class="card stat-card">
+        <div class="card-body">
+
+            <!-- اسم + حالة -->
+            <div class="d-flex align-items-center justify-content-between
+                        gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center flex-shrink-0
+                                {% if subject.is_active %}bg-success bg-opacity-10
+                                {% else %}bg-secondary bg-opacity-10{% endif %}"
+                         style="width:40px;height:40px;">
+                        <i class="fas fa-book
+                            {% if subject.is_active %}text-success
+                            {% else %}text-secondary{% endif %}"
+                           style="font-size:.85rem;"></i>
+                    </div>
+                    <div class="fw-bold">{{ subject.name }}</div>
+                </div>
+                {% if subject.is_active %}
+                <span class="badge bg-success flex-shrink-0">نشطة</span>
+                {% else %}
+                <span class="badge bg-secondary flex-shrink-0">معطّلة</span>
+                {% endif %}
+            </div>
+
+            <!-- وصف -->
+            {% if subject.description %}
+            <div class="text-muted small mb-2">
+                {{ subject.description|truncatechars:80 }}
+            </div>
+            {% endif %}
+
+            <!-- حصص + إجراءات -->
+            <div class="d-flex align-items-center justify-content-between
+                        flex-wrap gap-2 mt-2">
+                <span class="badge bg-primary">
+                    <i class="fas fa-calendar-check me-1"
+                       style="font-size:.65rem;"></i>
+                    {{ subject.hallschedule_set.count }} حصة
+                </span>
+                {% if is_general_supervisor or is_general_manager %}
+                <div class="d-flex gap-2">
+                    <a href="{% url 'halls:subject_update' subject.pk %}"
+                       class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit me-1"></i> تعديل
+                    </a>
+                    <form method="post"
+                          action="{% url 'halls:subject_delete' subject.pk %}"
+                          onsubmit="return confirm('هل تريد حذف {{ subject.name }}؟')">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% empty %}
+    <div class="card stat-card">
+        <div class="card-body text-center text-muted py-5">
+            <div class="rounded-circle d-inline-flex align-items-center
+                        justify-content-center bg-primary bg-opacity-10 mb-3"
+                 style="width:72px;height:72px;">
+                <i class="fas fa-book fa-2x text-primary"></i>
+            </div>
+            <div class="fw-bold mb-1">لا توجد مواد دراسية بعد</div>
+            {% if is_general_supervisor or is_general_manager %}
+            <div class="small mb-3">ابدأ بإضافة أول مادة دراسية</div>
+            <a href="{% url 'halls:subject_create' %}"
+               class="btn btn-success btn-sm px-4">
+                <i class="fas fa-plus me-1"></i> مادة جديدة
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}المواد الدراسية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <span class="text-muted">
+        إجمالي: {{ total }} مادة — نشطة: {{ active }}
+    </span>
+    {% if is_general_supervisor or is_general_manager %}
+    <a href="{% url 'halls:subject_create' %}" class="btn btn-success">
+        <i class="fas fa-plus me-1"></i> مادة جديدة
+    </a>
+    {% endif %}
+</div>
+
+<div class="card stat-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>اسم المادة</th>
+                        <th>الوصف</th>
+                        <th>عدد الحصص</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td class="fw-bold">{{ subject.name }}</td>
+                        <td class="text-muted small">
+                            {{ subject.description|truncatechars:60|default:"—" }}
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ subject.hallschedule_set.count }} حصة
+                            </span>
+                        </td>
+                        <td>
+                            {% if subject.is_active %}
+                            <span class="badge bg-success">نشطة</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشطة</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if is_general_supervisor or is_general_manager %}
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'halls:subject_update' subject.pk %}"
+                                   class="btn btn-sm btn-outline-warning"
+                                   title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post"
+                                      action="{% url 'halls:subject_delete' subject.pk %}"
+                                      onsubmit="return confirm('هل تريد حذف {{ subject.name }}؟')">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-book fa-2x mb-2 d-block"></i>
+                            لا توجد مواد دراسية بعد
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

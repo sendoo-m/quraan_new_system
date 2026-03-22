@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block page_title %}الفئات العمرية{% endblock %}
+
+{% block content %}
+
+<!-- هيدر الصفحة -->
+<div class="card stat-card mb-4">
+    <div class="card-body d-flex align-items-center justify-content-between
+                flex-wrap gap-2 py-3">
+        <div>
+            <div class="fw-bold">
+                <i class="fas fa-child text-warning me-2"></i>
+                الفئات العمرية
+            </div>
+            <div class="d-flex flex-wrap gap-1 mt-1">
+                <span class="badge bg-warning text-dark bg-opacity-75">
+                    {{ total }} فئة
+                </span>
+            </div>
+        </div>
+        <a href="{% url 'settings:age_group_create' %}"
+           class="btn btn-success btn-sm px-3">
+            <i class="fas fa-plus me-1"></i> فئة جديدة
+        </a>
+    </div>
+</div>
+
+<!-- ══════ Desktop Table ══════ -->
+<div class="card stat-card d-none d-md-block">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center">الترتيب</th>
+                        <th>الفئة</th>
+                        <th class="text-center">من سن</th>
+                        <th class="text-center">إلى سن</th>
+                        <th class="text-center">الطلاب</th>
+                        <th class="text-center">القاعات</th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-center">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ag in age_groups %}
+                    <tr>
+                        <td class="text-center text-muted">{{ ag.order }}</td>
+                        <td class="fw-bold">{{ ag.name }}</td>
+                        <td class="text-center small">{{ ag.min_age }} سنة</td>
+                        <td class="text-center small">{{ ag.max_age }} سنة</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">
+                                {{ ag.students_count }} طالب
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info">
+                                {{ ag.halls_count }} قاعة
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if ag.is_active %}
+                            <span class="badge bg-success">نشطة</span>
+                            {% else %}
+                            <span class="badge bg-secondary">معطّلة</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="{% url 'settings:age_group_update' ag.pk %}"
+                                   class="btn btn-sm btn-outline-warning"
+                                   title="تعديل">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post"
+                                      action="{% url 'settings:age_group_delete' ag.pk %}"
+                                      onsubmit="return confirm('حذف {{ ag.name }}؟')">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            {% if ag.students_count or ag.halls_count %}
+                                            disabled
+                                            title="مستخدمة — لا يمكن الحذف"
+                                            {% endif %}>
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="fas fa-child fa-2x mb-2 d-block"></i>
+                            لا توجد فئات عمرية
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ Mobile Cards ══════ -->
+<div class="d-md-none d-flex flex-column gap-3">
+    {% for ag in age_groups %}
+    <div class="card stat-card">
+        <div class="card-body d-flex flex-column gap-3">
+
+            <!-- اسم + حالة + ترتيب -->
+            <div class="d-flex align-items-start
+                        justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center flex-shrink-0
+                                {% if ag.is_active %}bg-warning bg-opacity-10
+                                {% else %}bg-secondary bg-opacity-10{% endif %}"
+                         style="width:44px;height:44px;">
+                        <i class="fas fa-child
+                            {% if ag.is_active %}text-warning
+                            {% else %}text-secondary{% endif %}"
+                           style="font-size:.85rem;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold small">{{ ag.name }}</div>
+                        <div class="text-muted mt-1" style="font-size:.72rem;">
+                            <i class="fas fa-sort-numeric-up me-1"></i>
+                            ترتيب: {{ ag.order }}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-1
+                            flex-shrink-0">
+                    {% if ag.is_active %}
+                    <span class="badge bg-success">نشطة</span>
+                    {% else %}
+                    <span class="badge bg-secondary">معطّلة</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- نطاق السن + إحصائيات -->
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark border"
+                      style="font-size:.75rem;">
+                    <i class="fas fa-users text-info me-1"></i>
+                    {{ ag.min_age }} — {{ ag.max_age }} سنة
+                </span>
+                <span class="badge bg-primary"
+                      style="font-size:.72rem;">
+                    {{ ag.students_count }} طالب
+                </span>
+                <span class="badge bg-info"
+                      style="font-size:.72rem;">
+                    {{ ag.halls_count }} قاعة
+                </span>
+            </div>
+
+            <!-- أزرار -->
+            <div class="d-flex gap-2">
+                <a href="{% url 'settings:age_group_update' ag.pk %}"
+                   class="btn btn-sm btn-outline-warning flex-grow-1">
+                    <i class="fas fa-edit me-1"></i> تعديل
+                </a>
+                <form method="post"
+                      action="{% url 'settings:age_group_delete' ag.pk %}"
+                      onsubmit="return confirm('حذف {{ ag.name }}؟')">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-danger"
+                            {% if ag.students_count or ag.halls_count %}
+                            disabled
+                            title="مستخدمة — لا يمكن الحذف"
+                            {% endif %}>
+                        <i class="fas fa-trash me-1"></i>
+                        {% if ag.students_count or ag.halls_count %}
+                        مستخدمة
+                        {% else %}
+                        حذف
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    {% empty %}
+    <div class="card stat-card">
+        <div class="card-body text-center py-5 text-muted">
+            <div class="rounded-circle d-inline-flex align-items-center
+                        justify-content-center bg-warning bg-opacity-10 mb-3"
+                 style="width:72px;height:72px;">
+                <i class="fas fa-child fa-2x text-warning"></i>
+            </div>
+            <div class="fw-bold mb-1">لا توجد فئات عمرية</div>
+            <div class="small mb-4">ابدأ بإضافة أول فئة عمرية</div>
+            <a href="{% url 'settings:age_group_create' %}"
+               class="btn btn-success btn-sm px-4">
+                <i class="fas fa-plus me-1"></i> فئة جديدة
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}الفئات العمرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <span class="text-muted">إجمالي: {{ total }} فئة</span>
+    <a href="{% url 'settings:age_group_create' %}" class="btn btn-success">
+        <i class="fas fa-plus me-1"></i> فئة جديدة
+    </a>
+</div>
+
+<div class="card stat-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الترتيب</th>
+                        <th>الفئة</th>
+                        <th>من سن</th>
+                        <th>إلى سن</th>
+                        <th>الطلاب</th>
+                        <th>القاعات</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ag in age_groups %}
+                    <tr>
+                        <td class="text-muted">{{ ag.order }}</td>
+                        <td class="fw-bold">{{ ag.name }}</td>
+                        <td>{{ ag.min_age }} سنة</td>
+                        <td>{{ ag.max_age }} سنة</td>
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ ag.students_count }} طالب
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ ag.halls_count }} قاعة
+                            </span>
+                        </td>
+                        <td>
+                            {% if ag.is_active %}
+                            <span class="badge bg-success">نشطة</span>
+                            {% else %}
+                            <span class="badge bg-secondary">معطّلة</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'settings:age_group_update' ag.pk %}"
+                                   class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post"
+                                      action="{% url 'settings:age_group_delete' ag.pk %}"
+                                      onsubmit="return confirm('حذف {{ ag.name }}؟')">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            {% if ag.students_count or ag.halls_count %}
+                                            disabled title="مستخدمة — لا يمكن الحذف"
+                                            {% endif %}>
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            لا توجد فئات عمرية
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

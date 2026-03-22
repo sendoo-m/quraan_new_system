@@ -1,0 +1,542 @@
+{% extends 'base.html' %}
+{% block page_title %}إعدادات المقرأة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-9">
+
+        <!-- هيدر الصفحة -->
+        <div class="card stat-card mb-4">
+            <div class="card-body d-flex align-items-center justify-content-between
+                        flex-wrap gap-2 py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center
+                                justify-content-center bg-primary bg-opacity-10
+                                flex-shrink-0"
+                         style="width:48px;height:48px;">
+                        <i class="fas fa-mosque text-primary fa-lg"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">إعدادات المقرأة</div>
+                        <div class="text-muted small mt-1">
+                            تعديل بيانات وإعدادات المقرأة
+                        </div>
+                    </div>
+                </div>
+                <span class="badge bg-primary px-3 py-2">
+                    <i class="fas fa-cog me-1"></i> الإعدادات
+                </span>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="row g-4">
+
+                <!-- ① بيانات المقرأة -->
+                <div class="col-12">
+                    <div class="card stat-card">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-mosque text-primary me-2"></i>
+                            بيانات المقرأة
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <!-- اسم المقرأة -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-tag text-primary me-1"></i>
+                                        اسم المقرأة
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.name.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- الشعار -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-image text-info me-1"></i>
+                                        شعار المقرأة
+                                    </label>
+                                    {% if settings.logo %}
+                                    <div class="mb-2 d-flex align-items-center gap-2">
+                                        <img src="{{ settings.logo.url }}"
+                                             height="48"
+                                             class="rounded border">
+                                        <span class="text-muted small">
+                                            الشعار الحالي
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    {{ form.logo }}
+                                    {% if form.logo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.logo.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- هاتف -->
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-phone text-success me-1"></i>
+                                        الهاتف
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.phone.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- البريد -->
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-envelope text-warning me-1"></i>
+                                        البريد الإلكتروني
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.email.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- العنوان -->
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-map-marker-alt
+                                                  text-danger me-1"></i>
+                                        العنوان
+                                    </label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.address.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- الوصف -->
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-align-right
+                                                  text-secondary me-1"></i>
+                                        نبذة عن المقرأة
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.description.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ② التسجيل + الحضور -->
+                <div class="col-12 col-md-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-user-plus text-success me-2"></i>
+                            إعدادات التسجيل
+                        </div>
+                        <div class="card-body d-flex flex-column gap-3">
+
+                            <!-- السماح بالتسجيل -->
+                            <div class="rounded-3 border p-3 d-flex
+                                        align-items-center gap-3"
+                                 id="reg-box">
+                                <div class="form-check form-switch mb-0">
+                                    {{ form.allow_registration }}
+                                </div>
+                                <label class="form-check-label fw-bold small
+                                              mb-0 flex-grow-1"
+                                       for="{{ form.allow_registration.id_for_label }}"
+                                       style="cursor:pointer;">
+                                    السماح بالتسجيل الجديد
+                                </label>
+                                <span id="reg-badge">
+                                    {% if form.allow_registration.value %}
+                                    <span class="badge bg-success">مفتوح</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">مغلق</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- التسكين التلقائي -->
+                            <div class="rounded-3 border p-3 d-flex
+                                        align-items-center gap-3"
+                                 id="assign-box">
+                                <div class="form-check form-switch mb-0">
+                                    {{ form.auto_assign_halls }}
+                                </div>
+                                <label class="form-check-label fw-bold small
+                                              mb-0 flex-grow-1"
+                                       for="{{ form.auto_assign_halls.id_for_label }}"
+                                       style="cursor:pointer;">
+                                    التسكين التلقائي عند التسجيل
+                                </label>
+                                <span id="assign-badge">
+                                    {% if form.auto_assign_halls.value %}
+                                    <span class="badge bg-success">مفعّل</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">معطّل</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- نطاق السن -->
+                            <div class="rounded-3 border p-3">
+                                <div class="fw-bold small text-muted mb-2">
+                                    <i class="fas fa-users me-1"></i>
+                                    نطاق السن المقبول
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-arrow-down
+                                                      text-success me-1"></i>
+                                            الأدنى
+                                        </label>
+                                        {{ form.min_age_limit }}
+                                        {% if form.min_age_limit.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.min_age_limit.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small">
+                                            <i class="fas fa-arrow-up
+                                                      text-danger me-1"></i>
+                                            الأقصى
+                                        </label>
+                                        {{ form.max_age_limit }}
+                                        {% if form.max_age_limit.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.max_age_limit.errors|join:", " }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ③ إعدادات الحضور -->
+                <div class="col-12 col-md-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-clock text-warning me-2"></i>
+                            إعدادات الحضور
+                        </div>
+                        <div class="card-body d-flex flex-column gap-3">
+
+                            <div>
+                                <label class="form-label fw-bold small">
+                                    <i class="far fa-clock text-success me-1"></i>
+                                    وقت بداية الحضور
+                                </label>
+                                {{ form.attendance_start_time }}
+                                {% if form.attendance_start_time.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-circle-exclamation me-1"></i>
+                                    {{ form.attendance_start_time.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="form-label fw-bold small">
+                                    <i class="fas fa-hourglass-half
+                                              text-danger me-1"></i>
+                                    دقائق التأخير
+                                </label>
+                                {{ form.late_threshold_minutes }}
+                                {% if form.late_threshold_minutes.errors %}
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-circle-exclamation me-1"></i>
+                                    {{ form.late_threshold_minutes.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1 text-muted"></i>
+                                    بعد هذه الدقائق يُعتبر الطالب متأخراً
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ④ التواصل الاجتماعي -->
+                <div class="col-12">
+                    <div class="card stat-card">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-share-alt text-info me-2"></i>
+                            التواصل الاجتماعي
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fab fa-facebook text-primary me-1"></i>
+                                        فيسبوك
+                                    </label>
+                                    {{ form.facebook }}
+                                    {% if form.facebook.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.facebook.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fab fa-whatsapp text-success me-1"></i>
+                                        واتساب
+                                    </label>
+                                    {{ form.whatsapp }}
+                                    {% if form.whatsapp.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="fas fa-circle-exclamation me-1"></i>
+                                        {{ form.whatsapp.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أزرار -->
+                <div class="col-12">
+                    <div class="d-flex gap-2 justify-content-between flex-wrap">
+                        <a href="{% url 'settings:home' %}"
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> رجوع
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">
+                            <i class="fas fa-save me-1"></i> حفظ الإعدادات
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleBox(checkboxId, boxId, badgeId, onText, offText, onClass) {
+    const cb    = document.getElementById(checkboxId);
+    const box   = document.getElementById(boxId);
+    const badge = document.getElementById(badgeId);
+    if (!cb) return;
+
+    function update() {
+        const on = cb.checked;
+        box.classList.toggle('bg-success',     on);
+        box.classList.toggle('bg-opacity-10',  on);
+        box.classList.toggle('border-success', on);
+        badge.innerHTML = on
+            ? `<span class="badge bg-success">${onText}</span>`
+            : `<span class="badge bg-secondary">${offText}</span>`;
+    }
+    cb.addEventListener('change', update);
+    update();
+}
+
+toggleBox(
+    '{{ form.allow_registration.id_for_label }}',
+    'reg-box', 'reg-badge', 'مفتوح', 'مغلق'
+);
+toggleBox(
+    '{{ form.auto_assign_halls.id_for_label }}',
+    'assign-box', 'assign-badge', 'مفعّل', 'معطّل'
+);
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}إعدادات المقرأة{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-4">
+
+                <!-- بيانات المقرأة -->
+                <div class="col-12">
+                    <div class="card stat-card">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-mosque text-primary me-2"></i>
+                            بيانات المقرأة
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">اسم المقرأة *</label>
+                                    {{ form.name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">الشعار</label>
+                                    {% if settings.logo %}
+                                    <div class="mb-2">
+                                        <img src="{{ settings.logo.url }}"
+                                             height="50" class="rounded">
+                                    </div>
+                                    {% endif %}
+                                    {{ form.logo }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">الهاتف</label>
+                                    {{ form.phone }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">البريد الإلكتروني</label>
+                                    {{ form.email }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">العنوان</label>
+                                    {{ form.address }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">نبذة عن المقرأة</label>
+                                    {{ form.description }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إعدادات التسجيل -->
+                <div class="col-md-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-user-plus text-success me-2"></i>
+                            إعدادات التسجيل
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch mb-3">
+                                {{ form.allow_registration }}
+                                <label class="form-check-label fw-bold me-2">
+                                    السماح بالتسجيل الجديد
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                {{ form.auto_assign_halls }}
+                                <label class="form-check-label fw-bold me-2">
+                                    التسكين التلقائي عند التسجيل
+                                </label>
+                            </div>
+                            <div class="row g-2 mt-2">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">الحد الأدنى للسن</label>
+                                    {{ form.min_age_limit }}
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold">الحد الأقصى للسن</label>
+                                    {{ form.max_age_limit }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إعدادات الحضور -->
+                <div class="col-md-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-clock text-warning me-2"></i>
+                            إعدادات الحضور
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">وقت بداية الحضور</label>
+                                {{ form.attendance_start_time }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    دقائق التأخير
+                                    <small class="text-muted fw-normal">
+                                        (بعدها يُعتبر متأخراً)
+                                    </small>
+                                </label>
+                                {{ form.late_threshold_minutes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تواصل اجتماعي -->
+                <div class="col-12">
+                    <div class="card stat-card">
+                        <div class="card-header fw-bold">
+                            <i class="fas fa-share-alt text-info me-2"></i>
+                            التواصل الاجتماعي
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">
+                                        <i class="fab fa-facebook text-primary me-1"></i>
+                                        فيسبوك
+                                    </label>
+                                    {{ form.facebook }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">
+                                        <i class="fab fa-whatsapp text-success me-1"></i>
+                                        واتساب
+                                    </label>
+                                    {{ form.whatsapp }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- أزرار -->
+                <div class="col-12 d-flex gap-2 justify-content-end">
+                    <a href="{% url 'settings:home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-save me-1"></i> حفظ الإعدادات
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

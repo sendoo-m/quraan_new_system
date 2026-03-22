@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% block page_title %}لوحة تحكم المدير العام{% endblock %}
+
+{% block content %}
+
+<!-- إحصائيات سريعة -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-primary bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-user-graduate text-primary fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-primary">{{ total_students }}</div>
+                    <div class="text-muted small mt-1">إجمالي الطلاب</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-success bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-door-open text-success fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-success">{{ total_halls }}</div>
+                    <div class="text-muted small mt-1">القاعات النشطة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-info bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-chalkboard-teacher text-info fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-info">{{ total_teachers }}</div>
+                    <div class="text-muted small mt-1">المعلمون</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-warning bg-opacity-10 flex-shrink-0"
+                     style="width:52px;height:52px;">
+                    <i class="fas fa-hourglass-half text-warning fa-lg"></i>
+                </div>
+                <div>
+                    <div class="fs-3 fw-bold lh-1 text-warning">{{ pending_students }}</div>
+                    <div class="text-muted small mt-1">ينتظرون التسكين</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- حالة القاعات -->
+<div class="card stat-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="fw-bold">
+            <i class="fas fa-door-open text-primary me-2"></i>
+            حالة القاعات
+        </span>
+        <span class="badge bg-primary px-3 py-2">{{ total_halls }} قاعة</span>
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Desktop Table -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>القاعة</th>
+                        <th>الفئة العمرية</th>
+                        <th>المعلم</th>
+                        <th>المشرف</th>
+                        <th class="text-center">الطلاب</th>
+                        <th class="text-center">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall in halls %}
+                    {% with count=hall.get_current_students_count %}
+                    <tr>
+                        <td class="fw-bold">{{ hall.name }}</td>
+                        <td>
+                            <span class="badge bg-info bg-opacity-75">
+                                {{ hall.get_age_group_display }}
+                            </span>
+                        </td>
+                        <td class="small">{{ hall.teacher.get_full_name|default:"—" }}</td>
+                        <td class="small">{{ hall.supervisor.get_full_name|default:"—" }}</td>
+                        <td class="text-center">
+                            <span class="badge
+                                {% if count >= hall.max_students %}bg-danger
+                                {% elif hall.has_available_seats %}bg-success
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ count }} / {{ hall.max_students }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if hall.has_available_seats %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>متاحة
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times me-1"></i>ممتلئة
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="fas fa-door-closed fa-2x mb-2 d-block"></i>
+                            لا توجد قاعات مسجّلة
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="d-md-none p-3">
+            {% for hall in halls %}
+            {% with count=hall.get_current_students_count %}
+            <div class="card border mb-3" style="border-radius:10px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="fw-bold">
+                            <i class="fas fa-door-open text-primary me-1"></i>
+                            {{ hall.name }}
+                        </div>
+                        {% if hall.has_available_seats %}
+                        <span class="badge bg-success">متاحة</span>
+                        {% else %}
+                        <span class="badge bg-danger">ممتلئة</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-info bg-opacity-75">
+                            {{ hall.get_age_group_display }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">الامتلاء</span>
+                        <span class="fw-bold">{{ count }} / {{ hall.max_students }}</span>
+                    </div>
+                    <div class="progress mb-3" style="height:8px;border-radius:4px;">
+                        <div class="progress-bar
+                            {% if count >= hall.max_students %}bg-danger
+                            {% elif hall.has_available_seats %}bg-success
+                            {% else %}bg-warning{% endif %}"
+                             style="width:{% widthratio count hall.max_students 100 %}%">
+                        </div>
+                    </div>
+                    <div class="row g-2 small">
+                        <div class="col-6">
+                            <div class="text-muted">المعلم</div>
+                            <div class="fw-bold">{{ hall.teacher.get_full_name|default:"—" }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted">المشرف</div>
+                            <div class="fw-bold">{{ hall.supervisor.get_full_name|default:"—" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% empty %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-door-closed fa-2x mb-2 d-block"></i>
+                لا توجد قاعات مسجّلة
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<!-- آخر المسجلين -->
+<div class="card stat-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="fw-bold">
+            <i class="fas fa-user-plus text-success me-2"></i>
+            آخر الطلاب المسجلين
+        </span>
+        <span class="badge bg-success px-3 py-2">
+            {{ recent_students|length }} طالب
+        </span>
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Desktop Table -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الطالب</th>
+                        <th class="text-center">العمر</th>
+                        <th>ولي الأمر</th>
+                        <th class="text-center">الحالة</th>
+                        <th>تاريخ التسجيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in recent_students %}
+                    <tr>
+                        <td class="fw-bold">{{ student.get_full_name }}</td>
+                        <td class="text-center small">{{ student.calculate_age }} سنة</td>
+                        <td class="small">{{ student.parent.get_full_name }}</td>
+                        <td class="text-center">
+                            {% if student.status == 'active' %}
+                            <span class="badge bg-success">نشط</span>
+                            {% elif student.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">ينتظر التسكين</span>
+                            {% else %}
+                            <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ student.registration_date }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            لا يوجد طلاب مسجلون بعد
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="d-md-none p-3">
+            {% for student in recent_students %}
+            <div class="card border mb-3" style="border-radius:10px;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between
+                                gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center
+                                        justify-content-center bg-primary bg-opacity-10
+                                        flex-shrink-0"
+                                 style="width:38px;height:38px;">
+                                <i class="fas fa-user-graduate text-primary"
+                                   style="font-size:.8rem;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold small">
+                                    {{ student.get_full_name }}
+                                </div>
+                                <div class="text-muted" style="font-size:.72rem;">
+                                    {{ student.calculate_age }} سنة
+                                </div>
+                            </div>
+                        </div>
+                        {% if student.status == 'active' %}
+                        <span class="badge bg-success">نشط</span>
+                        {% elif student.status == 'pending' %}
+                        <span class="badge bg-warning text-dark">ينتظر</span>
+                        {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                        {% endif %}
+                    </div>
+                    <div class="row g-1 small">
+                        <div class="col-6">
+                            <span class="text-muted">ولي الأمر: </span>
+                            <span class="fw-bold">{{ student.parent.get_full_name }}</span>
+                        </div>
+                        <div class="col-6 text-end text-muted">
+                            {{ student.registration_date }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                لا يوجد طلاب مسجلون بعد
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}لوحة تحكم المدير العام{% endblock %}
+
+{% block content %}
+<!-- إحصائيات سريعة -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ total_students }}</div>
+                    <div>إجمالي الطلاب</div>
+                </div>
+                <i class="fas fa-user-graduate fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ total_halls }}</div>
+                    <div>القاعات النشطة</div>
+                </div>
+                <i class="fas fa-door-open fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ total_teachers }}</div>
+                    <div>المعلمون</div>
+                </div>
+                <i class="fas fa-chalkboard-teacher fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-white">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ pending_students }}</div>
+                    <div>ينتظرون التسكين</div>
+                </div>
+                <i class="fas fa-hourglass-half fa-2x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- حالة القاعات -->
+<div class="card stat-card mb-4">
+    <div class="card-header fw-bold">
+        <i class="fas fa-door-open text-primary me-2"></i> حالة القاعات
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>القاعة</th>
+                        <th>الفئة العمرية</th>
+                        <th>المعلم</th>
+                        <th>المشرف</th>
+                        <th>الطلاب</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall in halls %}
+                    <tr>
+                        <td class="fw-bold">{{ hall.name }}</td>
+                        <td>{{ hall.get_age_group_display }}</td>
+                        <td>{{ hall.teacher.get_full_name|default:"—" }}</td>
+                        <td>{{ hall.supervisor.get_full_name|default:"—" }}</td>
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ hall.get_current_students_count }} / {{ hall.max_students }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if hall.has_available_seats %}
+                                <span class="badge bg-success">متاحة</span>
+                            {% else %}
+                                <span class="badge bg-danger">ممتلئة</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">لا توجد قاعات</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- آخر المسجلين -->
+<div class="card stat-card">
+    <div class="card-header fw-bold">
+        <i class="fas fa-user-plus text-success me-2"></i> آخر الطلاب المسجلين
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>الطالب</th>
+                        <th>العمر</th>
+                        <th>ولي الأمر</th>
+                        <th>الحالة</th>
+                        <th>تاريخ التسجيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in recent_students %}
+                    <tr>
+                        <td class="fw-bold">{{ student.get_full_name }}</td>
+                        <td>{{ student.calculate_age }} سنة</td>
+                        <td>{{ student.parent.get_full_name }}</td>
+                        <td>
+                            {% if student.status == 'active' %}
+                                <span class="badge bg-success">نشط</span>
+                            {% elif student.status == 'pending' %}
+                                <span class="badge bg-warning">ينتظر التسكين</span>
+                            {% else %}
+                                <span class="badge bg-secondary">غير نشط</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ student.registration_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

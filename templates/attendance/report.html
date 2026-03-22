@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% block page_title %}تقرير حضور الطلاب{% endblock %}
+
+{% block content %}
+
+<!-- فلترة -->
+<div class="card stat-card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-6 col-md-3">
+                <label class="form-label fw-bold small">
+                    <i class="fas fa-calendar-alt text-primary me-1"></i>
+                    من تاريخ
+                </label>
+                <input type="date" name="from" value="{{ from_date }}"
+                       class="form-control">
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label fw-bold small">
+                    <i class="fas fa-calendar-alt text-primary me-1"></i>
+                    إلى تاريخ
+                </label>
+                <input type="date" name="to" value="{{ to_date }}"
+                       class="form-control">
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label fw-bold small">
+                    <i class="fas fa-door-open text-primary me-1"></i>
+                    القاعة
+                </label>
+                <select name="hall" class="form-select">
+                    <option value="">كل القاعات</option>
+                    {% for hall in halls %}
+                    <option value="{{ hall.id }}"
+                        {% if request.GET.hall == hall.id|stringformat:"s" %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="fas fa-filter me-1"></i> عرض
+                </button>
+                <a href="{% url 'attendance:report' %}"
+                   class="btn btn-outline-secondary px-3">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- إحصائيات -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-primary bg-opacity-10 flex-shrink-0"
+                     style="width:48px;height:48px;">
+                    <i class="fas fa-list-ol text-primary"></i>
+                </div>
+                <div>
+                    <div class="fs-4 fw-bold lh-1">{{ total }}</div>
+                    <div class="text-muted small">إجمالي السجلات</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-success bg-opacity-10 flex-shrink-0"
+                     style="width:48px;height:48px;">
+                    <i class="fas fa-user-check text-success"></i>
+                </div>
+                <div>
+                    <div class="fs-4 fw-bold lh-1 text-success">{{ present }}</div>
+                    <div class="text-muted small">حضور</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-danger bg-opacity-10 flex-shrink-0"
+                     style="width:48px;height:48px;">
+                    <i class="fas fa-user-times text-danger"></i>
+                </div>
+                <div>
+                    <div class="fs-4 fw-bold lh-1 text-danger">{{ absent }}</div>
+                    <div class="text-muted small">غياب</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3 py-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center
+                            bg-warning bg-opacity-10 flex-shrink-0"
+                     style="width:48px;height:48px;">
+                    <i class="fas fa-user-clock text-warning"></i>
+                </div>
+                <div>
+                    <div class="fs-4 fw-bold lh-1 text-warning">{{ late }}</div>
+                    <div class="text-muted small">تأخير</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول التقرير -->
+<div class="card stat-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="fw-bold">
+            <i class="fas fa-chart-bar text-primary me-2"></i>
+            سجلات الحضور
+            {% if total %}
+            <span class="badge bg-primary ms-1">{{ total }}</span>
+            {% endif %}
+        </span>
+        <span class="text-muted small d-none d-md-inline">
+            {{ from_date }} ← {{ to_date }}
+        </span>
+    </div>
+    <div class="card-body p-0">
+
+        <!-- Desktop Table -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>الطالب</th>
+                        <th>القاعة</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>وقت الحضور</th>
+                        <th>ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td class="text-muted small">
+                            {{ attendances.start_index|add:forloop.counter0 }}
+                        </td>
+                        <td class="fw-bold">{{ att.student.get_full_name }}</td>
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-75">
+                                {{ att.hall.name }}
+                            </span>
+                        </td>
+                        <td class="small">{{ att.date }}</td>
+                        <td>
+                            <span class="badge
+                                {% if att.status == 'present' %}bg-success
+                                {% elif att.status == 'absent' %}bg-danger
+                                {% elif att.status == 'late' %}bg-warning text-dark
+                                {% else %}bg-info{% endif %}">
+                                {{ att.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="small">{{ att.arrival_time|default:"—" }}</td>
+                        <td class="text-muted small">
+                            {{ att.notes|truncatechars:30|default:"—" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                            لا توجد سجلات في هذه الفترة
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="d-md-none p-3">
+            {% for att in attendances %}
+            <div class="card border mb-2" style="border-radius:10px;">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold">{{ att.student.get_full_name }}</div>
+                            <div class="text-muted small mt-1">
+                                <i class="fas fa-door-open me-1"></i>
+                                {{ att.hall.name }}
+                                <span class="mx-2">•</span>
+                                <i class="far fa-calendar-alt me-1"></i>
+                                {{ att.date }}
+                            </div>
+                            {% if att.arrival_time %}
+                            <div class="text-muted small mt-1">
+                                <i class="far fa-clock me-1"></i>
+                                {{ att.arrival_time }}
+                            </div>
+                            {% endif %}
+                            {% if att.notes %}
+                            <div class="text-muted small mt-1">
+                                <i class="fas fa-sticky-note me-1"></i>
+                                {{ att.notes|truncatechars:40 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <span class="badge ms-2
+                            {% if att.status == 'present' %}bg-success
+                            {% elif att.status == 'absent' %}bg-danger
+                            {% elif att.status == 'late' %}bg-warning text-dark
+                            {% else %}bg-info{% endif %}">
+                            {{ att.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                لا توجد سجلات في هذه الفترة
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+{% include 'components/pagination.html' with page_obj=attendances %}
+
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}تقرير الحضور{% endblock %}
+
+{% block content %}
+<!-- فلترة -->
+<div class="card stat-card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">من تاريخ</label>
+                <input type="date" name="from" value="{{ from_date }}"
+                       class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">إلى تاريخ</label>
+                <input type="date" name="to" value="{{ to_date }}"
+                       class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">القاعة</label>
+                <select name="hall" class="form-select">
+                    <option value="">كل القاعات</option>
+                    {% for hall in halls %}
+                    <option value="{{ hall.id }}"
+                        {% if request.GET.hall == hall.id|stringformat:"s" %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i> عرض التقرير
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- إحصائيات -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white text-center">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold">{{ total }}</div>
+                <div class="small">إجمالي السجلات</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white text-center">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold">{{ present }}</div>
+                <div class="small">حضور</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-danger text-white text-center">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold">{{ absent }}</div>
+                <div class="small">غياب</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-white text-center">
+            <div class="card-body py-3">
+                <div class="fs-2 fw-bold">{{ late }}</div>
+                <div class="small">تأخير</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول التقرير -->
+<div class="card stat-card">
+    <div class="card-header fw-bold">
+        <i class="fas fa-chart-bar text-primary me-2"></i>
+        سجلات الحضور
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>الطالب</th>
+                        <th>القاعة</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>وقت الحضور</th>
+                        <th>ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td class="fw-bold">{{ att.student.get_full_name }}</td>
+                        <td>{{ att.hall.name }}</td>
+                        <td>{{ att.date }}</td>
+                        <td>
+                            <span class="badge
+                                {% if att.status == 'present' %}bg-success
+                                {% elif att.status == 'absent' %}bg-danger
+                                {% elif att.status == 'late' %}bg-warning text-dark
+                                {% else %}bg-info{% endif %}">
+                                {{ att.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ att.arrival_time|default:"—" }}</td>
+                        <td class="text-muted small">{{ att.notes|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            لا توجد سجلات في هذه الفترة
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% include 'components/pagination.html' with page_obj=attendances %}
+
+{% endblock %} {% endcomment %}
