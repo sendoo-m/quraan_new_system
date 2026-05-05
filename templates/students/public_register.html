@@ -1,4 +1,121 @@
-{% extends 'base_public.html' %}
+{% extends "base.html" %}
+
+{% block title %}تسجيل طالب جديد | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تسجيل طالب جديد{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">التسجيل العام</h2>
+    <p class="text-muted mb-0">
+        سجل ولي الأمر والطالب في خطوة واحدة.
+    </p>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="row g-4">
+    {% csrf_token %}
+
+    <div class="col-lg-5">
+        <div class="page-card p-4 h-100">
+            <div class="section-title">بيانات ولي الأمر</div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ parent_form.first_name.label }}</label>
+                {{ parent_form.first_name }}
+                <div class="text-danger small mt-1">{{ parent_form.first_name.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ parent_form.last_name.label }}</label>
+                {{ parent_form.last_name }}
+                <div class="text-danger small mt-1">{{ parent_form.last_name.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ parent_form.username.label }}</label>
+                {{ parent_form.username }}
+                <div class="text-danger small mt-1">{{ parent_form.username.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ parent_form.phone.label }}</label>
+                {{ parent_form.phone }}
+                <div class="text-danger small mt-1">{{ parent_form.phone.errors }}</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ parent_form.password.label }}</label>
+                {{ parent_form.password }}
+                <div class="text-danger small mt-1">{{ parent_form.password.errors }}</div>
+            </div>
+            <div class="mb-0">
+                <label class="form-label fw-semibold">{{ parent_form.password_confirm.label }}</label>
+                {{ parent_form.password_confirm }}
+                <div class="text-danger small mt-1">{{ parent_form.password_confirm.errors }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">بيانات الطالب</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ student_form.first_name.label }}</label>
+                    {{ student_form.first_name }}
+                    <div class="text-danger small mt-1">{{ student_form.first_name.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ student_form.last_name.label }}</label>
+                    {{ student_form.last_name }}
+                    <div class="text-danger small mt-1">{{ student_form.last_name.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ student_form.date_of_birth.label }}</label>
+                    {{ student_form.date_of_birth }}
+                    <div class="text-danger small mt-1">{{ student_form.date_of_birth.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ student_form.profile_picture.label }}</label>
+                    {{ student_form.profile_picture }}
+                    <div class="text-danger small mt-1">{{ student_form.profile_picture.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">السور المحفوظة</div>
+            <div class="text-danger small mb-2">{{ student_form.memorized_surahs.errors }}</div>
+            <div>{{ student_form.memorized_surahs }}</div>
+        </div>
+
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">تفاصيل إضافية</div>
+            <div class="row g-3">
+                <div class="col-md-6 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        {{ student_form.uses_bus }}
+                        <label class="form-check-label fw-semibold" for="{{ student_form.uses_bus.id_for_label }}">
+                            {{ student_form.uses_bus.label }}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ student_form.bus_notes.label }}</label>
+                    {{ student_form.bus_notes }}
+                    <div class="text-danger small mt-1">{{ student_form.bus_notes.errors }}</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">{{ student_form.notes.label }}</label>
+                    {{ student_form.notes }}
+                    <div class="text-danger small mt-1">{{ student_form.notes.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-card p-4">
+            <button type="submit" class="btn btn-primary">إتمام التسجيل</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% comment %} {% extends 'base_public.html' %}
 {% block title %}تسجيل طالب جديد — {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
@@ -314,153 +431,4 @@ function updateBus() {
 busCb?.addEventListener('change', updateBus);
 updateBus();
 </script>
-{% endblock %}
-
-{% comment %} {% extends 'base_public.html' %}
-{% block title %}تسجيل طالب جديد — {{ SITE_NAME }}{% endblock %}
-
-{% block content %}
-<div class="min-vh-100 d-flex align-items-center py-5"
-     style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
-    <div class="container">
-
-        <!-- Header -->
-        <div class="text-center text-white mb-4">
-            <i class="fas fa-mosque fa-3x text-warning mb-3"></i>
-            <h3 class="fw-bold">{{ SITE_NAME }}</h3>
-            <p class="text-muted">تسجيل طالب جديد</p>
-        </div>
-
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row g-4 justify-content-center">
-
-                <!-- بيانات ولي الأمر -->
-                <div class="col-lg-5">
-                    <div class="card stat-card">
-                        <div class="card-header fw-bold">
-                            <i class="fas fa-user text-primary me-2"></i>
-                            بيانات ولي الأمر
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">الاسم الأول *</label>
-                                    {{ parent_form.first_name }}
-                                    {% if parent_form.first_name.errors %}
-                                    <div class="text-danger small">{{ parent_form.first_name.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">اسم العائلة *</label>
-                                    {{ parent_form.last_name }}
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-bold">اسم المستخدم *</label>
-                                    {{ parent_form.username }}
-                                    {% if parent_form.username.errors %}
-                                    <div class="text-danger small">{{ parent_form.username.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-bold">رقم الهاتف *</label>
-                                    {{ parent_form.phone }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">كلمة المرور *</label>
-                                    {{ parent_form.password }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">تأكيد كلمة المرور *</label>
-                                    {{ parent_form.password_confirm }}
-                                </div>
-                                {% if parent_form.non_field_errors %}
-                                <div class="col-12">
-                                    <div class="alert alert-danger py-2 small">
-                                        {{ parent_form.non_field_errors }}
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- بيانات الطالب -->
-                <div class="col-lg-5">
-                    <div class="card stat-card">
-                        <div class="card-header fw-bold">
-                            <i class="fas fa-user-graduate text-success me-2"></i>
-                            بيانات الطالب
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">الاسم الأول *</label>
-                                    {{ student_form.first_name }}
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">اسم العائلة *</label>
-                                    {{ student_form.last_name }}
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-bold">تاريخ الميلاد *</label>
-                                    {{ student_form.date_of_birth }}
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-bold">صورة الطالب</label>
-                                    {{ student_form.profile_picture }}
-                                </div>
-                                <div class="col-12">
-                                    <div class="form-check form-switch">
-                                        {{ student_form.uses_bus }}
-                                        <label class="form-check-label fw-bold me-2">
-                                            الاشتراك في خدمة الباص
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-bold">
-                                        السور المحفوظة
-                                    </label>
-                                    <div class="border rounded p-2"
-                                         style="max-height:200px;overflow-y:auto;">
-                                        <div class="row row-cols-2 g-1">
-                                            {% for surah in student_form.memorized_surahs %}
-                                            <div class="col">
-                                                <div class="form-check">
-                                                    {{ surah.tag }}
-                                                    <label class="form-check-label small"
-                                                           for="{{ surah.id_for_label }}">
-                                                        {{ surah.choice_label }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- زر التسجيل -->
-                <div class="col-lg-10">
-                    <div class="d-flex gap-3 justify-content-between align-items-center">
-                        <a href="{% url 'accounts:login' %}" class="text-white small">
-                            <i class="fas fa-sign-in-alt me-1"></i>
-                            لديك حساب بالفعل؟ تسجيل الدخول
-                        </a>
-                        <button type="submit" class="btn btn-warning px-5 fw-bold">
-                            <i class="fas fa-paper-plane me-2"></i>
-                            تسجيل الطالب
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock %} {% endcomment %}

@@ -1,4 +1,100 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}كل الجداول | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}كل الجداول{% endblock %}
+
+{% block extra_css %}
+<style>
+    .day-card{
+        border:1px solid var(--border);
+        border-radius:16px;
+        padding:14px;
+        background:#fff;
+        height:100%;
+    }
+    .session-chip{
+        border-radius:12px;
+        padding:10px 12px;
+        color:#111827;
+        margin-bottom:10px;
+        font-size:.92rem;
+    }
+    .sess-0{ background:#dbeafe; }
+    .sess-1{ background:#dcfce7; }
+    .sess-2{ background:#fef3c7; }
+    .sess-3{ background:#fce7f3; }
+    .sess-4{ background:#ede9fe; }
+    .sess-5{ background:#fee2e2; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <label class="form-label fw-semibold">تصفية حسب القاعة</label>
+            <select name="hall" class="form-select">
+                <option value="">كل القاعات</option>
+                {% for hall in all_halls %}
+                    <option value="{{ hall.id }}" {% if selected_hall == hall.id|stringformat:"s" %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4 d-grid">
+            <button class="btn btn-primary">عرض الجداول</button>
+        </div>
+    </form>
+</div>
+
+{% if timetable %}
+    <div class="row g-4">
+        {% for item in timetable %}
+            <div class="col-12">
+                <div class="page-card p-4">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-4">
+                        <div>
+                            <h3 class="fw-bold mb-1">{{ item.hall.name }}</h3>
+                            <div class="text-muted small">{{ item.hall.location }} | عدد الحصص: {{ item.total_sch }}</div>
+                        </div>
+                        <a href="{% url 'halls:detail' item.hall.pk %}" class="btn btn-sm btn-outline-primary">عرض القاعة</a>
+                    </div>
+
+                    <div class="row g-3">
+                        {% for day in item.days %}
+                            <div class="col-md-6 col-xl">
+                                <div class="day-card">
+                                    <div class="fw-bold mb-3">{{ day.label }}</div>
+
+                                    {% if day.sessions %}
+                                        {% for session in day.sessions %}
+                                            <div class="session-chip {{ session.color }}">
+                                                <div class="fw-semibold">{{ session.subject.name }}</div>
+                                                <div class="small">{{ session.start_time }} - {{ session.end_time }}</div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-muted small">لا توجد حصص</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="page-card">
+        <div class="empty-state">لا توجد جداول متاحة حاليًا.</div>
+    </div>
+{% endif %}
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}الجدول الدراسي الكامل{% endblock %}
 
 {% block extra_css %}
@@ -279,200 +375,6 @@
     </div>
 </div>
 
-{% endfor %}
-
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}الجدول الدراسي الكامل{% endblock %}
-
-{% block extra_css %}
-<style>
-    :root {
-        --c0: #4e73df; --b0: #eef1fb;
-        --c1: #1cc88a; --b1: #e8f8f2;
-        --c2: #f6c23e; --b2: #fef9ec;
-        --c3: #e74a3b; --b3: #fdf0ee;
-        --c4: #36b9cc; --b4: #eaf7f9;
-        --c5: #858796; --b5: #f5f5f6;
-    }
-    .sched-wrap     { overflow-x: auto; border-radius: 0 0 12px 12px; }
-    .sched-table    { min-width: 860px; }
-    .sched-table th {
-        background: linear-gradient(135deg, #1a1a2e, #16213e);
-        color: #fff; text-align: center;
-        font-size: .85rem; padding: 10px 8px;
-        white-space: nowrap;
-    }
-    .sched-table td { vertical-align: top; padding: 6px; min-width: 120px; }
-    .sess {
-        border-radius: 8px; padding: 7px 10px; margin-bottom: 4px;
-        border-right: 4px solid; font-size: .8rem;
-        box-shadow: 0 1px 4px rgba(0,0,0,.07);
-        transition: transform .15s;
-    }
-    .sess:hover     { transform: translateY(-2px); }
-    .sess-0 { border-color: var(--c0); background: var(--b0); }
-    .sess-1 { border-color: var(--c1); background: var(--b1); }
-    .sess-2 { border-color: var(--c2); background: var(--b2); }
-    .sess-3 { border-color: var(--c3); background: var(--b3); }
-    .sess-4 { border-color: var(--c4); background: var(--b4); }
-    .sess-5 { border-color: var(--c5); background: var(--b5); }
-    .empty-cell {
-        height: 36px; border-radius: 6px;
-        background: #f8f9fa; border: 1px dashed #dee2e6;
-        display: flex; align-items: center; justify-content: center;
-        color: #ccc; font-size: .75rem;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-
-<!-- فلتر -->
-<div class="card stat-card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label fw-bold">تصفية حسب القاعة</label>
-                <select name="hall" class="form-select" onchange="this.form.submit()">
-                    <option value="">كل القاعات</option>
-                    {% for h in all_halls %}
-                    <option value="{{ h.id }}"
-                        {% if selected_hall == h.id|stringformat:"s" %}selected{% endif %}>
-                        {{ h.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-auto">
-                <a href="{% url 'halls:all_schedules' %}"
-                   class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i> الكل
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- الجداول -->
-{% for item in timetable %}
-<div class="card stat-card mb-4">
-
-    <!-- هيدر القاعة -->
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="fw-bold">
-                <i class="fas fa-door-open text-primary me-1"></i>
-                {{ item.hall.name }}
-            </span>
-            {% if item.hall.age_group %}
-            <span class="badge bg-warning text-dark">
-                <i class="fas fa-users me-1"></i>
-                {{ item.hall.age_group.name }}
-            </span>
-            {% endif %}
-            {% if item.hall.teacher %}
-            <span class="badge bg-success">
-                <i class="fas fa-chalkboard-teacher me-1"></i>
-                {{ item.hall.teacher.get_full_name }}
-            </span>
-            {% endif %}
-            {% if item.hall.supervisor %}
-            <span class="badge bg-info">
-                <i class="fas fa-user-tie me-1"></i>
-                {{ item.hall.supervisor.get_full_name }}
-            </span>
-            {% endif %}
-            <span class="badge bg-secondary">
-                {{ item.total_sch }} حصة
-            </span>
-        </div>
-        <div class="d-flex gap-2 align-items-center">
-            <span class="badge bg-primary">
-                {{ item.hall.students.count }} / {{ item.hall.max_students }} طالب
-            </span>
-            {% if is_general_supervisor or is_general_manager %}
-            <a href="{% url 'halls:schedule' item.hall.pk %}"
-               class="btn btn-outline-success btn-sm">
-                <i class="fas fa-plus me-1"></i> إضافة حصة
-            </a>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- الجدول -->
-    <div class="sched-wrap">
-        <table class="table sched-table table-bordered mb-0">
-            <thead>
-                <tr>
-                    {% for day in item.days %}
-                    <th>
-                        <i class="fas fa-calendar-day me-1"></i>
-                        {{ day.label }}
-                    </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    {% for day in item.days %}
-                    <td>
-                        {% if day.sessions %}
-                            {% for sch in day.sessions %}
-                            <div class="sess {{ sch.color }}">
-                                <!-- المادة -->
-                                <div class="fw-bold text-truncate mb-1">
-                                    <i class="fas fa-book-open me-1"></i>
-                                    {{ sch.subject.name }}
-                                </div>
-                                <!-- الوقت -->
-                                <div>
-                                    <span class="badge bg-light text-dark">
-                                        <i class="far fa-clock me-1"></i>
-                                        {{ sch.start_time|time:"H:i" }}
-                                        —
-                                        {{ sch.end_time|time:"H:i" }}
-                                    </span>
-                                </div>
-                                <!-- حذف -->
-                                {% if is_general_supervisor or is_general_manager %}
-                                <form method="post"
-                                      action="{% url 'halls:schedule' item.hall.pk %}"
-                                      class="d-inline mt-1">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="delete_id" value="{{ sch.pk }}">
-                                    <button type="submit"
-                                            class="btn btn-outline-danger py-0 px-1 mt-1"
-                                            style="font-size:.7rem"
-                                            onclick="return confirm('حذف الحصة؟')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-cell">—</div>
-                        {% endif %}
-                    </td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-{% empty %}
-<div class="text-center text-muted py-5">
-    <i class="fas fa-calendar-times fa-3x mb-3 d-block"></i>
-    لا يوجد جداول مضافة بعد
-    {% if is_general_supervisor or is_general_manager %}
-    <br>
-    <a href="{% url 'halls:list' %}" class="btn btn-success mt-3">
-        <i class="fas fa-door-open me-1"></i> اذهب للقاعات وأضف جدولاً
-    </a>
-    {% endif %}
-</div>
 {% endfor %}
 
 {% endblock %} {% endcomment %}

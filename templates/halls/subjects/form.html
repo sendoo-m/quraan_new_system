@@ -1,4 +1,62 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}{{ action }} مادة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ action }} مادة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">{{ action }} مادة دراسية</h2>
+    <p class="text-muted mb-0">أدخل اسم المادة وحالتها ووصفًا مختصرًا عند الحاجة.</p>
+</div>
+
+<form method="post" class="row g-4">
+    {% csrf_token %}
+
+    <div class="col-lg-8">
+        <div class="page-card p-4">
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-4">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ form.name.label }}</label>
+                {{ form.name }}
+                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ form.description.label }}</label>
+                {{ form.description }}
+                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            </div>
+
+            <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+                    {{ form.is_active.label }}
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <div class="section-title">الإجراءات</div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">حفظ المادة</button>
+                <a href="{% url 'halls:subjects' %}" class="btn btn-outline-secondary">رجوع</a>
+            </div>
+
+            {% if subject %}
+                <hr>
+                <div class="small text-muted">أنت تعدل الآن:</div>
+                <div class="fw-bold mt-1">{{ subject.name }}</div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}{{ action }} مادة دراسية{% endblock %}
 
 {% block content %}
@@ -160,53 +218,4 @@ function updateActive() {
 activeCheckbox?.addEventListener('change', updateActive);
 updateActive();
 </script>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}{{ action }} مادة دراسية{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-book text-primary me-2"></i>
-                {{ action }} مادة دراسية
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">اسم المادة *</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}
-                        <div class="text-danger small">{{ form.name.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">وصف المادة</label>
-                        {{ form.description }}
-                    </div>
-                    <div class="mb-4">
-                        <div class="form-check form-switch">
-                            {{ form.is_active }}
-                            <label class="form-check-label fw-bold me-2">
-                                المادة نشطة
-                            </label>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2 justify-content-end">
-                        <a href="{% url 'halls:subjects' %}"
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-times"></i> إلغاء
-                        </a>
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="fas fa-save me-1"></i> حفظ
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %} {% endcomment %}

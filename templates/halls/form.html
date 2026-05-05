@@ -1,4 +1,118 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}{{ action }} قاعة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ action }} قاعة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">{{ action }} قاعة</h2>
+    <p class="text-muted mb-0">
+        أدخل بيانات القاعة، الكادر المسؤول، وشروط القبول والطاقة الاستيعابية.
+    </p>
+</div>
+
+<form method="post" class="row g-4">
+    {% csrf_token %}
+
+    <div class="col-lg-8">
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">البيانات الأساسية</div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-4">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.location.label }}</label>
+                    {{ form.location }}
+                    <div class="text-danger small mt-1">{{ form.location.errors }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.age_group.label }}</label>
+                    {{ form.age_group }}
+                    <div class="text-danger small mt-1">{{ form.age_group.errors }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.max_students.label }}</label>
+                    {{ form.max_students }}
+                    <div class="text-danger small mt-1">{{ form.max_students.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">الطاقم المسؤول</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">{{ form.general_supervisor.label }}</label>
+                    {{ form.general_supervisor }}
+                    <div class="text-danger small mt-1">{{ form.general_supervisor.errors }}</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">{{ form.teacher.label }}</label>
+                    {{ form.teacher }}
+                    <div class="text-danger small mt-1">{{ form.teacher.errors }}</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">{{ form.supervisor.label }}</label>
+                    {{ form.supervisor }}
+                    <div class="text-danger small mt-1">{{ form.supervisor.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-card p-4">
+            <div class="section-title">شروط القبول والحالة</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.current_juz.label }}</label>
+                    {{ form.current_juz }}
+                    <div class="text-danger small mt-1">{{ form.current_juz.errors }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.required_completed_juz_count.label }}</label>
+                    {{ form.required_completed_juz_count }}
+                    <div class="text-danger small mt-1">{{ form.required_completed_juz_count.errors }}</div>
+                </div>
+
+                <div class="col-12 d-flex align-items-center">
+                    <div class="form-check mt-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+                            {{ form.is_active.label }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <div class="section-title">الإجراءات</div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle ms-2"></i>حفظ القاعة
+                </button>
+                <a href="{% url 'halls:list' %}" class="btn btn-outline-secondary">رجوع</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}{{ action }} قاعة{% endblock %}
 
 {% block content %}
@@ -244,68 +358,4 @@ function updateActive() {
 activeCheckbox?.addEventListener('change', updateActive);
 updateActive();
 </script>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}{{ action }} قاعة{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-door-open text-primary me-2"></i>
-                {{ action }} قاعة
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">اسم القاعة *</label>
-                            {{ form.name }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">الموقع *</label>
-                            {{ form.location }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">الفئة العمرية *</label>
-                            {{ form.age_group }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">أقصى عدد للطلاب *</label>
-                            {{ form.max_students }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">المعلم</label>
-                            {{ form.teacher }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">مشرف القاعة</label>
-                            {{ form.supervisor }}
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                {{ form.is_active }}
-                                <label class="form-check-label fw-bold me-2">
-                                    القاعة نشطة
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-12 d-flex gap-2 justify-content-end">
-                            <a href="{% url 'halls:list' %}"
-                               class="btn btn-outline-secondary">
-                                <i class="fas fa-times"></i> إلغاء
-                            </a>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="fas fa-save me-1"></i> حفظ
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %} {% endcomment %}

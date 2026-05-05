@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | {{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body{
+            font-family:'Cairo',sans-serif;
+            min-height:100vh;
+            margin:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:
+                radial-gradient(circle at top right, rgba(29,78,216,.12), transparent 30%),
+                radial-gradient(circle at bottom left, rgba(25,135,84,.10), transparent 28%),
+                #f4f7fb;
+            padding:18px;
+        }
+
+        .login-shell{
+            width:100%;
+            max-width:1050px;
+            display:grid;
+            grid-template-columns:1.05fr .95fr;
+            background:#fff;
+            border-radius:28px;
+            overflow:hidden;
+            box-shadow:0 20px 60px rgba(15,23,42,.10);
+        }
+
+        .login-info{
+            background:linear-gradient(160deg,#0f172a 0%,#1d4ed8 100%);
+            color:#fff;
+            padding:48px;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+        }
+
+        .login-card{
+            padding:42px 30px;
+        }
+
+        .brand-box{
+            width:70px;
+            height:70px;
+            border-radius:18px;
+            background:rgba(255,255,255,.14);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            overflow:hidden;
+        }
+
+        .form-control{
+            min-height:50px;
+            border-radius:14px;
+        }
+
+        .btn-login{
+            min-height:50px;
+            border-radius:14px;
+            font-weight:800;
+        }
+
+        @media (max-width:991.98px){
+            .login-shell{ grid-template-columns:1fr; }
+            .login-info{ padding:28px; }
+            .login-card{ padding:28px 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-shell">
+        <div class="login-info">
+            <div>
+                <div class="brand-box mb-4">
+                    {% if SITE_LOGO %}
+                        <img src="{{ SITE_LOGO.url }}" alt="{{ SITE_NAME }}" style="width:100%;height:100%;object-fit:cover;">
+                    {% else %}
+                        <span style="font-size:1.8rem;">📘</span>
+                    {% endif %}
+                </div>
+
+                <h1 class="fw-bold mb-3">{{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</h1>
+                <p class="mb-0 text-white-50" style="line-height:1.9;">
+                    منصة متكاملة لإدارة القاعات، الطلاب، الحضور، التقييمات، والمتابعة اليومية
+                    بشكل احترافي ومتوافق مع الكمبيوتر والموبايل.
+                </p>
+            </div>
+
+            {% if SITE_PHONE %}
+                <div class="small text-white-50">للتواصل: {{ SITE_PHONE }}</div>
+            {% endif %}
+        </div>
+
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold mb-2">تسجيل الدخول</h2>
+                <p class="text-muted mb-0">أدخل اسم المستخدم وكلمة المرور</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">اسم المستخدم</label>
+                    <input type="text" name="username" class="form-control" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">كلمة المرور</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login w-100">
+                    دخول إلى النظام
+                </button>
+            </form>
+
+            {% if ALLOW_REGISTRATION %}
+                <div class="text-center mt-4 small text-muted">
+                    التسجيل متاح حاليًا لأولياء الأمور.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+{% comment %} {% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | {{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            background:
+                radial-gradient(circle at top right, rgba(13,110,253,.12), transparent 30%),
+                radial-gradient(circle at bottom left, rgba(25,135,84,.10), transparent 28%),
+                #f4f7fb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+        }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 1080px;
+            display: grid;
+            grid-template-columns: 1.05fr .95fr;
+            background: #fff;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, .10);
+        }
+
+        .login-side {
+            background: linear-gradient(160deg, #0f172a 0%, #1d4ed8 100%);
+            color: #fff;
+            padding: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .login-side h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .login-side p {
+            color: rgba(255,255,255,.85);
+            line-height: 1.9;
+        }
+
+        .login-card {
+            padding: 42px 32px;
+        }
+
+        .brand-logo {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            background: rgba(255,255,255,.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .form-control {
+            min-height: 50px;
+            border-radius: 14px;
+        }
+
+        .btn-login {
+            min-height: 50px;
+            border-radius: 14px;
+            font-weight: 800;
+        }
+
+        @media (max-width: 991.98px) {
+            .login-wrap {
+                grid-template-columns: 1fr;
+            }
+
+            .login-side {
+                padding: 28px;
+            }
+
+            .login-card {
+                padding: 28px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrap">
+        <div class="login-side">
+            <div>
+                <div class="brand-logo mb-4">
+                    {% if SITE_LOGO %}
+                        <img src="{{ SITE_LOGO.url }}" alt="{{ SITE_NAME }}" style="width:100%;height:100%;object-fit:cover;border-radius:18px;">
+                    {% else %}
+                        <span>📘</span>
+                    {% endif %}
+                </div>
+
+                <h1>{{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</h1>
+                <p>
+                    منصة متكاملة لإدارة حلقات التحفيظ، الطلاب، القاعات، الحضور، والمتابعة اليومية
+                    بصورة منظمة وسهلة على الكمبيوتر والموبايل.
+                </p>
+            </div>
+
+            <div class="small text-white-50">
+                {% if SITE_PHONE %}للتواصل: {{ SITE_PHONE }}{% endif %}
+            </div>
+        </div>
+
+        <div class="login-card">
+            <div class="mb-4 text-center">
+                <h2 class="fw-bold mb-2">تسجيل الدخول</h2>
+                <p class="text-muted mb-0">أدخل بيانات حسابك للمتابعة</p>
+            </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger rounded-4">
+                    اسم المستخدم أو كلمة المرور غير صحيحة.
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">اسم المستخدم</label>
+                    <input type="text" name="username" class="form-control" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">كلمة المرور</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login w-100">
+                    دخول إلى النظام
+                </button>
+            </form>
+
+            <div class="text-center mt-4 small text-muted">
+                {% if ALLOW_REGISTRATION %}
+                    لا تملك حسابًا؟ يمكنك التسجيل من بوابة ولي الأمر.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> {% endcomment %}

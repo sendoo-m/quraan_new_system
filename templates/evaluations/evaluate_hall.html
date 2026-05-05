@@ -1,4 +1,97 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}تقييم القاعة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تقييم القاعة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">تقييم قاعة كاملة</h2>
+            <p class="text-muted mb-0">اختر القاعة ثم راجع الطلاب الذين لم يتم تقييمهم اليوم.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard:teacher' %}" class="btn btn-outline-secondary">رجوع للوحة</a>
+            {% if selected_hall %}
+                <a href="{% url 'halls:detail' selected_hall.pk %}" class="btn btn-outline-primary">تفاصيل القاعة</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <form method="get">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">القاعة</label>
+                    <select name="hall" class="form-select" onchange="this.form.submit()">
+                        <option value="">— اختر القاعة —</option>
+                        {% for hall in halls %}
+                            <option value="{{ hall.id }}" {% if selected_hall and selected_hall.id == hall.id %}selected{% endif %}>{{ hall.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+            <div class="alert alert-info rounded-4 mb-0">
+                التاريخ: {{ today }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        {% if selected_hall %}
+            <div class="page-card p-0 overflow-hidden">
+                {% if students_data %}
+                    <div class="table-responsive">
+                        <table class="table table-modern align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>الطالب</th>
+                                    <th>العمر</th>
+                                    <th>تم التقييم</th>
+                                    <th>إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in students_data %}
+                                    <tr>
+                                        <td>{{ row.student.get_full_name }}</td>
+                                        <td>{{ row.student.calculate_age }} سنة</td>
+                                        <td>
+                                            {% if row.evaluated %}
+                                                <span class="badge text-bg-success">نعم</span>
+                                            {% else %}
+                                                <span class="badge text-bg-warning">لا</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'evaluations:evaluate' row.student.id %}" class="btn btn-sm btn-primary">
+                                                {% if row.evaluated %}تحديث التقييم{% else %}تقييم{% endif %}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state p-5 text-center">لا يوجد طلاب نشطون في هذه القاعة.</div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="page-card p-5 text-center">
+                <h3 class="fw-bold mb-2">اختر قاعة أولًا</h3>
+                <p class="text-muted mb-0">سيظهر لك الطلاب النشطون مع حالة تقييمهم لهذا اليوم.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}تقييم الطلاب{% endblock %}
 
 {% block content %}
@@ -294,77 +387,5 @@ function filterCards(type) {
     document.getElementById(map[type])?.classList.add('active');
 }
 </script>
-{% endif %}
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}تقييم الطلاب{% endblock %}
-
-{% block content %}
-<!-- اختيار القاعة -->
-<div class="card stat-card mb-4">
-    <div class="card-body">
-        <form method="get" class="d-flex gap-3 align-items-end">
-            <div class="flex-grow-1">
-                <label class="form-label fw-bold">اختر القاعة</label>
-                <select name="hall" class="form-select"
-                        onchange="this.form.submit()">
-                    <option value="">— اختر القاعة —</option>
-                    {% for hall in halls %}
-                    <option value="{{ hall.id }}"
-                        {% if selected_hall.id == hall.id %}selected{% endif %}>
-                        {{ hall.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
-    </div>
-</div>
-
-{% if selected_hall %}
-<!-- قائمة الطلاب للتقييم -->
-<div class="card stat-card">
-    <div class="card-header fw-bold">
-        <i class="fas fa-star text-warning me-2"></i>
-        طلاب {{ selected_hall.name }} — {{ today }}
-    </div>
-    <div class="card-body">
-        <div class="row g-3">
-            {% for item in students_data %}
-            <div class="col-md-6">
-                <div class="card border {% if item.evaluated %}border-success{% else %}border-warning{% endif %}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0">
-                                {{ item.student.get_full_name }}
-                            </h6>
-                            {% if item.evaluated %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-check"></i> تم التقييم
-                            </span>
-                            {% else %}
-                            <span class="badge bg-warning text-dark">
-                                <i class="fas fa-clock"></i> لم يُقيَّم
-                            </span>
-                            {% endif %}
-                        </div>
-                        <a href="{% url 'evaluations:evaluate' item.student.pk %}"
-                           class="btn btn-sm {% if item.evaluated %}btn-outline-success{% else %}btn-primary{% endif %} w-100">
-                            <i class="fas fa-{% if item.evaluated %}edit{% else %}star{% endif %} me-1"></i>
-                            {% if item.evaluated %}تعديل التقييم{% else %}تقييم الطالب{% endif %}
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div class="col-12 text-center text-muted py-4">
-                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                لا يوجد طلاب في هذه القاعة
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
 {% endif %}
 {% endblock %} {% endcomment %}

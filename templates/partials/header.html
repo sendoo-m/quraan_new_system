@@ -1,0 +1,28 @@
+<header class="topbar d-flex align-items-center">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-light border mobile-menu-btn" id="sidebarToggle" type="button">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+
+                <div>
+                    <h1 class="page-title">{% block page_title %}لوحة التحكم{% endblock %}</h1>
+                    <div class="page-subtitle">{{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-sm-block">
+                    <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+                    <small class="text-muted">{{ user.get_role_display }}</small>
+                </div>
+
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                     style="width:44px;height:44px;">
+                    {{ user.first_name|default:user.username|slice:":1" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

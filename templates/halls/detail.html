@@ -1,4 +1,128 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}{{ hall.name }} | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تفاصيل القاعة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">{{ hall.name }}</h2>
+            <p class="text-muted mb-0">{{ hall.location }}</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {% if user.is_general_manager or user.is_general_supervisor %}
+                <a href="{% url 'halls:update' hall.pk %}" class="btn btn-outline-warning">تعديل القاعة</a>
+                <a href="{% url 'halls:schedule' hall.pk %}" class="btn btn-outline-secondary">إدارة الجدول</a>
+            {% endif %}
+            {% if user.is_hall_supervisor %}
+                <a href="{% url 'evaluations:add_followup' %}" class="btn btn-primary">متابعة يومية</a>
+            {% endif %}
+            <a href="{% url 'halls:list' %}" class="btn btn-primary">رجوع للقائمة</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">عدد الطلاب النشطين</div>
+            <div class="fs-3 fw-bold">{{ hall.get_current_students_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">المقاعد المتاحة</div>
+            <div class="fs-3 fw-bold">{{ hall.get_available_seats }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">الفئة العمرية</div>
+            <div class="fw-bold fs-5">{{ hall.age_group.name|default:"—" }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">الحالة</div>
+            <div class="fw-bold fs-5">
+                {% if hall.is_active %}نشطة{% else %}غير نشطة{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">معلومات القاعة</div>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>المعلم:</strong> {{ hall.teacher.get_full_name|default:"—" }}</li>
+                <li class="mb-2"><strong>مشرف القاعة:</strong> {{ hall.supervisor.get_full_name|default:"—" }}</li>
+                <li class="mb-2"><strong>المشرف العام:</strong> {{ hall.general_supervisor.get_full_name|default:"—" }}</li>
+                <li class="mb-2"><strong>أقصى عدد:</strong> {{ hall.max_students }}</li>
+                <li class="mb-2"><strong>الجزء الحالي:</strong> {{ hall.current_juz }}</li>
+                <li class="mb-0"><strong>الأجزاء المطلوبة قبل القبول:</strong> {{ hall.required_completed_juz_count }}</li>
+            </ul>
+        </div>
+
+        <div class="page-card p-4">
+            <div class="section-title">جدول القاعة</div>
+            {% if schedules %}
+                <ul class="list-group list-group-flush">
+                    {% for sch in schedules %}
+                        <li class="list-group-item px-0">
+                            <div class="fw-semibold">{{ sch.get_day_display }} - {{ sch.subject.name }}</div>
+                            <div class="text-muted small">{{ sch.start_time }} إلى {{ sch.end_time }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state p-3">لا يوجد جدول مسجل لهذه القاعة.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="page-card p-4">
+            <div class="section-title">طلاب القاعة</div>
+            {% if students %}
+                <div class="table-responsive">
+                    <table class="table table-modern align-middle">
+                        <thead>
+                            <tr>
+                                <th>الطالب</th>
+                                <th>ولي الأمر</th>
+                                <th>الهاتف</th>
+                                <th>الحالة</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                                <tr>
+                                    <td>{{ student.get_full_name }}</td>
+                                    <td>{{ student.parent.get_full_name|default:"—" }}</td>
+                                    <td>{{ student.parent.phone|default:"—" }}</td>
+                                    <td><span class="badge text-bg-success">نشط</span></td>
+                                    <td>
+                                        <a href="{% url 'students:detail' student.pk %}" class="btn btn-sm btn-outline-primary">عرض</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">لا يوجد طلاب نشطون في هذه القاعة.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}{{ hall.name }}{% endblock %}
 
 {% block content %}
@@ -287,134 +411,5 @@
         </div>
     </div>
 
-</div>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}{{ hall.name }}{% endblock %}
-
-{% block content %}
-<div class="row g-4">
-
-    <!-- بيانات القاعة -->
-    <div class="col-md-4">
-        <div class="card stat-card">
-            <div class="card-body">
-                <h5 class="fw-bold mb-3">
-                    <i class="fas fa-door-open text-primary me-2"></i>
-                    {{ hall.name }}
-                </h5>
-                <ul class="list-unstyled small">
-                    <li class="mb-2">
-                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                        {{ hall.location }}
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-users text-primary me-2"></i>
-                        {{ hall.get_age_group_display }}
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-chalkboard-teacher text-success me-2"></i>
-                        {{ hall.teacher.get_full_name|default:"لم يُعيَّن" }}
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-user-shield text-info me-2"></i>
-                        {{ hall.supervisor.get_full_name|default:"لم يُعيَّن" }}
-                    </li>
-                    <li>
-                        <i class="fas fa-chair text-warning me-2"></i>
-                        {{ hall.get_current_students_count }} / {{ hall.max_students }} طالب
-                    </li>
-                </ul>
-
-                {% if is_general_supervisor or is_general_manager %}
-                <div class="d-grid gap-2 mt-3">
-                    <a href="{% url 'halls:schedule' hall.pk %}"
-                       class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-calendar me-1"></i> الجدول الدراسي
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- الجدول الدراسي -->
-        {% if schedules %}
-        <div class="card stat-card mt-3">
-            <div class="card-header fw-bold">
-                <i class="fas fa-calendar text-info me-2"></i>
-                الجدول الدراسي
-            </div>
-            <div class="list-group list-group-flush">
-                {% for schedule in schedules %}
-                <div class="list-group-item small">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bold">{{ schedule.get_day_display }}</span>
-                        <span class="text-muted">
-                            {{ schedule.start_time }} — {{ schedule.end_time }}
-                        </span>
-                    </div>
-                    <span class="text-primary">{{ schedule.subject.name }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- قائمة الطلاب -->
-    <div class="col-md-8">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-user-graduate text-primary me-2"></i>
-                الطلاب — {{ students|length }} طالب
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>الطالب</th>
-                                <th>العمر</th>
-                                <th>السور المحفوظة</th>
-                                <th>ولي الأمر</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in students %}
-                            <tr>
-                                <td class="text-muted">{{ forloop.counter }}</td>
-                                <td class="fw-bold">{{ student.get_full_name }}</td>
-                                <td>{{ student.calculate_age }} سنة</td>
-                                <td>
-                                    <span class="badge bg-success">
-                                        {{ student.memorized_surahs.count }} سورة
-                                    </span>
-                                </td>
-                                <td class="small text-muted">
-                                    {{ student.parent.get_full_name }}
-                                </td>
-                                <td>
-                                    <a href="{% url 'students:detail' student.pk %}"
-                                       class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    لا يوجد طلاب في هذه القاعة
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %} {% endcomment %}

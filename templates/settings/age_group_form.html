@@ -1,4 +1,84 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}{{ action }} فئة عمرية | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ action }} فئة عمرية{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">{{ action }} فئة عمرية</h2>
+    <p class="text-muted mb-0">
+        أدخل البيانات الخاصة بالفئة العمرية وحدد نطاق السن والترتيب.
+    </p>
+</div>
+
+<form method="post" class="row g-4">
+    {% csrf_token %}
+
+    <div class="col-lg-8">
+        <div class="page-card p-4">
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-4">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">{{ form.min_age.label }}</label>
+                    {{ form.min_age }}
+                    <div class="text-danger small mt-1">{{ form.min_age.errors }}</div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">{{ form.max_age.label }}</label>
+                    {{ form.max_age }}
+                    <div class="text-danger small mt-1">{{ form.max_age.errors }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">{{ form.order.label }}</label>
+                    {{ form.order }}
+                    <div class="text-danger small mt-1">{{ form.order.errors }}</div>
+                </div>
+
+                <div class="col-md-6 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        {{ form.is_active }}
+                        <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+                            {{ form.is_active.label }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <div class="section-title">الإجراءات</div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">حفظ الفئة</button>
+                <a href="{% url 'settings:age_groups' %}" class="btn btn-outline-secondary">رجوع</a>
+            </div>
+
+            {% if age_group %}
+                <hr>
+                <div class="small text-muted">أنت تعدل الآن:</div>
+                <div class="fw-bold mt-1">{{ age_group.name }}</div>
+                <div class="text-muted small">{{ age_group.min_age }} - {{ age_group.max_age }} سنة</div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}{{ action }} فئة عمرية{% endblock %}
 
 {% block content %}
@@ -221,60 +301,4 @@ function updateActive() {
 activeCheckbox?.addEventListener('change', updateActive);
 updateActive();
 </script>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}{{ action }} فئة عمرية{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-5">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-child text-warning me-2"></i>
-                {{ action }} فئة عمرية
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold">اسم الفئة *</label>
-                            {{ form.name }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">السن الأدنى *</label>
-                            {{ form.min_age }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">السن الأقصى *</label>
-                            {{ form.max_age }}
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">الترتيب</label>
-                            {{ form.order }}
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check form-switch">
-                                {{ form.is_active }}
-                                <label class="form-check-label fw-bold me-2">
-                                    الفئة نشطة
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-12 d-flex gap-2 justify-content-end">
-                            <a href="{% url 'settings:age_groups' %}"
-                               class="btn btn-outline-secondary">
-                                <i class="fas fa-times"></i> إلغاء
-                            </a>
-                            <button type="submit" class="btn btn-warning px-4 fw-bold">
-                                <i class="fas fa-save me-1"></i> حفظ
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %} {% endcomment %}

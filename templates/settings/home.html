@@ -1,4 +1,101 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}الإعدادات العامة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}الإعدادات العامة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="row g-3 align-items-center">
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-2">إدارة إعدادات المقرأة</h2>
+            <p class="text-muted mb-0">
+                من هنا يمكنك إدارة بيانات المقرأة، المستخدمين، والفئات العمرية.
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-start text-center">
+            <a href="{% url 'settings:site' %}" class="btn btn-primary me-2">بيانات المقرأة</a>
+            <a href="{% url 'settings:users' %}" class="btn btn-outline-primary">المستخدمون</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="bi bi-people"></i></div>
+            <div class="text-muted">إجمالي المستخدمين</div>
+            <div class="fs-3 fw-bold">{{ total_users }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="bi bi-mortarboard"></i></div>
+            <div class="text-muted">إجمالي الطلاب</div>
+            <div class="fs-3 fw-bold">{{ total_students }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f59e0b;"><i class="bi bi-building"></i></div>
+            <div class="text-muted">القاعات</div>
+            <div class="fs-3 fw-bold">{{ total_halls }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-danger"><i class="bi bi-diagram-3"></i></div>
+            <div class="text-muted">الفئات العمرية</div>
+            <div class="fs-3 fw-bold">{{ total_age_groups }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="page-card p-4 h-100">
+            <div class="section-title">بيانات المقرأة الحالية</div>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>الاسم:</strong> {{ settings.name }}</li>
+                {% if settings.phone %}<li class="mb-2"><strong>الهاتف:</strong> {{ settings.phone }}</li>{% endif %}
+                {% if settings.email %}<li class="mb-2"><strong>البريد:</strong> {{ settings.email }}</li>{% endif %}
+                <li class="mb-2"><strong>التسجيل:</strong> {% if settings.allow_registration %}مفتوح{% else %}مغلق{% endif %}</li>
+                <li class="mb-0"><strong>التسكين التلقائي:</strong> {% if settings.auto_assign_halls %}مفعل{% else %}غير مفعل{% endif %}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="page-card p-4 h-100">
+            <div class="section-title">توزيع المستخدمين حسب الدور</div>
+            {% if staff_by_role %}
+                <div class="table-responsive">
+                    <table class="table table-modern">
+                        <thead>
+                            <tr>
+                                <th>الدور</th>
+                                <th>العدد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in staff_by_role %}
+                                <tr>
+                                    <td>{{ row.role }}</td>
+                                    <td>{{ row.count }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">لا توجد بيانات بعد.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}الإعدادات{% endblock %}
 
 {% block content %}
@@ -280,149 +377,4 @@
     </div>
 </div>
 
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}الإعدادات{% endblock %}
-
-{% block content %}
-<!-- إحصائيات سريعة -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card stat-card bg-primary text-white text-center">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold">{{ total_users }}</div>
-                <div class="small">إجمالي المستخدمين</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stat-card bg-success text-white text-center">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold">{{ total_students }}</div>
-                <div class="small">الطلاب</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stat-card bg-info text-white text-center">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold">{{ total_halls }}</div>
-                <div class="small">القاعات</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stat-card bg-warning text-white text-center">
-            <div class="card-body py-3">
-                <div class="fs-2 fw-bold">{{ total_age_groups }}</div>
-                <div class="small">الفئات العمرية</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- بطاقات الإعدادات -->
-<div class="row g-4">
-
-    <!-- إعدادات المقرأة -->
-    <div class="col-md-4">
-        <div class="card stat-card h-100">
-            <div class="card-body text-center py-4">
-                <i class="fas fa-cog fa-3x text-primary mb-3"></i>
-                <h5 class="fw-bold">إعدادات المقرأة</h5>
-                <p class="text-muted small mb-3">
-                    الاسم، الشعار، العنوان، التسجيل، الحضور
-                </p>
-                <a href="{% url 'settings:site' %}" class="btn btn-primary w-100">
-                    <i class="fas fa-edit me-1"></i> تعديل الإعدادات
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- إدارة المستخدمين -->
-    <div class="col-md-4">
-        <div class="card stat-card h-100">
-            <div class="card-body text-center py-4">
-                <i class="fas fa-users-cog fa-3x text-success mb-3"></i>
-                <h5 class="fw-bold">إدارة المستخدمين</h5>
-                <p class="text-muted small mb-3">
-                    إضافة، تعديل، تفعيل، تعطيل، إعادة كلمة المرور
-                </p>
-                <!-- توزيع الأدوار -->
-                <div class="mb-3">
-                    {% for item in staff_by_role %}
-                    <span class="badge bg-secondary m-1">
-                        {{ item.role }} ({{ item.count }})
-                    </span>
-                    {% endfor %}
-                </div>
-                <a href="{% url 'settings:users' %}" class="btn btn-success w-100">
-                    <i class="fas fa-users me-1"></i> إدارة المستخدمين
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- الفئات العمرية -->
-    <div class="col-md-4">
-        <div class="card stat-card h-100">
-            <div class="card-body text-center py-4">
-                <i class="fas fa-child fa-3x text-warning mb-3"></i>
-                <h5 class="fw-bold">الفئات العمرية</h5>
-                <p class="text-muted small mb-3">
-                    إضافة وتعديل الفئات العمرية للطلاب والقاعات
-                </p>
-                <a href="{% url 'settings:age_groups' %}" class="btn btn-warning w-100">
-                    <i class="fas fa-layer-group me-1"></i> إدارة الفئات
-                </a>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<!-- معلومات المقرأة -->
-<div class="card stat-card mt-4">
-    <div class="card-header fw-bold">
-        <i class="fas fa-info-circle text-primary me-2"></i>
-        بيانات المقرأة الحالية
-    </div>
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-2 text-center">
-                {% if settings.logo %}
-                <img src="{{ settings.logo.url }}" class="img-fluid rounded" style="max-height:80px;">
-                {% else %}
-                <i class="fas fa-mosque fa-3x text-primary"></i>
-                {% endif %}
-            </div>
-            <div class="col-md-10">
-                <div class="row g-2 small">
-                    <div class="col-md-4">
-                        <strong>الاسم:</strong> {{ settings.name }}
-                    </div>
-                    <div class="col-md-4">
-                        <strong>الهاتف:</strong> {{ settings.phone|default:"—" }}
-                    </div>
-                    <div class="col-md-4">
-                        <strong>البريد:</strong> {{ settings.email|default:"—" }}
-                    </div>
-                    <div class="col-md-4">
-                        <strong>العنوان:</strong> {{ settings.address|default:"—" }}
-                    </div>
-                    <div class="col-md-4">
-                        <i class="fas fa-circle {% if settings.allow_registration %}text-success{% else %}text-danger{% endif %} me-1"></i>
-                        التسجيل: {% if settings.allow_registration %}مفتوح{% else %}مغلق{% endif %}
-                    </div>
-                    <div class="col-md-4">
-                        <i class="fas fa-circle {% if settings.auto_assign_halls %}text-success{% else %}text-danger{% endif %} me-1"></i>
-                        التسكين التلقائي: {% if settings.auto_assign_halls %}مفعّل{% else %}معطّل{% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %} {% endcomment %}

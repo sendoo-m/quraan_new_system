@@ -1,0 +1,214 @@
+<aside class="sidebar d-flex flex-column" id="appSidebar">
+    <div class="p-3 border-bottom border-secondary border-opacity-25">
+        <div class="d-flex align-items-center gap-3">
+            {% if SITE_LOGO and SITE_LOGO.url %}
+                <img src="{{ SITE_LOGO.url }}" alt="{{ SITE_NAME }}" class="rounded-3" width="52" height="52" style="object-fit: cover;">
+            {% else %}
+                <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center text-white" style="width:52px;height:52px;">
+                    <i class="bi bi-moon-stars-fill fs-5"></i>
+                </div>
+            {% endif %}
+
+            <div class="min-w-0">
+                <div class="fw-bold text-white text-truncate">{{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</div>
+                <small class="text-white-50">{{ user.get_role_display }}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-3">
+        <div class="bg-white bg-opacity-10 rounded-4 p-3 mb-3">
+            <div class="fw-bold text-white">{{ user.get_full_name|default:user.username }}</div>
+            <small class="text-white-50">{{ user.username }}</small>
+        </div>
+
+        <div class="small text-uppercase text-white-50 mb-2">التنقل</div>
+
+        <nav class="nav flex-column gap-1">
+            <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'accounts:dashboard' %}">
+                <i class="bi bi-speedometer2 ms-2"></i>لوحة التحكم
+            </a>
+
+            {% if user.is_general_manager %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:manager' %}">
+                    <i class="bi bi-kanban ms-2"></i>لوحة المدير العام
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'settings:home' %}">
+                    <i class="bi bi-gear ms-2"></i>الإعدادات العامة
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'settings:users' %}">
+                    <i class="bi bi-people ms-2"></i>المستخدمون
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'settings:age_groups' %}">
+                    <i class="bi bi-diagram-3 ms-2"></i>الفئات العمرية
+                </a>
+            {% endif %}
+
+            {% if user.is_general_supervisor %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:supervisor' %}">
+                    <i class="bi bi-person-workspace ms-2"></i>لوحة المشرف العام
+                </a>
+            {% endif %}
+
+            {% if user.is_hall_supervisor %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:hall_supervisor' %}">
+                    <i class="bi bi-building-check ms-2"></i>لوحة مشرف القاعة
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'evaluations:add_followup' %}">
+                    <i class="bi bi-journal-text ms-2"></i>المتابعة اليومية
+                </a>
+            {% endif %}
+
+            {% if user.is_teacher %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:teacher' %}">
+                    <i class="bi bi-journal-check ms-2"></i>لوحة المعلم
+                </a>
+            {% endif %}
+
+            {% if user.is_parent %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:parent' %}">
+                    <i class="bi bi-person-hearts ms-2"></i>لوحة ولي الأمر
+                </a>
+            {% endif %}
+
+            {% if user.is_general_manager or user.is_general_supervisor or user.is_hall_supervisor or user.is_teacher %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'halls:list' %}">
+                    <i class="bi bi-building ms-2"></i>القاعات
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'halls:all_schedules' %}">
+                    <i class="bi bi-calendar3 ms-2"></i>الجداول
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'students:list' %}">
+                    <i class="bi bi-mortarboard ms-2"></i>الطلاب
+                </a>
+            {% endif %}
+
+            {% if user.is_parent %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'students:register' %}">
+                    <i class="bi bi-person-plus ms-2"></i>تسجيل طالب
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <div class="mt-auto p-3 border-top border-secondary border-opacity-25">
+        <div class="small text-white-50 mb-2">بيانات المقرأة</div>
+        <div class="text-white small">{{ SITE_NAME }}</div>
+        {% if SITE_PHONE %}
+            <div class="text-white-50 small mt-1"><i class="bi bi-telephone ms-2"></i>{{ SITE_PHONE }}</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:logout' %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-light w-100">
+                <i class="bi bi-box-arrow-left ms-2"></i>تسجيل الخروج
+            </button>
+        </form>
+    </div>
+</aside>
+
+{% comment %} <aside class="sidebar d-flex flex-column" id="appSidebar">
+    <div class="p-3 border-bottom border-secondary border-opacity-25">
+        <div class="d-flex align-items-center gap-3">
+            {% if SITE_LOGO %}
+                <img src="{{ SITE_LOGO.url }}" alt="{{ SITE_NAME }}" class="rounded-3" width="52" height="52" style="object-fit: cover;">
+            {% else %}
+                <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center text-white" style="width:52px;height:52px;">
+                    <i class="bi bi-moon-stars-fill fs-5"></i>
+                </div>
+            {% endif %}
+
+            <div class="min-w-0">
+                <div class="fw-bold text-white text-truncate">{{ SITE_NAME|default:"مقرأة تحفيظ القرآن الكريم" }}</div>
+                <small class="text-white-50">{{ user.get_role_display }}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-3">
+        <div class="bg-white bg-opacity-10 rounded-4 p-3 mb-3">
+            <div class="fw-bold text-white">{{ user.get_full_name|default:user.username }}</div>
+            <small class="text-white-50">{{ user.username }}</small>
+        </div>
+
+        <div class="small text-uppercase text-white-50 mb-2">التنقل</div>
+
+        <nav class="nav flex-column gap-1">
+            <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'accounts:dashboard' %}">
+                <i class="bi bi-speedometer2 ms-2"></i>لوحة التحكم
+            </a>
+
+            {% if user.is_general_manager %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:manager' %}">
+                    <i class="bi bi-kanban ms-2"></i>لوحة المدير العام
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'settings:home' %}">
+                    <i class="bi bi-gear ms-2"></i>الإعدادات العامة
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'settings:users' %}">
+                    <i class="bi bi-people ms-2"></i>المستخدمون
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'settings:age_groups' %}">
+                    <i class="bi bi-diagram-3 ms-2"></i>الفئات العمرية
+                </a>
+            {% endif %}
+
+            {% if user.is_general_supervisor %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:supervisor' %}">
+                    <i class="bi bi-person-workspace ms-2"></i>لوحة المشرف العام
+                </a>
+            {% endif %}
+
+            {% if user.is_hall_supervisor %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:hall_supervisor' %}">
+                    <i class="bi bi-building-check ms-2"></i>لوحة مشرف القاعة
+                </a>
+            {% endif %}
+
+            {% if user.is_teacher %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:teacher' %}">
+                    <i class="bi bi-journal-check ms-2"></i>لوحة المعلم
+                </a>
+            {% endif %}
+
+            {% if user.is_parent %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:parent' %}">
+                    <i class="bi bi-person-hearts ms-2"></i>لوحة ولي الأمر
+                </a>
+            {% endif %}
+
+            {% if user.is_general_manager or user.is_general_supervisor or user.is_hall_supervisor or user.is_teacher %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'halls:list' %}">
+                    <i class="bi bi-building ms-2"></i>القاعات
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'halls:all_schedules' %}">
+                    <i class="bi bi-calendar3 ms-2"></i>الجداول
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'students:list' %}">
+                    <i class="bi bi-mortarboard ms-2"></i>الطلاب
+                </a>
+            {% endif %}
+
+            {% if user.is_parent %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'students:register' %}">
+                    <i class="bi bi-person-plus ms-2"></i>تسجيل طالب
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <div class="mt-auto p-3 border-top border-secondary border-opacity-25">
+        <div class="small text-white-50 mb-2">بيانات المقرأة</div>
+        <div class="text-white small">{{ SITE_NAME }}</div>
+        {% if SITE_PHONE %}
+            <div class="text-white-50 small mt-1"><i class="bi bi-telephone ms-2"></i>{{ SITE_PHONE }}</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:logout' %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-light w-100">
+                <i class="bi bi-box-arrow-left ms-2"></i>تسجيل الخروج
+            </button>
+        </form>
+    </div>
+</aside> {% endcomment %}

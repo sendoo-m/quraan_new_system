@@ -1,4 +1,69 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}لوحة مشرف القاعة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}لوحة مشرف القاعة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">مرحبًا {{ user.first_name|default:user.username }}</h2>
+    <p class="text-muted mb-3">
+        يمكنك من هنا متابعة القاعات المسندة لك وتسجيل الحضور والانصراف والمتابعة اليومية.
+    </p>
+    <a href="{% url 'evaluations:add_followup' %}" class="btn btn-primary">
+        <i class="bi bi-journal-text ms-2"></i>إضافة متابعة يومية
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="bi bi-building"></i></div>
+            <div class="text-muted">عدد القاعات التابعة</div>
+            <div class="fs-3 fw-bold">{{ my_halls.count }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="bi bi-calendar-date"></i></div>
+            <div class="text-muted">تاريخ اليوم</div>
+            <div class="fw-bold fs-5">{{ today }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f59e0b;"><i class="bi bi-clock-history"></i></div>
+            <div class="text-muted">اسم اليوم</div>
+            <div class="fw-bold fs-5">{{ today_name }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="page-card p-4">
+    <div class="section-title">القاعات الخاصة بك</div>
+    {% if my_halls %}
+        <div class="row g-3">
+            {% for hall in my_halls %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="border rounded-4 p-3 h-100">
+                        <div class="fw-bold mb-2">{{ hall.name }}</div>
+                        <div class="text-muted small mb-2">{{ hall.location }}</div>
+                        <div class="small">السعة: {{ hall.max_students }}</div>
+                        <div class="small">الطلاب الحاليون: {{ hall.get_current_students_count }}</div>
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="{% url 'halls:detail' hall.pk %}" class="btn btn-sm btn-outline-primary">تفاصيل القاعة</a>
+                            <a href="{% url 'evaluations:add_followup' %}" class="btn btn-sm btn-primary">متابعة يومية</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">لا توجد قاعات مسندة لك حاليًا.</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}لوحة مشرف القاعة{% endblock %}
 
 {% block content %}
@@ -159,68 +224,4 @@
 
 {% endif %}
 
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}لوحة مشرف القاعة{% endblock %}
-
-{% block content %}
-<div class="row g-4">
-    {% for hall in my_halls %}
-    <div class="col-md-6">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-door-open text-primary me-2"></i>
-                {{ hall.name }}
-                <span class="badge bg-info me-2">
-                    {{ hall.get_age_group_display }}
-                </span>
-            </div>
-            <div class="card-body">
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <div class="bg-light rounded p-2 text-center">
-                            <div class="fs-4 fw-bold text-primary">
-                                {{ hall.get_current_students_count }}
-                            </div>
-                            <div class="small text-muted">طالب</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="bg-light rounded p-2 text-center">
-                            <div class="fs-4 fw-bold text-success">
-                                {{ hall.get_available_seats }}
-                            </div>
-                            <div class="small text-muted">مقعد متاح</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <a href="{% url 'attendance:take' hall.pk %}"
-                       class="btn btn-primary">
-                        <i class="fas fa-clipboard-check me-1"></i>
-                        تسجيل الحضور
-                    </a>
-                    <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}"
-                       class="btn btn-outline-info">
-                        <i class="fas fa-tasks me-1"></i>
-                        المتابعة اليومية
-                    </a>
-                    <a href="{% url 'evaluations:hall_followups' hall.pk %}"
-                       class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-history me-1"></i>
-                        سجل المتابعات
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <div class="col-12 text-center py-5 text-muted">
-        <i class="fas fa-door-open fa-3x mb-3 d-block"></i>
-        لم يتم تخصيص قاعات لك بعد
-    </div>
-    {% endfor %}
-</div>
 {% endblock %} {% endcomment %}

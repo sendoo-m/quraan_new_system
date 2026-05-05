@@ -1,4 +1,179 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}{{ student.get_full_name }} | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تفاصيل الطالب{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">{{ student.get_full_name }}</h2>
+            <p class="text-muted mb-0">
+                {{ student.age_group.name|default:"بدون فئة عمرية" }} — {{ student.calculate_age }} سنة
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'students:update' student.pk %}" class="btn btn-outline-warning">تعديل</a>
+            {% if user.is_general_supervisor %}
+                <a href="{% url 'students:transfer' student.pk %}" class="btn btn-outline-secondary">نقل</a>
+            {% endif %}
+            {% if user.is_teacher %}
+                <a href="{% url 'evaluations:evaluate' student.pk %}" class="btn btn-primary">تقييم الطالب</a>
+            {% endif %}
+            <a href="{% url 'students:list' %}" class="btn btn-primary">رجوع</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">الحالة</div>
+            <div class="fw-bold fs-5">{{ student.get_status_display }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">تاريخ التسجيل</div>
+            <div class="fw-bold fs-5">{{ student.registration_date }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">القاعة</div>
+            <div class="fw-bold fs-5">{{ student.hall.name|default:"—" }}</div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="text-muted">عدد الأجزاء</div>
+            <div class="fw-bold fs-5">{{ student.get_completed_juz_count }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">البيانات الأساسية</div>
+            {% if student.profile_picture %}
+                <img src="{{ student.profile_picture.url }}" alt="{{ student.get_full_name }}" class="img-fluid rounded-4 mb-3">
+            {% endif %}
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>ولي الأمر:</strong> {{ student.parent.get_full_name|default:student.parent.username }}</li>
+                <li class="mb-2"><strong>الهاتف:</strong> {{ student.parent.phone|default:"—" }}</li>
+                <li class="mb-2"><strong>تاريخ الميلاد:</strong> {{ student.date_of_birth }}</li>
+                <li class="mb-2"><strong>السن:</strong> {{ student.calculate_age }}</li>
+                <li class="mb-2"><strong>الفئة العمرية:</strong> {{ student.age_group.name|default:"—" }}</li>
+                <li class="mb-0"><strong>يستخدم الباص:</strong> {% if student.uses_bus %}نعم{% else %}لا{% endif %}</li>
+            </ul>
+        </div>
+
+        <div class="page-card p-4">
+            <div class="section-title">الملاحظات</div>
+            <div class="text-muted">{{ student.notes|default:"لا توجد ملاحظات" }}</div>
+            {% if student.uses_bus %}
+                <hr>
+                <div class="fw-semibold mb-2">ملاحظات الباص</div>
+                <div class="text-muted">{{ student.bus_notes|default:"لا توجد ملاحظات" }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">السور المحفوظة</div>
+            {% if surahs %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for surah in surahs %}
+                        <span class="badge bg-light text-dark border">{{ surah.number }} - {{ surah.name }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state p-3">لا توجد سور محفوظة مسجلة.</div>
+            {% endif %}
+        </div>
+
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">آخر التقييمات</div>
+            {% if evaluations %}
+                <div class="table-responsive">
+                    <table class="table table-modern align-middle">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الحفظ</th>
+                                <th>السلوك</th>
+                                <th>الالتزام</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eval in evaluations %}
+                                <tr>
+                                    <td>{{ eval.date }}</td>
+                                    <td>{{ eval.get_memorization_rating_display }}</td>
+                                    <td>{{ eval.get_behavior_rating_display }}</td>
+                                    <td>{{ eval.get_commitment_rating_display }}</td>
+                                    <td>{{ eval.general_notes|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state p-3">لا توجد تقييمات بعد.</div>
+            {% endif %}
+        </div>
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">سجل الحضور</div>
+            {% if attendances %}
+                <div class="table-responsive">
+                    <table class="table table-modern align-middle">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for att in attendances %}
+                                <tr>
+                                    <td>{{ att.date }}</td>
+                                    <td>{{ att.get_status_display|default:att.status }}</td>
+                                    <td>{{ att.notes|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state p-3">لا يوجد سجل حضور.</div>
+            {% endif %}
+        </div>
+
+        <div class="page-card p-4">
+            <div class="section-title">المتابعات اليومية</div>
+            {% if followups %}
+                <div class="list-group list-group-flush">
+                    {% for followup in followups %}
+                        <div class="list-group-item px-0">
+                            <div class="fw-semibold">{{ followup.date }}</div>
+                            <div class="text-muted">{{ followup.notes|default:"لا توجد ملاحظات" }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state p-3">لا توجد متابعات حديثة.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}بيانات {{ student.get_full_name }}{% endblock %}
 
 {% block content %}
@@ -552,317 +727,4 @@
     </div>
 </div>
 
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}بيانات {{ student.get_full_name }}{% endblock %}
-
-{% block content %}
-
-<!-- شريط الإجراءات العلوي ✅ -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0">
-        <i class="fas fa-user-graduate text-primary me-2"></i>
-        {{ student.get_full_name }}
-    </h5>
-    <div class="d-flex gap-2">
-        <a href="{% url 'students:list' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-right me-1"></i> رجوع
-        </a>
-        {% if is_general_supervisor or is_general_manager %}
-        <a href="{% url 'students:update' student.pk %}"
-           class="btn btn-warning btn-sm">
-            <i class="fas fa-edit me-1"></i> تعديل البيانات
-        </a>
-        {% if student.status == 'pending' %}
-        <form method="post" action="{% url 'students:assign_hall' student.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-success btn-sm">
-                <i class="fas fa-door-open me-1"></i> تسكين تلقائي
-            </button>
-        </form>
-        {% endif %}
-        {% if student.hall %}
-        <a href="{% url 'students:transfer' student.pk %}"
-           class="btn btn-info btn-sm text-white">
-            <i class="fas fa-exchange-alt me-1"></i> نقل لقاعة أخرى
-        </a>
-        {% endif %}
-        {% endif %}
-    </div>
-</div>
-
-<div class="row g-4">
-
-    <!-- بيانات الطالب -->
-    <div class="col-md-4">
-        <div class="card stat-card text-center">
-            <div class="card-body py-4">
-                {% if student.profile_picture %}
-                <img src="{{ student.profile_picture.url }}"
-                     class="rounded-circle mb-3"
-                     width="100" height="100"
-                     style="object-fit:cover;">
-                {% else %}
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center
-                            justify-content-center mx-auto mb-3"
-                     style="width:100px;height:100px;font-size:36px;">
-                    {{ student.first_name|first }}
-                </div>
-                {% endif %}
-
-                <h5 class="fw-bold mb-1">{{ student.get_full_name }}</h5>
-                <p class="text-muted mb-2">{{ student.calculate_age }} سنة</p>
-
-                {% if student.age_group %}
-                <span class="badge bg-info mb-2">{{ student.age_group.name }}</span>
-                {% endif %}
-                <br>
-                {% if student.status == 'active' %}
-                <span class="badge bg-success fs-6">نشط</span>
-                {% elif student.status == 'pending' %}
-                <span class="badge bg-warning text-dark fs-6">ينتظر التسكين</span>
-                {% else %}
-                <span class="badge bg-secondary fs-6">غير نشط</span>
-                {% endif %}
-
-                <hr>
-                <div class="text-start small">
-                    <p class="mb-2">
-                        <i class="fas fa-door-open text-primary me-2"></i>
-                        <strong>القاعة:</strong>
-                        {{ student.hall.name|default:"لم يُسكَّن بعد" }}
-                    </p>
-                    <p class="mb-2">
-                        <i class="fas fa-user text-secondary me-2"></i>
-                        <strong>ولي الأمر:</strong>
-                        {{ student.parent.get_full_name }}
-                    </p>
-                    <p class="mb-2">
-                        <i class="fas fa-phone text-success me-2"></i>
-                        <strong>الهاتف:</strong>
-                        {{ student.parent.phone|default:"—" }}
-                    </p>
-                    <p class="mb-2">
-                        <i class="fas fa-calendar text-info me-2"></i>
-                        <strong>التسجيل:</strong>
-                        {{ student.registration_date }}
-                    </p>
-                    <p class="mb-2">
-                        <i class="fas fa-bus text-warning me-2"></i>
-                        <strong>الباص:</strong>
-                        {% if student.uses_bus %}
-                        <span class="text-success">مشترك</span>
-                        {% if student.bus_notes %}
-                        <span class="text-muted">({{ student.bus_notes }})</span>
-                        {% endif %}
-                        {% else %}
-                        <span class="text-muted">غير مشترك</span>
-                        {% endif %}
-                    </p>
-                    <p class="mb-0">
-                        <i class="fas fa-book-open text-success me-2"></i>
-                        <strong>السور المحفوظة:</strong>
-                        <span class="badge bg-success">{{ surahs.count }} سورة</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- السور المحفوظة -->
-        <div class="card stat-card mt-3">
-            <div class="card-header fw-bold">
-                <i class="fas fa-book-open text-success me-2"></i>
-                السور المحفوظة
-            </div>
-            <div class="card-body p-2" style="max-height:220px;overflow-y:auto;">
-                {% for surah in surahs %}
-                <span class="badge bg-success m-1">{{ surah.name_arabic }}</span>
-                {% empty %}
-                <p class="text-muted small text-center mb-0">لم يتم تحديد سور بعد</p>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- ملاحظات -->
-        {% if student.notes %}
-        <div class="card stat-card mt-3">
-            <div class="card-header fw-bold">
-                <i class="fas fa-sticky-note text-warning me-2"></i>
-                ملاحظات
-            </div>
-            <div class="card-body small">
-                {{ student.notes }}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- التقييمات والحضور -->
-    <div class="col-md-8">
-
-        <!-- آخر التقييمات -->
-        <div class="card stat-card mb-3">
-            <div class="card-header fw-bold">
-                <i class="fas fa-star text-warning me-2"></i>
-                آخر التقييمات
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>التاريخ</th>
-                                <th>الحفظ</th>
-                                <th>السلوك</th>
-                                <th>الالتزام</th>
-                                <th>تميّز</th>
-                                <th>ملاحظات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for eval in evaluations %}
-                            <tr>
-                                <td class="small">{{ eval.date }}</td>
-                                <td>
-                                    <span class="badge
-                                        {% if eval.memorization_rating == 'excellent' %}bg-success
-                                        {% elif eval.memorization_rating == 'good' %}bg-primary
-                                        {% elif eval.memorization_rating == 'average' %}bg-warning text-dark
-                                        {% else %}bg-danger{% endif %}">
-                                        {{ eval.get_memorization_rating_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge
-                                        {% if eval.behavior_rating == 'excellent' %}bg-success
-                                        {% elif eval.behavior_rating == 'good' %}bg-primary
-                                        {% elif eval.behavior_rating == 'average' %}bg-warning text-dark
-                                        {% else %}bg-danger{% endif %}">
-                                        {{ eval.get_behavior_rating_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge
-                                        {% if eval.commitment_rating == 'excellent' %}bg-success
-                                        {% elif eval.commitment_rating == 'good' %}bg-primary
-                                        {% elif eval.commitment_rating == 'average' %}bg-warning text-dark
-                                        {% else %}bg-danger{% endif %}">
-                                        {{ eval.get_commitment_rating_display }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    {% if eval.is_distinguished %}
-                                    <i class="fas fa-star text-warning" title="متميز"></i>
-                                    {% endif %}
-                                    {% if eval.needs_attention %}
-                                    <i class="fas fa-exclamation-triangle text-danger" title="يحتاج متابعة"></i>
-                                    {% endif %}
-                                </td>
-                                <td class="small text-muted">
-                                    {{ eval.general_notes|truncatechars:40|default:"—" }}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-3">
-                                    لا توجد تقييمات بعد
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% if is_teacher or is_general_supervisor or is_general_manager %}
-            <div class="card-footer bg-transparent text-end">
-                <a href="{% url 'evaluations:evaluate' student.pk %}"
-                   class="btn btn-warning btn-sm">
-                    <i class="fas fa-star me-1"></i> تقييم جديد
-                </a>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- سجل الحضور -->
-        <div class="card stat-card mb-3">
-            <div class="card-header fw-bold">
-                <i class="fas fa-clipboard-check text-info me-2"></i>
-                سجل الحضور
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>التاريخ</th>
-                                <th>الحالة</th>
-                                <th>وقت الحضور</th>
-                                <th>ملاحظات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for att in attendances %}
-                            <tr>
-                                <td class="small">{{ att.date }}</td>
-                                <td>
-                                    <span class="badge
-                                        {% if att.status == 'present' %}bg-success
-                                        {% elif att.status == 'absent' %}bg-danger
-                                        {% elif att.status == 'late' %}bg-warning text-dark
-                                        {% else %}bg-info{% endif %}">
-                                        {{ att.get_status_display }}
-                                    </span>
-                                </td>
-                                <td class="small">{{ att.arrival_time|default:"—" }}</td>
-                                <td class="small text-muted">{{ att.notes|default:"—" }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-3">
-                                    لا يوجد سجل حضور
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- المتابعات اليومية -->
-        {% if followups %}
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-tasks text-primary me-2"></i>
-                المتابعات اليومية للقاعة
-            </div>
-            <div class="list-group list-group-flush">
-                {% for followup in followups %}
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="fw-bold small text-primary">{{ followup.date }}</span>
-                        <span class="text-muted small">{{ followup.created_by.get_full_name }}</span>
-                    </div>
-                    <p class="mb-1 small">
-                        <strong>📚 الواجب:</strong> {{ followup.homework }}
-                    </p>
-                    {% if followup.memorization_task %}
-                    <p class="mb-0 small text-success">
-                        <strong>📖 الحفظ:</strong> {{ followup.memorization_task }}
-                    </p>
-                    {% endif %}
-                    {% if followup.extra_notes %}
-                    <p class="mb-0 small text-muted">
-                        <strong>📝 ملاحظات:</strong> {{ followup.extra_notes }}
-                    </p>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-    </div>
-</div>
 {% endblock %} {% endcomment %}

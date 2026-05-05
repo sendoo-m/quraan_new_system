@@ -1,4 +1,103 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}تقييم طالب | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تقييم طالب{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">{{ student.get_full_name }}</h2>
+            <p class="text-muted mb-0">التقييم بتاريخ {{ today }}.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline-secondary">رجوع للطالب</a>
+            <a href="{% url 'dashboard:teacher' %}" class="btn btn-outline-primary">لوحة المعلم</a>
+        </div>
+    </div>
+</div>
+
+<form method="post" class="row g-4">
+    {% csrf_token %}
+
+    <div class="col-lg-8">
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">تقييم الحفظ</div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold">تقييم الحفظ</label>
+                <select name="memorization_rating" class="form-select">
+                    {% for value, label in rating_choices %}
+                        <option value="{{ value }}" {% if existing and existing.memorization_rating == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-0">
+                <label class="form-label fw-semibold">ملاحظات الحفظ</label>
+                <textarea name="memorization_notes" rows="3" class="form-control">{% if existing %}{{ existing.memorization_notes }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="page-card p-4 mb-4">
+            <div class="section-title">السلوك والالتزام</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">تقييم السلوك</label>
+                    <select name="behavior_rating" class="form-select">
+                        {% for value, label in rating_choices %}
+                            <option value="{{ value }}" {% if existing and existing.behavior_rating == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">تقييم الالتزام</label>
+                    <select name="commitment_rating" class="form-select">
+                        {% for value, label in rating_choices %}
+                            <option value="{{ value }}" {% if existing and existing.commitment_rating == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">ملاحظات السلوك</label>
+                    <textarea name="behavior_notes" rows="3" class="form-control">{% if existing %}{{ existing.behavior_notes }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-card p-4">
+            <div class="section-title">ملاحظات عامة</div>
+            <textarea name="general_notes" rows="4" class="form-control mb-3">{% if existing %}{{ existing.general_notes }}{% endif %}</textarea>
+
+            <div class="row g-3">
+                <div class="col-md-6 form-check">
+                    <input class="form-check-input" type="checkbox" name="is_distinguished" id="is_distinguished" {% if existing and existing.is_distinguished %}checked{% endif %}>
+                    <label class="form-check-label" for="is_distinguished">متميز</label>
+                </div>
+                <div class="col-md-6 form-check">
+                    <input class="form-check-input" type="checkbox" name="needs_attention" id="needs_attention" {% if existing and existing.needs_attention %}checked{% endif %}>
+                    <label class="form-check-label" for="needs_attention">يحتاج متابعة</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <div class="section-title">معلومات سريعة</div>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>الطالب:</strong> {{ student.get_full_name }}</li>
+                <li class="mb-2"><strong>القاعة:</strong> {{ student.hall.name|default:"—" }}</li>
+                <li class="mb-2"><strong>ولي الأمر:</strong> {{ student.parent.get_full_name|default:student.parent.username }}</li>
+                <li class="mb-0"><strong>الفئة:</strong> {{ student.age_group.name|default:"—" }}</li>
+            </ul>
+
+            <hr>
+
+            <button type="submit" class="btn btn-primary w-100">حفظ التقييم</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}تقييم {{ student.get_full_name }}{% endblock %}
 
 {% block content %}
@@ -294,142 +393,4 @@ function toggleBox(checkboxId, boxId, colorClass) {
 toggleBox('distinguished', 'distinguished-box', 'bg-warning');
 toggleBox('attention',     'attention-box',      'bg-danger');
 </script>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}تقييم {{ student.get_full_name }}{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-star text-warning me-2"></i>
-                تقييم {{ student.get_full_name }} — {{ today }}
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="row g-3">
-
-                        <!-- تقييم الحفظ -->
-                        <div class="col-12">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-book-open text-success me-1"></i>
-                                تقييم الحفظ *
-                            </label>
-                            <div class="d-flex gap-2 flex-wrap">
-                                {% for val, label in rating_choices %}
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio"
-                                           name="memorization_rating"
-                                           id="mem_{{ val }}" value="{{ val }}"
-                                           {% if existing.memorization_rating == val %}checked{% endif %}
-                                           required>
-                                    <label class="form-check-label" for="mem_{{ val }}">
-                                        {{ label }}
-                                    </label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">ملاحظات الحفظ</label>
-                            <textarea name="memorization_notes" class="form-control"
-                                      rows="2"
-                                      placeholder="ما الذي حفظه؟ ما الذي يحتاج مراجعة؟">{{ existing.memorization_notes|default:'' }}</textarea>
-                        </div>
-
-                        <!-- تقييم السلوك -->
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-heart text-danger me-1"></i>
-                                تقييم السلوك *
-                            </label>
-                            <select name="behavior_rating" class="form-select" required>
-                                {% for val, label in rating_choices %}
-                                <option value="{{ val }}"
-                                    {% if existing.behavior_rating == val %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- تقييم الالتزام -->
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-check-circle text-primary me-1"></i>
-                                تقييم الالتزام *
-                            </label>
-                            <select name="commitment_rating" class="form-select" required>
-                                {% for val, label in rating_choices %}
-                                <option value="{{ val }}"
-                                    {% if existing.commitment_rating == val %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- ملاحظات السلوك -->
-                        <div class="col-12">
-                            <label class="form-label fw-bold">ملاحظات السلوك والالتزام</label>
-                            <textarea name="behavior_notes" class="form-control"
-                                      rows="2"
-                                      placeholder="ملاحظات السلوك...">{{ existing.behavior_notes|default:'' }}</textarea>
-                        </div>
-
-                        <!-- التمييز والمتابعة -->
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox"
-                                       name="is_distinguished" id="distinguished"
-                                       {% if existing.is_distinguished %}checked{% endif %}>
-                                <label class="form-check-label fw-bold" for="distinguished">
-                                    <i class="fas fa-star text-warning me-1"></i>
-                                    طالب متميز
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox"
-                                       name="needs_attention" id="attention"
-                                       {% if existing.needs_attention %}checked{% endif %}>
-                                <label class="form-check-label fw-bold" for="attention">
-                                    <i class="fas fa-exclamation-triangle text-danger me-1"></i>
-                                    يحتاج متابعة
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- ملاحظات لولي الأمر -->
-                        <div class="col-12">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-comment text-info me-1"></i>
-                                رسالة لولي الأمر
-                            </label>
-                            <textarea name="general_notes" class="form-control"
-                                      rows="3"
-                                      placeholder="رسالة تظهر لولي الأمر مباشرةً...">{{ existing.general_notes|default:'' }}</textarea>
-                        </div>
-
-                        <!-- أزرار -->
-                        <div class="col-12 d-flex gap-2 justify-content-end">
-                            <a href="{% url 'dashboard:teacher' %}"
-                               class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-right"></i> رجوع
-                            </a>
-                            <button type="submit" class="btn btn-warning px-4 fw-bold">
-                                <i class="fas fa-save me-1"></i> حفظ التقييم
-                            </button>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %} {% endcomment %}

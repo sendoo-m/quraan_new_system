@@ -1,4 +1,96 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}جدول {{ hall.name }} | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}إدارة جدول القاعة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">جدول {{ hall.name }}</h2>
+            <p class="text-muted mb-0">{{ hall.location }}</p>
+        </div>
+        <a href="{% url 'halls:detail' hall.pk %}" class="btn btn-outline-primary">تفاصيل القاعة</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="page-card p-4">
+            <div class="section-title">إضافة حصة جديدة</div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-4">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.subject.label }}</label>
+                    {{ form.subject }}
+                    <div class="text-danger small mt-1">{{ form.subject.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.day.label }}</label>
+                    {{ form.day }}
+                    <div class="text-danger small mt-1">{{ form.day.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.start_time.label }}</label>
+                    {{ form.start_time }}
+                    <div class="text-danger small mt-1">{{ form.start_time.errors }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.end_time.label }}</label>
+                    {{ form.end_time }}
+                    <div class="text-danger small mt-1">{{ form.end_time.errors }}</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">حفظ الحصة</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="page-card p-4">
+            <div class="section-title">الحصص الحالية</div>
+
+            {% if schedules %}
+                <div class="table-responsive">
+                    <table class="table table-modern align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>اليوم</th>
+                                <th>من</th>
+                                <th>إلى</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in schedules %}
+                                <tr>
+                                    <td>{{ item.subject.name }}</td>
+                                    <td>{{ item.get_day_display }}</td>
+                                    <td>{{ item.start_time }}</td>
+                                    <td>{{ item.end_time }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">لا توجد حصص مضافة حتى الآن.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}جدول {{ hall.name }}{% endblock %}
 
 {% block content %}
@@ -255,91 +347,5 @@
         </div>
     </div>
 
-</div>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}جدول {{ hall.name }}{% endblock %}
-
-{% block content %}
-<div class="row g-4">
-
-    <!-- إضافة حصة -->
-    <div class="col-md-4">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-plus text-success me-2"></i>
-                إضافة حصة
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">المادة</label>
-                        {{ form.subject }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">اليوم</label>
-                        {{ form.day }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">وقت البداية</label>
-                        {{ form.start_time }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">وقت النهاية</label>
-                        {{ form.end_time }}
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fas fa-plus me-1"></i> إضافة
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- الجدول الحالي -->
-    <div class="col-md-8">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-calendar text-primary me-2"></i>
-                الجدول الحالي
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>اليوم</th>
-                                <th>المادة</th>
-                                <th>من</th>
-                                <th>إلى</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for schedule in schedules %}
-                            <tr>
-                                <td class="fw-bold">{{ schedule.get_day_display }}</td>
-                                <td>
-                                    <span class="badge bg-primary">
-                                        {{ schedule.subject.name }}
-                                    </span>
-                                </td>
-                                <td>{{ schedule.start_time }}</td>
-                                <td>{{ schedule.end_time }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-4">
-                                    لا يوجد جدول بعد
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %} {% endcomment %}

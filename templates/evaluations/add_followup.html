@@ -1,4 +1,80 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}المتابعة اليومية | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}المتابعة اليومية{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">إضافة / تحديث المتابعة اليومية</h2>
+            <p class="text-muted mb-0">اختر القاعة ثم أدخل الواجب والمطلوب حفظه والملاحظات.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard:hall_supervisor' %}" class="btn btn-outline-secondary">رجوع للوحة</a>
+            {% if hall_id %}
+                <a href="{% url 'evaluations:hall_followups' hall_id %}" class="btn btn-outline-primary">عرض المتابعات</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <form method="get">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">القاعة</label>
+                    <select name="hall" class="form-select" onchange="this.form.submit()">
+                        <option value="">— اختر القاعة —</option>
+                        {% for hall in halls %}
+                            <option value="{{ hall.id }}" {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>{{ hall.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+            <div class="alert alert-info rounded-4 mb-0">
+                التاريخ: {{ today }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        {% if hall_id %}
+            <form method="post" class="page-card p-4">
+                {% csrf_token %}
+                <input type="hidden" name="hall" value="{{ hall_id }}">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">الواجب المطلوب</label>
+                    <textarea name="homework" rows="4" class="form-control">{% if existing %}{{ existing.homework }}{% endif %}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">المطلوب حفظه</label>
+                    <textarea name="memorization_task" rows="4" class="form-control">{% if existing %}{{ existing.memorization_task }}{% endif %}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">ملاحظات إضافية</label>
+                    <textarea name="extra_notes" rows="3" class="form-control">{% if existing %}{{ existing.extra_notes }}{% endif %}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">حفظ المتابعة</button>
+            </form>
+        {% else %}
+            <div class="page-card p-5 text-center">
+                <h3 class="fw-bold mb-2">اختر قاعة أولًا</h3>
+                <p class="text-muted mb-0">بعد اختيار القاعة سيظهر نموذج المتابعة اليومية.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}المتابعة اليومية{% endblock %}
 
 {% block content %}
@@ -225,93 +301,4 @@ previewBtn?.addEventListener('click', () => {
     });
 });
 </script>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}المتابعة اليومية{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-
-        <!-- اختيار القاعة -->
-        <div class="card stat-card mb-4">
-            <div class="card-body">
-                <form method="get" class="d-flex gap-3 align-items-end">
-                    <div class="flex-grow-1">
-                        <label class="form-label fw-bold">اختر القاعة</label>
-                        <select name="hall" class="form-select"
-                                onchange="this.form.submit()">
-                            <option value="">— اختر القاعة —</option>
-                            {% for hall in halls %}
-                            <option value="{{ hall.id }}"
-                                {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>
-                                {{ hall.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- فورم المتابعة -->
-        {% if hall_id %}
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-tasks text-primary me-2"></i>
-                متابعة يوم {{ today }}
-                {% if existing %}
-                <span class="badge bg-info me-2">تعديل على متابعة موجودة</span>
-                {% endif %}
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="hall" value="{{ hall_id }}">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-book text-warning me-1"></i>
-                            الواجب المطلوب *
-                        </label>
-                        <textarea name="homework" class="form-control" rows="3"
-                                  placeholder="اكتب الواجب المطلوب من الطلاب..."
-                                  required>{{ existing.homework|default:'' }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-book-open text-success me-1"></i>
-                            المطلوب حفظه
-                        </label>
-                        <textarea name="memorization_task" class="form-control" rows="2"
-                                  placeholder="السور أو الآيات المطلوب حفظها...">{{ existing.memorization_task|default:'' }}</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-sticky-note text-info me-1"></i>
-                            ملاحظات إضافية
-                        </label>
-                        <textarea name="extra_notes" class="form-control" rows="2"
-                                  placeholder="أي ملاحظات أخرى لأولياء الأمور...">{{ existing.extra_notes|default:'' }}</textarea>
-                    </div>
-
-                    <div class="d-flex gap-2 justify-content-end">
-                        <a href="{% url 'dashboard:hall_supervisor' %}"
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-right"></i> رجوع
-                        </a>
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="fas fa-save me-1"></i>
-                            {% if existing %}تحديث{% else %}نشر{% endif %} المتابعة
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
 {% endblock %} {% endcomment %}

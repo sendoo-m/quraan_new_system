@@ -1,4 +1,86 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}لوحة المعلم | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}لوحة المعلم{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">لوحة المعلم</h2>
+    <p class="text-muted mb-3">
+        راجع طلابك، أضف التقييمات، وتابع ما لم يتم تقييمه اليوم.
+    </p>
+    {% if my_halls %}
+        <a href="{% url 'evaluations:evaluate_hall' my_halls.first.pk %}" class="btn btn-primary">
+            <i class="bi bi-clipboard-check ms-2"></i>تقييم القاعة
+        </a>
+    {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="bi bi-building"></i></div>
+            <div class="text-muted">القاعات التعليمية</div>
+            <div class="fs-3 fw-bold">{{ my_halls.count }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="bi bi-mortarboard"></i></div>
+            <div class="text-muted">الطلاب النشطون</div>
+            <div class="fs-3 fw-bold">{{ total_students }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f59e0b;"><i class="bi bi-calendar-date"></i></div>
+            <div class="text-muted">تاريخ اليوم</div>
+            <div class="fw-bold fs-5">{{ today }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="page-card p-4 h-100">
+            <div class="section-title">الطلاب</div>
+            {% if my_students %}
+                <ul class="list-group list-group-flush">
+                    {% for student in my_students|slice:":10" %}
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span>{{ student.get_full_name }}</span>
+                            <small class="text-muted">{% if student.hall %}{{ student.hall.name }}{% endif %}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">لا يوجد طلاب نشطون حاليًا.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="page-card p-4 h-100">
+            <div class="section-title">طلاب لم يتم تقييمهم اليوم</div>
+            {% if not_evaluated_today %}
+                <ul class="list-group list-group-flush">
+                    {% for student in not_evaluated_today|slice:":10" %}
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span>{{ student.get_full_name }}</span>
+                            <a href="{% url 'evaluations:evaluate' student.pk %}" class="btn btn-sm btn-outline-primary">تقييم</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">تم تقييم جميع الطلاب اليوم.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}لوحة المعلم{% endblock %}
 
 {% block content %}
@@ -227,115 +309,4 @@
 </div>
 {% endif %}
 
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}لوحة المعلم{% endblock %}
-
-{% block content %}
-<!-- إحصائيات -->
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card stat-card bg-primary text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fs-2 fw-bold">{{ total_students }}</div>
-                    <div>طلابي</div>
-                </div>
-                <i class="fas fa-user-graduate fa-2x opacity-75"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card stat-card bg-warning text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fs-2 fw-bold">{{ not_evaluated_today|length }}</div>
-                    <div>لم يُقيَّموا اليوم</div>
-                </div>
-                <i class="fas fa-clock fa-2x opacity-75"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card stat-card bg-success text-white">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fs-2 fw-bold">{{ my_halls|length }}</div>
-                    <div>قاعاتي</div>
-                </div>
-                <i class="fas fa-door-open fa-2x opacity-75"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- قاعاتي -->
-<div class="row g-4">
-    {% for hall in my_halls %}
-    <div class="col-md-6">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-door-open text-primary me-2"></i>
-                {{ hall.name }}
-            </div>
-            <div class="card-body">
-                <p class="text-muted small mb-3">
-                    {{ hall.get_age_group_display }} —
-                    {{ hall.get_current_students_count }} طالب
-                </p>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'evaluations:evaluate_hall' hall.pk %}"
-                       class="btn btn-warning">
-                        <i class="fas fa-star me-1"></i>
-                        تقييم طلاب القاعة
-                    </a>
-                    <a href="{% url 'halls:detail' hall.pk %}"
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-eye me-1"></i>
-                        عرض القاعة
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
-<!-- الطلاب اللي لسه مش اتقيّموا النهارده -->
-{% if not_evaluated_today %}
-<div class="card stat-card mt-4">
-    <div class="card-header fw-bold">
-        <i class="fas fa-exclamation-circle text-warning me-2"></i>
-        لم يُقيَّموا اليوم
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>الطالب</th>
-                        <th>القاعة</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in not_evaluated_today %}
-                    <tr>
-                        <td class="fw-bold">{{ student.get_full_name }}</td>
-                        <td>{{ student.hall.name }}</td>
-                        <td>
-                            <a href="{% url 'evaluations:evaluate' student.pk %}"
-                               class="btn btn-sm btn-warning">
-                                <i class="fas fa-star me-1"></i> تقييم
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-{% endif %}
 {% endblock %} {% endcomment %}

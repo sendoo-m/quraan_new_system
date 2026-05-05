@@ -1,4 +1,55 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}متابعات القاعة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}متابعات القاعة{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">{{ hall.name }}</h2>
+            <p class="text-muted mb-0">آخر المتابعات اليومية المسجلة للقاعة.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.id }}" class="btn btn-primary">إضافة متابعة</a>
+            <a href="{% url 'halls:detail' hall.pk %}" class="btn btn-outline-secondary">تفاصيل القاعة</a>
+        </div>
+    </div>
+</div>
+
+<div class="page-card p-0 overflow-hidden">
+    {% if followups %}
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الواجب</th>
+                        <th>المطلوب حفظه</th>
+                        <th>ملاحظات</th>
+                        <th>الكاتب</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for followup in followups %}
+                        <tr>
+                            <td>{{ followup.date }}</td>
+                            <td>{{ followup.homework }}</td>
+                            <td>{{ followup.memorization_task|default:"—" }}</td>
+                            <td>{{ followup.extra_notes|default:"—" }}</td>
+                            <td>{{ followup.created_by.get_full_name|default:followup.created_by.username }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state p-5 text-center">لا توجد متابعات لهذه القاعة بعد.</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}متابعات {{ hall.name }}{% endblock %}
 
 {% block content %}
@@ -137,55 +188,4 @@
 
 {% endif %}
 
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}متابعات {{ hall.name }}{% endblock %}
-
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <span class="text-muted">آخر 30 متابعة</span>
-    <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}"
-       class="btn btn-primary btn-sm">
-        <i class="fas fa-plus me-1"></i> متابعة جديدة
-    </a>
-</div>
-
-<div class="row g-3">
-    {% for followup in followups %}
-    <div class="col-12">
-        <div class="card stat-card border-start border-4 border-primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold text-primary">
-                        <i class="fas fa-calendar me-1"></i>
-                        {{ followup.date }}
-                    </span>
-                    <span class="text-muted small">
-                        كتبه: {{ followup.created_by.get_full_name }}
-                    </span>
-                </div>
-                <p class="mb-1">
-                    <strong>📚 الواجب:</strong> {{ followup.homework }}
-                </p>
-                {% if followup.memorization_task %}
-                <p class="mb-1 text-success">
-                    <strong>📖 الحفظ:</strong> {{ followup.memorization_task }}
-                </p>
-                {% endif %}
-                {% if followup.extra_notes %}
-                <p class="mb-0 text-muted small">
-                    <strong>📝 ملاحظات:</strong> {{ followup.extra_notes }}
-                </p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <div class="col-12 text-center py-5 text-muted">
-        <i class="fas fa-tasks fa-3x mb-3 d-block"></i>
-        لا توجد متابعات بعد
-    </div>
-    {% endfor %}
-</div>
 {% endblock %} {% endcomment %}

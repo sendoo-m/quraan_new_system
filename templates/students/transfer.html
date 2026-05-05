@@ -1,4 +1,60 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}نقل طالب | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}نقل طالب{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <h2 class="fw-bold mb-2">نقل الطالب</h2>
+    <p class="text-muted mb-0">{{ student.get_full_name }}</p>
+</div>
+
+<form method="post" class="row g-4">
+    {% csrf_token %}
+
+    <div class="col-lg-7">
+        <div class="page-card p-4">
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-4">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ form.new_hall.label }}</label>
+                {{ form.new_hall }}
+                <div class="text-danger small mt-1">{{ form.new_hall.errors }}</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">{{ form.reason.label }}</label>
+                {{ form.reason }}
+                <div class="text-danger small mt-1">{{ form.reason.errors }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="page-card p-4 position-sticky" style="top: 92px;">
+            <div class="section-title">بيانات الطالب الحالية</div>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>الطالب:</strong> {{ student.get_full_name }}</li>
+                <li class="mb-2"><strong>القاعة الحالية:</strong> {{ student.hall.name|default:"—" }}</li>
+                <li class="mb-2"><strong>الفئة العمرية:</strong> {{ student.age_group.name|default:"—" }}</li>
+                <li class="mb-0"><strong>الحالة:</strong> {{ student.get_status_display }}</li>
+            </ul>
+
+            <hr>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">تنفيذ النقل</button>
+                <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline-secondary">رجوع</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}نقل الطالب{% endblock %}
 
 {% block content %}
@@ -153,63 +209,6 @@
             </div>
         </div>
 
-    </div>
-</div>
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}نقل الطالب{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card stat-card">
-            <div class="card-header fw-bold">
-                <i class="fas fa-exchange-alt text-warning me-2"></i>
-                نقل {{ student.get_full_name }}
-            </div>
-            <div class="card-body">
-                <!-- بيانات الطالب الحالية -->
-                <div class="alert alert-info mb-4">
-                    <div class="row">
-                        <div class="col-6">
-                            <strong>العمر:</strong> {{ student.calculate_age }} سنة
-                        </div>
-                        <div class="col-6">
-                            <strong>الفئة:</strong> {{ student.get_age_group_display }}
-                        </div>
-                        <div class="col-12 mt-1">
-                            <strong>القاعة الحالية:</strong>
-                            {{ student.hall.name|default:"غير مسكَّن" }}
-                        </div>
-                    </div>
-                </div>
-
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">القاعة الجديدة *</label>
-                        {{ form.new_hall }}
-                        {% if form.new_hall.errors %}
-                        <div class="text-danger small">{{ form.new_hall.errors }}</div>
-                        {% endif %}
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">سبب النقل</label>
-                        {{ form.reason }}
-                    </div>
-                    <div class="d-flex gap-2 justify-content-end">
-                        <a href="{% url 'students:list' %}"
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-times"></i> إلغاء
-                        </a>
-                        <button type="submit" class="btn btn-warning px-4 fw-bold">
-                            <i class="fas fa-exchange-alt me-1"></i> تأكيد النقل
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %} {% endcomment %}

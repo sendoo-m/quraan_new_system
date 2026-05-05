@@ -1,4 +1,174 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}إدارة المستخدمين | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}إدارة المستخدمين{% endblock %}
+
+{% block content %}
+<div class="page-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+        <div>
+            <h2 class="fw-bold mb-2">المستخدمون والصلاحيات</h2>
+            <p class="text-muted mb-0">
+                إدارة المستخدمين، الأدوار الوظيفية، وحسابات النظام المختلفة.
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'settings:user_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle ms-2"></i>إضافة مستخدم
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary"><i class="bi bi-people"></i></div>
+            <div class="text-muted">إجمالي المستخدمين</div>
+            <div class="fs-3 fw-bold">{{ total }}</div>
+        </div>
+    </div>
+
+    {% for item in roles_count %}
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success"><i class="bi bi-person-badge"></i></div>
+            <div class="text-muted">{{ item.role }}</div>
+            <div class="fs-3 fw-bold">{{ item.count }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="page-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold">بحث</label>
+            <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="اسم المستخدم أو الاسم">
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">الدور الوظيفي</label>
+            <select name="role" class="form-select">
+                <option value="">كل الأدوار</option>
+                {% for value, label in role_choices %}
+                    <option value="{{ value }}" {% if request.GET.role == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3 d-grid">
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-search ms-2"></i>بحث
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="page-card p-0 overflow-hidden">
+    {% if users %}
+        <div class="table-responsive">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>الدور</th>
+                        <th>الهاتف</th>
+                        <th>الحالة</th>
+                        <th>صلاحيات إضافية</th>
+                        <th style="width: 220px;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in users %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ item.get_full_name|default:"—" }}</div>
+                                <div class="text-muted small">{{ item.username }}</div>
+                            </td>
+                            <td>{{ item.get_role_display }}</td>
+                            <td>{{ item.phone|default:"—" }}</td>
+                            <td>
+                                {% if item.is_active %}
+                                    <span class="badge text-bg-success">نشط</span>
+                                {% else %}
+                                    <span class="badge text-bg-danger">معطل</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="small text-muted">
+                                    {% if item.can_manage_users %}<span class="badge bg-light text-dark border">المستخدمون</span>{% endif %}
+                                    {% if item.can_manage_halls %}<span class="badge bg-light text-dark border">القاعات</span>{% endif %}
+                                    {% if item.can_manage_students %}<span class="badge bg-light text-dark border">الطلاب</span>{% endif %}
+                                    {% if item.can_manage_attendance %}<span class="badge bg-light text-dark border">الحضور</span>{% endif %}
+                                    {% if item.can_manage_evaluations %}<span class="badge bg-light text-dark border">التقييمات</span>{% endif %}
+                                    {% if item.can_manage_settings %}<span class="badge bg-light text-dark border">الإعدادات</span>{% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{% url 'settings:user_update' item.pk %}" class="btn btn-sm btn-outline-primary">
+                                        تعديل
+                                    </a>
+
+                                    <form method="post" action="{% url 'settings:user_toggle' item.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            {% if item.is_active %}تعطيل{% else %}تفعيل{% endif %}
+                                        </button>
+                                    </form>
+
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#resetPwd{{ item.pk }}">
+                                        كلمة المرور
+                                    </button>
+                                </div>
+
+                                <div class="collapse mt-2" id="resetPwd{{ item.pk }}">
+                                    <form method="post" action="{% url 'settings:user_reset_password' item.pk %}" class="d-flex gap-2">
+                                        {% csrf_token %}
+                                        <input type="text" name="new_password" class="form-control form-control-sm" placeholder="كلمة مرور جديدة">
+                                        <button type="submit" class="btn btn-sm btn-danger">حفظ</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if users.has_other_pages %}
+            <div class="p-3 border-top">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if users.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ users.previous_page_number }}&q={{ request.GET.q }}&role={{ request.GET.role }}">السابق</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">{{ users.number }} / {{ users.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if users.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ users.next_page_number }}&q={{ request.GET.q }}&role={{ request.GET.role }}">التالي</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">لا يوجد مستخدمون مطابقون للبحث.</div>
+    {% endif %}
+</div>
+{% endblock %}
+{% comment %} {% extends 'base.html' %}
 {% block page_title %}إدارة المستخدمين{% endblock %}
 
 {% block content %}
@@ -308,178 +478,6 @@
 {% endfor %}
 
 <!-- Pagination -->
-{% include 'components/pagination.html' with page_obj=users %}
-
-{% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}إدارة المستخدمين{% endblock %}
-
-{% block content %}
-<!-- فلترة -->
-<div class="card stat-card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label fw-bold">بحث</label>
-                <input type="text" name="q" value="{{ request.GET.q }}"
-                       class="form-control" placeholder="الاسم أو اسم المستخدم">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold">الدور</label>
-                <select name="role" class="form-select">
-                    <option value="">الكل</option>
-                    {% for val, label in role_choices %}
-                    <option value="{{ val }}"
-                        {% if request.GET.role == val %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-5 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="fas fa-search"></i> بحث
-                </button>
-                <a href="{% url 'settings:users' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-times"></i>
-                </a>
-                <a href="{% url 'settings:user_create' %}" class="btn btn-success">
-                    <i class="fas fa-plus"></i> مستخدم جديد
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- الجدول -->
-<div class="card stat-card">
-    <div class="card-header fw-bold">
-        <i class="fas fa-users text-primary me-2"></i>
-        المستخدمون — إجمالي: {{ total }}
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>المستخدم</th>
-                        <th>اسم المستخدم</th>
-                        <th>الدور</th>
-                        <th>الهاتف</th>
-                        <th>الحالة</th>
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td class="text-muted">{{ forloop.counter }}</td>
-                        <td class="fw-bold">{{ user.get_full_name }}</td>
-                        <td class="text-muted small">{{ user.username }}</td>
-                        <td>
-                            <span class="badge
-                                {% if user.role == 'general_manager' %}bg-danger
-                                {% elif user.role == 'general_supervisor' %}bg-warning text-dark
-                                {% elif user.role == 'teacher' %}bg-success
-                                {% elif user.role == 'hall_supervisor' %}bg-info
-                                {% else %}bg-secondary{% endif %}">
-                                {{ user.get_role_display }}
-                            </span>
-                        </td>
-                        <td class="small">{{ user.phone|default:"—" }}</td>
-                        <td>
-                            {% if user.is_active %}
-                            <span class="badge bg-success">نشط</span>
-                            {% else %}
-                            <span class="badge bg-danger">معطّل</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="d-flex gap-1 flex-wrap">
-                                <!-- تعديل -->
-                                <a href="{% url 'settings:user_update' user.pk %}"
-                                   class="btn btn-sm btn-outline-warning"
-                                   title="تعديل">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-
-                                <!-- تفعيل / تعطيل -->
-                                {% if user != request.user %}
-                                <form method="post"
-                                      action="{% url 'settings:user_toggle' user.pk %}">
-                                    {% csrf_token %}
-                                    <button type="submit"
-                                            class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
-                                            title="{% if user.is_active %}تعطيل{% else %}تفعيل{% endif %}">
-                                        <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
-                                    </button>
-                                </form>
-
-                                <!-- إعادة كلمة المرور -->
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-secondary"
-                                        title="إعادة تعيين كلمة المرور"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#resetModal{{ user.pk }}">
-                                    <i class="fas fa-key"></i>
-                                </button>
-                                {% endif %}
-                            </div>
-
-                            <!-- Modal إعادة كلمة المرور -->
-                            <div class="modal fade" id="resetModal{{ user.pk }}"
-                                 tabindex="-1">
-                                <div class="modal-dialog modal-sm">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h6 class="modal-title">
-                                                إعادة تعيين كلمة المرور
-                                            </h6>
-                                        </div>
-                                        <form method="post"
-                                              action="{% url 'settings:user_reset_password' user.pk %}">
-                                            {% csrf_token %}
-                                            <div class="modal-body">
-                                                <label class="form-label fw-bold">
-                                                    كلمة المرور الجديدة
-                                                </label>
-                                                <input type="text"
-                                                       name="new_password"
-                                                       class="form-control"
-                                                       value="Pass@1234">
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button"
-                                                        class="btn btn-secondary btn-sm"
-                                                        data-bs-dismiss="modal">
-                                                    إلغاء
-                                                </button>
-                                                <button type="submit"
-                                                        class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-save"></i> حفظ
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
-                            لا يوجد مستخدمون
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 {% include 'components/pagination.html' with page_obj=users %}
 
 {% endblock %} {% endcomment %}
