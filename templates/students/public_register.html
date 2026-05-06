@@ -4,6 +4,677 @@
 {% block page_title %}تسجيل طالب جديد{% endblock %}
 
 {% block content %}
+<style>
+/* ══════════════════════════════════════════
+   متغيرات ألوان المشروع
+══════════════════════════════════════════ */
+:root {
+    --reg-primary:       #01696f;
+    --reg-primary-light: rgba(1, 105, 111, 0.08);
+    --reg-primary-border:rgba(1, 105, 111, 0.18);
+    --reg-surface:       #ffffff;
+    --reg-bg:            #f4f6f9;
+    --reg-border:        rgba(15, 23, 42, 0.08);
+    --reg-text:          #0f172a;
+    --reg-muted:         #6b7280;
+    --reg-error:         #dc2626;
+    --reg-radius:        16px;
+    --reg-radius-sm:     10px;
+    --reg-shadow:        0 2px 12px rgba(15,23,42,0.06);
+}
+
+/* ══════════════════════════════════════════
+   هيدر الصفحة
+══════════════════════════════════════════ */
+.reg-page-header {
+    background: linear-gradient(135deg, var(--reg-primary) 0%, #0a8a91 100%);
+    border-radius: var(--reg-radius);
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+.reg-page-header .header-icon {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.reg-page-header .header-icon svg { width: 26px; height: 26px; stroke: #fff; }
+.reg-page-header h1 {
+    font-size: 1.35rem; font-weight: 800;
+    margin: 0 0 .3rem; line-height: 1.3;
+}
+.reg-page-header p {
+    margin: 0; font-size: .92rem;
+    opacity: .85; line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════
+   بطاقة القسم
+══════════════════════════════════════════ */
+.reg-card {
+    background: var(--reg-surface);
+    border: 1px solid var(--reg-border);
+    border-radius: var(--reg-radius);
+    box-shadow: var(--reg-shadow);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+.reg-card-header {
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid var(--reg-border);
+    display: flex; align-items: center;
+    justify-content: space-between; gap: .75rem;
+    background: #fafbfc;
+}
+.reg-card-title {
+    font-size: .95rem; font-weight: 800;
+    color: var(--reg-text); margin: 0;
+    display: flex; align-items: center; gap: .5rem;
+}
+.reg-card-title svg { width: 17px; height: 17px; stroke: var(--reg-primary); flex-shrink: 0; }
+.reg-card-hint { font-size: .78rem; color: var(--reg-muted); font-weight: 500; }
+.reg-card-body { padding: 1.25rem; }
+
+/* حقول الفورم */
+.field-block { margin-bottom: .95rem; }
+.field-block:last-child { margin-bottom: 0; }
+.field-label {
+    display: block; font-size: .85rem;
+    font-weight: 700; color: #374151; margin-bottom: .4rem;
+}
+.field-label .required { color: var(--reg-error); margin-right: 2px; }
+.field-help {
+    font-size: .78rem; color: var(--reg-muted);
+    margin-top: .3rem; display: flex; align-items: center; gap: .3rem;
+}
+.field-help svg { width: 13px; height: 13px; stroke: var(--reg-primary); }
+.field-error { color: var(--reg-error); font-size: .8rem; margin-top: .3rem; }
+.field-error:empty { display: none; }
+
+.reg-card .form-control,
+.reg-card input[type="text"],
+.reg-card input[type="email"],
+.reg-card input[type="password"],
+.reg-card input[type="tel"],
+.reg-card input[type="date"],
+.reg-card input[type="number"],
+.reg-card select,
+.reg-card textarea {
+    border-radius: var(--reg-radius-sm) !important;
+    border: 1.5px solid #e2e8f0;
+    padding: .6rem .85rem;
+    font-size: .9rem;
+    transition: border-color .18s, box-shadow .18s;
+    min-height: 44px; width: 100%;
+    background: #fff; color: var(--reg-text);
+}
+.reg-card .form-control:focus,
+.reg-card input:focus,
+.reg-card select:focus,
+.reg-card textarea:focus {
+    border-color: var(--reg-primary) !important;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.12) !important;
+    outline: none;
+}
+.reg-card textarea { min-height: 100px; resize: vertical; }
+
+/* السور المحفوظة */
+.memorized-scroll {
+    max-height: 320px; overflow-y: auto;
+    border: 1.5px solid #e2e8f0;
+    border-radius: var(--reg-radius-sm);
+    padding: .75rem .9rem; background: #fafbfc;
+}
+.memorized-scroll::-webkit-scrollbar { width: 5px; }
+.memorized-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.memorized-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+/* شريط الإرسال */
+.reg-submit-card {
+    background: var(--reg-surface);
+    border: 1px solid var(--reg-border);
+    border-radius: var(--reg-radius);
+    box-shadow: var(--reg-shadow);
+    padding: 1.1rem 1.25rem;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+}
+.submit-info {
+    display: flex; align-items: center;
+    gap: .6rem; color: var(--reg-muted); font-size: .88rem;
+}
+.submit-info svg { width: 17px; height: 17px; stroke: var(--reg-primary); flex-shrink: 0; }
+.reg-submit-btn {
+    min-width: 180px; min-height: 46px;
+    border-radius: 12px; font-weight: 700;
+    font-size: .95rem; padding: .7rem 1.5rem;
+    background: var(--reg-primary); color: #fff;
+    border: none; cursor: pointer;
+    transition: background .18s, box-shadow .18s, transform .12s;
+    display: flex; align-items: center; gap: .5rem; justify-content: center;
+}
+.reg-submit-btn:hover {
+    background: #0a8a91;
+    box-shadow: 0 4px 16px rgba(1,105,111,.25);
+    transform: translateY(-1px);
+}
+.reg-submit-btn svg { width: 18px; height: 18px; stroke: #fff; }
+
+/* فوتر الصفحة */
+.reg-page-footer {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: var(--reg-radius);
+    padding: 1.5rem 2rem; margin-top: .5rem;
+    color: #e2e8f0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.25rem; align-items: center;
+}
+.footer-brand { display: flex; align-items: center; gap: 1rem; }
+.footer-logo {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.footer-logo svg { width: 22px; height: 22px; stroke: #4fd1c7; }
+.footer-name { font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: .2rem; }
+.footer-desc { font-size: .82rem; color: #94a3b8; margin: 0; }
+.footer-contact { display: flex; flex-direction: column; gap: .6rem; }
+.footer-contact-item {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .88rem; color: #cbd5e1;
+}
+.footer-contact-item svg { width: 16px; height: 16px; stroke: #4fd1c7; flex-shrink: 0; }
+.footer-contact-item a { color: #4fd1c7; text-decoration: none; font-weight: 600; }
+.footer-contact-item a:hover { text-decoration: underline; }
+.footer-divider {
+    border: none; border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 1.1rem 0 .85rem; grid-column: 1/-1;
+}
+.footer-copy {
+    font-size: .78rem; color: #64748b;
+    text-align: center; margin: 0; grid-column: 1/-1;
+}
+
+/* موبايل */
+@media (max-width: 991.98px) {
+    .reg-page-footer { grid-template-columns: 1fr; }
+    .footer-contact { flex-direction: row; flex-wrap: wrap; }
+}
+@media (max-width: 767.98px) {
+    .reg-page-header { flex-direction: column; align-items: flex-start; gap: .85rem; }
+    .reg-page-header h1 { font-size: 1.15rem; }
+    .reg-card-header { flex-direction: column; align-items: flex-start; }
+    .reg-submit-card { flex-direction: column; align-items: stretch; }
+    .reg-submit-btn { width: 100%; }
+    .memorized-scroll { max-height: 220px; }
+    .reg-page-footer { padding: 1.1rem 1rem; }
+    .footer-brand { flex-direction: column; align-items: flex-start; gap: .6rem; }
+    .footer-contact { flex-direction: column; }
+}
+</style>
+
+<!-- هيدر الصفحة -->
+<div class="reg-page-header">
+    <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+    </div>
+    <div>
+        <h1>تسجيل طالب جديد في مقرأة تحفيظ القرآن الكريم</h1>
+        <p>أدخل بيانات ولي الأمر والطالب في نموذج واحد — سيتم إنشاء حساب ولي الأمر وربط الطالب به تلقائيًا.</p>
+    </div>
+</div>
+
+<!-- نموذج التسجيل -->
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-4">
+
+        <!-- ════ عمود ولي الأمر ════ -->
+        <div class="col-12 col-lg-5">
+            <div class="reg-card h-100">
+                <div class="reg-card-header">
+                    <h2 class="reg-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        بيانات ولي الأمر
+                    </h2>
+                    <span class="reg-card-hint">حساب جديد للدخول والمتابعة</span>
+                </div>
+                <div class="reg-card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ parent_form.first_name.label }} <span class="required">*</span></label>
+                                {{ parent_form.first_name }}
+                                <div class="field-error">{{ parent_form.first_name.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ parent_form.last_name.label }} <span class="required">*</span></label>
+                                {{ parent_form.last_name }}
+                                <div class="field-error">{{ parent_form.last_name.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-block">
+                        <label class="field-label">{{ parent_form.username.label }} <span class="required">*</span></label>
+                        {{ parent_form.username }}
+                        <div class="field-help">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            يُستخدم لتسجيل الدخول لاحقًا
+                        </div>
+                        <div class="field-error">{{ parent_form.username.errors }}</div>
+                    </div>
+
+                    <div class="field-block">
+                        <label class="field-label">{{ parent_form.phone.label }}</label>
+                        {{ parent_form.phone }}
+                        <div class="field-error">{{ parent_form.phone.errors }}</div>
+                    </div>
+
+                    <div class="field-block">
+                        <label class="field-label">{{ parent_form.password.label }} <span class="required">*</span></label>
+                        {{ parent_form.password }}
+                        <div class="field-error">{{ parent_form.password.errors }}</div>
+                    </div>
+
+                    <div class="field-block">
+                        <label class="field-label">{{ parent_form.password_confirm.label }} <span class="required">*</span></label>
+                        {{ parent_form.password_confirm }}
+                        <div class="field-error">{{ parent_form.password_confirm.errors }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ عمود الطالب ════ -->
+        <div class="col-12 col-lg-7">
+
+            <!-- بيانات الطالب الأساسية -->
+            <div class="reg-card">
+                <div class="reg-card-header">
+                    <h2 class="reg-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        بيانات الطالب
+                    </h2>
+                    <span class="reg-card-hint">أدخل البيانات الأساسية بدقة</span>
+                </div>
+                <div class="reg-card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ student_form.first_name.label }} <span class="required">*</span></label>
+                                {{ student_form.first_name }}
+                                <div class="field-error">{{ student_form.first_name.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="field-block">
+                                <label class="field-label">الاسم رباعي <span class="required">*</span></label>
+                                {{ student_form.last_name }}
+                                <div class="field-error">{{ student_form.last_name.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ student_form.date_of_birth.label }} <span class="required">*</span></label>
+                                {{ student_form.date_of_birth }}
+                                <div class="field-error">{{ student_form.date_of_birth.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="field-block">
+                                <label class="field-label">رقم موبايل الطوارئ</label>
+                                {{ student_form.emergency_phone }}
+                                <div class="field-help">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6.34 6.34l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.03z"/></svg>
+                                    للتواصل السريع في الحالات الطارئة
+                                </div>
+                                <div class="field-error">{{ student_form.emergency_phone.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-block">
+                                <label class="field-label">{{ student_form.profile_picture.label }}</label>
+                                {{ student_form.profile_picture }}
+                                <div class="field-error">{{ student_form.profile_picture.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- السور المحفوظة — في عمود الطالب مباشرة -->
+            <div class="reg-card">
+                <div class="reg-card-header">
+                    <h2 class="reg-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        السور المحفوظة
+                    </h2>
+                    <span class="reg-card-hint">يمكن اختيار أكثر من سورة</span>
+                </div>
+                <div class="reg-card-body">
+                    <div class="field-error mb-2">{{ student_form.memorized_surahs.errors }}</div>
+                    <div class="memorized-scroll">{{ student_form.memorized_surahs }}</div>
+                </div>
+            </div>
+
+            <!-- تفاصيل إضافية -->
+            <div class="reg-card">
+                <div class="reg-card-header">
+                    <h2 class="reg-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        تفاصيل إضافية
+                    </h2>
+                    <span class="reg-card-hint">بيانات مساندة للتسكين والمواصلات</span>
+                </div>
+                <div class="reg-card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 d-flex align-items-center">
+                            <div class="form-check">
+                                {{ student_form.uses_bus }}
+                                <label class="form-check-label fw-semibold" for="{{ student_form.uses_bus.id_for_label }}">
+                                    {{ student_form.uses_bus.label }}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block mb-0">
+                                <label class="field-label">{{ student_form.bus_notes.label }}</label>
+                                {{ student_form.bus_notes }}
+                                <div class="field-error">{{ student_form.bus_notes.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-block mb-0">
+                                <label class="field-label">{{ student_form.notes.label }}</label>
+                                {{ student_form.notes }}
+                                <div class="field-error">{{ student_form.notes.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /col-lg-7 -->
+    </div><!-- /row -->
+
+    <!-- شريط الإرسال -->
+    <div class="reg-submit-card">
+        <div class="submit-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            تأكد من صحة جميع البيانات قبل إتمام التسجيل
+        </div>
+        <button type="submit" class="reg-submit-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            إتمام التسجيل
+        </button>
+    </div>
+</form>
+
+<!-- فوتر الصفحة -->
+<footer class="reg-page-footer">
+    <div class="footer-brand">
+        <div class="footer-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+        </div>
+        <div>
+            <div class="footer-name">{{ SITE_NAME }}</div>
+            <p class="footer-desc">نحفظ القرآن الكريم بإتقان ورعاية — لكل طالب مسيرته الخاصة</p>
+        </div>
+    </div>
+    <div class="footer-contact">
+        <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6.34 6.34l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.03z"/>
+            </svg>
+            للتسجيل والاستفسار:
+            <a href="tel:{{ SITE_PHONE }}">{{ SITE_PHONE }}</a>
+        </div>
+        {% if SITE_SETTINGS.address %}
+        <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ SITE_SETTINGS.address }}
+        </div>
+        {% endif %}
+        {% if SITE_SETTINGS.email %}
+        <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <a href="mailto:{{ SITE_SETTINGS.email }}">{{ SITE_SETTINGS.email }}</a>
+        </div>
+        {% endif %}
+    </div>
+    <hr class="footer-divider">
+    <p class="footer-copy">جميع الحقوق محفوظة &copy; {{ SITE_NAME }} — نظام إدارة المقرأة</p>
+</footer>
+
+{% endblock %}
+{% comment %} {% extends "base.html" %}
+
+{% block title %}تسجيل طالب جديد | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تسجيل طالب جديد{% endblock %}
+
+{% block content %}
+<style>
+    .registration-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .registration-hero {
+        background: linear-gradient(180deg, rgba(1, 105, 111, 0.08) 0%, rgba(1, 105, 111, 0.03) 100%);
+        border: 1px solid rgba(1, 105, 111, 0.12);
+        border-radius: 18px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .registration-hero h2 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: .4rem;
+    }
+
+    .registration-hero p {
+        margin-bottom: 0;
+        color: #6b7280;
+        line-height: 1.8;
+    }
+
+    .form-section-card {
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 18px;
+        padding: 1.1rem;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+        height: 100%;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding-bottom: .75rem;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .section-hint {
+        font-size: .82rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .field-block {
+        margin-bottom: 1rem;
+    }
+
+    .field-block:last-child {
+        margin-bottom: 0;
+    }
+
+    .field-label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: .45rem;
+        color: #111827;
+    }
+
+    .field-help {
+        font-size: .8rem;
+        color: #6b7280;
+        margin-top: .35rem;
+    }
+
+    .field-error {
+        color: #dc2626;
+        font-size: .82rem;
+        margin-top: .35rem;
+    }
+
+    .form-section-card input,
+    .form-section-card select,
+    .form-section-card textarea {
+        width: 100%;
+        border-radius: 12px;
+        min-height: 46px;
+    }
+
+    .form-section-card textarea {
+        min-height: 110px;
+    }
+
+    .memorized-box {
+        max-height: 280px;
+        overflow-y: auto;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 14px;
+        padding: .9rem;
+        background: #fcfcfd;
+    }
+
+    .extra-box {
+        background: #fafafa;
+        border: 1px dashed rgba(15, 23, 42, 0.12);
+        border-radius: 14px;
+        padding: 1rem;
+    }
+
+    .submit-card {
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 18px;
+        padding: 1rem;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+    }
+
+    .submit-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .submit-note {
+        color: #6b7280;
+        font-size: .9rem;
+        margin: 0;
+    }
+
+    .submit-btn {
+        min-width: 180px;
+        min-height: 46px;
+        border-radius: 12px;
+        font-weight: 700;
+        padding: .8rem 1.25rem;
+    }
+
+    @media (max-width: 991.98px) {
+        .registration-hero,
+        .form-section-card,
+        .submit-card {
+            border-radius: 16px;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .registration-hero {
+            padding: 1rem;
+        }
+
+        .registration-hero h2 {
+            font-size: 1.15rem;
+        }
+
+        .form-section-card {
+            padding: 1rem;
+        }
+
+        .section-title {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .submit-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .submit-btn {
+            width: 100%;
+        }
+
+        .memorized-box {
+            max-height: 220px;
+        }
+    }
+</style>
+
+
 <div class="page-card p-4 mb-4">
     <h2 class="fw-bold mb-2">التسجيل العام</h2>
     <p class="text-muted mb-0">
@@ -50,25 +721,46 @@
         </div>
     </div>
 
-    <div class="col-lg-7">
-        <div class="page-card p-4 mb-4">
-            <div class="section-title">بيانات الطالب</div>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ student_form.first_name.label }}</label>
-                    {{ student_form.first_name }}
-                    <div class="text-danger small mt-1">{{ student_form.first_name.errors }}</div>
+            <div class="col-12 col-lg-7">
+            <section class="form-section-card mb-4">
+                <div class="section-title">
+                    <span>بيانات الطالب</span>
+                    <span class="section-hint">أدخل البيانات الأساسية بدقة</span>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ student_form.last_name.label }}</label>
-                    {{ student_form.last_name }}
-                    <div class="text-danger small mt-1">{{ student_form.last_name.errors }}</div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ student_form.date_of_birth.label }}</label>
-                    {{ student_form.date_of_birth }}
-                    <div class="text-danger small mt-1">{{ student_form.date_of_birth.errors }}</div>
-                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="field-block">
+                            <label class="field-label">{{ student_form.first_name.label }}</label>
+                            {{ student_form.first_name }}
+                            <div class="field-error">{{ student_form.first_name.errors }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="field-block">
+                            <label class="field-label">الاسم رباعي</label>
+                            {{ student_form.last_name }}
+                            <div class="field-error">{{ student_form.last_name.errors }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="field-block">
+                            <label class="field-label">{{ student_form.date_of_birth.label }}</label>
+                            {{ student_form.date_of_birth }}
+                            <div class="field-error">{{ student_form.date_of_birth.errors }}</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <div class="field-block">
+                            <label class="field-label">رقم موبايل الطوارئ</label>
+                            {{ student_form.emergency_phone }}
+                            <div class="field-help">يستخدم للتواصل السريع عند الحالات الطارئة.</div>
+                            <div class="field-error">{{ student_form.emergency_phone.errors }}</div>
+                        </div>
+                    </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ student_form.profile_picture.label }}</label>
                     {{ student_form.profile_picture }}
@@ -77,10 +769,14 @@
             </div>
         </div>
 
+        <div class="col-lg-5">
+        <div class="page-card p-4 h-100">
+
         <div class="page-card p-4 mb-4">
             <div class="section-title">السور المحفوظة</div>
             <div class="text-danger small mb-2">{{ student_form.memorized_surahs.errors }}</div>
             <div>{{ student_form.memorized_surahs }}</div>
+        </div>
         </div>
 
         <div class="page-card p-4 mb-4">
@@ -112,323 +808,4 @@
         </div>
     </div>
 </form>
-{% endblock %}
-
-
-{% comment %} {% extends 'base_public.html' %}
-{% block title %}تسجيل طالب جديد — {{ SITE_NAME }}{% endblock %}
-
-{% block content %}
-<div class="min-vh-100 d-flex align-items-center py-5"
-     style="background:linear-gradient(135deg,#1a1a2e,#16213e);">
-    <div class="container">
-
-        <!-- هيدر -->
-        <div class="text-center text-white mb-4">
-            <div class="rounded-circle d-inline-flex align-items-center
-                        justify-content-center bg-warning bg-opacity-10 mb-3"
-                 style="width:72px;height:72px;">
-                <i class="fas fa-mosque fa-2x text-warning"></i>
-            </div>
-            <h4 class="fw-bold mb-1">{{ SITE_NAME }}</h4>
-            <p class="text-white-50 small mb-0">
-                <i class="fas fa-user-plus me-1"></i>
-                تسجيل طالب جديد
-            </p>
-        </div>
-
-        <form method="post" enctype="multipart/form-data" novalidate>
-            {% csrf_token %}
-            <div class="row g-4 justify-content-center">
-
-                <!-- ① بيانات ولي الأمر -->
-                <div class="col-12 col-lg-5">
-                    <div class="card stat-card h-100">
-                        <div class="card-header fw-bold">
-                            <i class="fas fa-user text-primary me-2"></i>
-                            بيانات ولي الأمر
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-user text-primary me-1"></i>
-                                        الاسم الأول
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ parent_form.first_name }}
-                                    {% if parent_form.first_name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.first_name.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-user text-primary me-1"></i>
-                                        اسم العائلة
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ parent_form.last_name }}
-                                    {% if parent_form.last_name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.last_name.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-at text-warning me-1"></i>
-                                        اسم المستخدم
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ parent_form.username }}
-                                    {% if parent_form.username.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.username.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-phone text-success me-1"></i>
-                                        رقم الهاتف
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ parent_form.phone }}
-                                    {% if parent_form.phone.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.phone.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-lock text-secondary me-1"></i>
-                                        كلمة المرور
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ parent_form.password }}
-                                    {% if parent_form.password.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.password.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-lock text-secondary me-1"></i>
-                                        تأكيد كلمة المرور
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ parent_form.password_confirm }}
-                                    {% if parent_form.password_confirm.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.password_confirm.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                {% if parent_form.non_field_errors %}
-                                <div class="col-12">
-                                    <div class="alert alert-danger py-2 small mb-0">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ parent_form.non_field_errors|join:", " }}
-                                    </div>
-                                </div>
-                                {% endif %}
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ② بيانات الطالب -->
-                <div class="col-12 col-lg-5">
-                    <div class="card stat-card h-100">
-                        <div class="card-header fw-bold">
-                            <i class="fas fa-user-graduate text-success me-2"></i>
-                            بيانات الطالب
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-user text-success me-1"></i>
-                                        الاسم الأول
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ student_form.first_name }}
-                                    {% if student_form.first_name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ student_form.first_name.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-user text-success me-1"></i>
-                                        اسم العائلة
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ student_form.last_name }}
-                                    {% if student_form.last_name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ student_form.last_name.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-calendar text-info me-1"></i>
-                                        تاريخ الميلاد
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    {{ student_form.date_of_birth }}
-                                    {% if student_form.date_of_birth.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ student_form.date_of_birth.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-image text-secondary me-1"></i>
-                                        صورة الطالب
-                                    </label>
-                                    {{ student_form.profile_picture }}
-                                    {% if student_form.profile_picture.errors %}
-                                    <div class="text-danger small mt-1">
-                                        <i class="fas fa-circle-exclamation me-1"></i>
-                                        {{ student_form.profile_picture.errors|join:", " }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-
-                                <!-- باص toggle -->
-                                <div class="col-12">
-                                    <div class="rounded-3 border p-3 d-flex
-                                                align-items-center gap-3"
-                                         id="bus-box">
-                                        <div class="form-check form-switch mb-0">
-                                            {{ student_form.uses_bus }}
-                                        </div>
-                                        <label class="form-check-label fw-bold
-                                                      small mb-0 flex-grow-1"
-                                               for="{{ student_form.uses_bus.id_for_label }}"
-                                               style="cursor:pointer;">
-                                            <i class="fas fa-bus text-warning me-1"></i>
-                                            الاشتراك في خدمة الباص
-                                        </label>
-                                        <span id="bus-badge">
-                                            {% if student_form.uses_bus.value %}
-                                            <span class="badge bg-warning text-dark">
-                                                مشترك
-                                            </span>
-                                            {% else %}
-                                            <span class="badge bg-secondary">
-                                                غير مشترك
-                                            </span>
-                                            {% endif %}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- السور المحفوظة -->
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-book-open text-success me-1"></i>
-                                        السور المحفوظة
-                                    </label>
-                                    <div class="border rounded-3 p-2"
-                                         style="max-height:200px;overflow-y:auto;">
-                                        <div class="row row-cols-2 g-1">
-                                            {% for surah in student_form.memorized_surahs %}
-                                            <div class="col">
-                                                <div class="form-check">
-                                                    {{ surah.tag }}
-                                                    <label class="form-check-label small"
-                                                           for="{{ surah.id_for_label }}">
-                                                        {{ surah.choice_label }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1 text-muted"></i>
-                                        اختياري — يمكن تحديثه لاحقاً
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ③ أزرار التسجيل -->
-                <div class="col-12 col-lg-10">
-                    <div class="d-flex gap-3 justify-content-between
-                                align-items-center flex-wrap">
-                        <a href="{% url 'accounts:login' %}"
-                           class="text-white-50 small">
-                            <i class="fas fa-sign-in-alt me-1"></i>
-                            لديك حساب بالفعل؟
-                            <span class="text-warning">تسجيل الدخول</span>
-                        </a>
-                        <button type="submit"
-                                class="btn btn-warning px-5 fw-bold">
-                            <i class="fas fa-paper-plane me-2"></i>
-                            تسجيل الطالب
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-const busCb    = document.getElementById(
-    '{{ student_form.uses_bus.id_for_label }}'
-);
-const busBox   = document.getElementById('bus-box');
-const busBadge = document.getElementById('bus-badge');
-
-function updateBus() {
-    const on = busCb?.checked;
-    busBox.classList.toggle('bg-warning',    on);
-    busBox.classList.toggle('bg-opacity-10', on);
-    busBox.classList.toggle('border-warning',on);
-    busBadge.innerHTML = on
-        ? '<span class="badge bg-warning text-dark">مشترك</span>'
-        : '<span class="badge bg-secondary">غير مشترك</span>';
-}
-
-busCb?.addEventListener('change', updateBus);
-updateBus();
-</script>
-{% endblock %} {% endcomment %}
+{% endblock %}  {% endcomment %}
