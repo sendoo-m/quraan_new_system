@@ -1,14 +1,401 @@
 {% extends 'base.html' %}
-{% block page_title %}حضور الموظفين{% endblock %}
+{% block page_title %}سجل حضور الموظفين{% endblock %}
 
 {% block content %}
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="rounded-circle d-flex align-items-center justify-content-center bg-success bg-opacity-10 flex-shrink-0" style="width:48px;height:48px;"><i class="fas fa-user-check text-success"></i></div><div><div class="fs-4 fw-bold lh-1 text-success">{{ stats.present }}</div><div class="text-muted small">حاضر</div></div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="rounded-circle d-flex align-items-center justify-content-center bg-warning bg-opacity-10 flex-shrink-0" style="width:48px;height:48px;"><i class="fas fa-user-clock text-warning"></i></div><div><div class="fs-4 fw-bold lh-1 text-warning">{{ stats.late }}</div><div class="text-muted small">متأخر</div></div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="rounded-circle d-flex align-items-center justify-content-center bg-danger bg-opacity-10 flex-shrink-0" style="width:48px;height:48px;"><i class="fas fa-user-times text-danger"></i></div><div><div class="fs-4 fw-bold lh-1 text-danger">{{ stats.absent }}</div><div class="text-muted small">غائب</div></div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body d-flex align-items-center gap-3 py-3"><div class="rounded-circle d-flex align-items-center justify-content-center bg-info bg-opacity-10 flex-shrink-0" style="width:48px;height:48px;"><i class="fas fa-user-shield text-info"></i></div><div><div class="fs-4 fw-bold lh-1 text-info">{{ stats.excused }}</div><div class="text-muted small">إجازة</div></div></div></div></div>
+<style>
+/* ══ هيدر ══ */
+.sl-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.sl-hero-left { display: flex; align-items: center; gap: 1rem; }
+.sl-hero-icon {
+    width: 50px; height: 50px; background: rgba(255,255,255,.12);
+    border-radius: 13px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+}
+.sl-hero-icon i { font-size: 1.35rem; color: #fff; }
+.sl-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.sl-hero p  { font-size: .87rem; opacity: .8; margin: 0; }
+.sl-hero-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.btn-hero {
+    background: rgba(255,255,255,.18); color: #fff; border: none;
+    border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
+    font-size: .85rem; text-decoration: none;
+    display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-hero:hover { background: rgba(255,255,255,.3); color: #fff; }
+.btn-hero-success { background: rgba(22,163,74,.35); }
+.btn-hero-success:hover { background: rgba(22,163,74,.5); }
+
+/* ══ إحصائيات ══ */
+.sl-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1.25rem; }
+.sl-stat {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 12px; padding: .75rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sl-stat-num { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: .2rem; }
+.sl-stat-lbl { font-size: .78rem; color: #6b7280; font-weight: 600; }
+.sl-stat.present .sl-stat-num { color: #16a34a; }
+.sl-stat.absent  .sl-stat-num { color: #dc2626; }
+.sl-stat.late    .sl-stat-num { color: #d97706; }
+.sl-stat.excused .sl-stat-num { color: #0891b2; }
+
+/* ══ فلاتر ══ */
+.sl-filter {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .85rem 1.1rem; margin-bottom: 1.1rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sl-filter-label { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.sl-filter input[type=date],
+.sl-filter input[type=text],
+.sl-filter select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .4rem .75rem; font-size: .88rem; color: #0f172a;
+    background: #fff; height: 40px; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.sl-filter input:focus, .sl-filter select:focus {
+    border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none;
+}
+.btn-sl-filter {
+    height: 40px; padding: 0 1.1rem; border-radius: 9px; width: 100%;
+    font-weight: 700; font-size: .88rem;
+    background: #1e293b; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: background .15s; cursor: pointer;
+}
+.btn-sl-filter:hover { background: #334155; }
+.btn-sl-reset {
+    height: 40px; padding: 0 1rem; border-radius: 9px; width: 100%;
+    font-weight: 600; font-size: .88rem;
+    background: #f1f5f9; color: #64748b; border: none;
+    text-decoration: none; display: flex; align-items: center;
+    justify-content: center; gap: .4rem; transition: background .15s;
+}
+.btn-sl-reset:hover { background: #e2e8f0; color: #334155; }
+
+/* ══ جدول ديسكتوب ══ */
+.sl-table-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04); margin-bottom: .5rem;
+}
+.sl-table-header {
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center;
+    justify-content: space-between; gap: .75rem;
+    background: #fafbfc;
+}
+.sl-table-title { font-weight: 800; font-size: .95rem; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+.sl-count-badge {
+    background: #1e293b; color: #fff; border-radius: 30px;
+    padding: .15rem .7rem; font-size: .78rem; font-weight: 700;
+}
+.sl-table thead th {
+    background: #f8fafc; font-size: .8rem; font-weight: 700;
+    color: #6b7280; text-transform: uppercase; letter-spacing: .04em;
+    padding: .75rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.sl-table tbody td {
+    padding: .65rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .9rem;
+}
+.sl-table tbody tr:last-child td { border-bottom: none; }
+.sl-table tbody tr.row-present { background: #f0fdf4; }
+.sl-table tbody tr.row-absent  { background: #fff1f2; }
+.sl-table tbody tr.row-late    { background: #fffbeb; }
+.sl-table tbody tr.row-excused { background: #ecfeff; }
+.sl-table tbody tr:hover { filter: brightness(.98); }
+
+/* أفاتار */
+.staff-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.staff-name { font-weight: 700; font-size: .9rem; color: #0f172a; }
+
+/* role badge */
+.role-badge {
+    padding: .2rem .65rem; border-radius: 30px; font-size: .75rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: .3rem;
+}
+.role-teacher    { background: #dcfce7; color: #16a34a; }
+.role-supervisor { background: #cffafe; color: #0891b2; }
+
+/* status pill */
+.status-pill {
+    padding: .25rem .7rem; border-radius: 30px; font-size: .78rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: .3rem;
+}
+.status-present { background: #dcfce7; color: #16a34a; }
+.status-absent  { background: #fee2e2; color: #dc2626; }
+.status-late    { background: #fef3c7; color: #d97706; }
+.status-excused { background: #cffafe; color: #0891b2; }
+
+/* time chip */
+.time-chip {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .82rem; color: #475569; font-weight: 600;
+}
+.time-chip i { color: #94a3b8; font-size: .78rem; }
+
+/* ══ كاردات موبايل ══ */
+.sl-mobile-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; margin-bottom: .85rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04); overflow: hidden;
+}
+.sl-mobile-card.row-present { border-right: 4px solid #16a34a; }
+.sl-mobile-card.row-absent  { border-right: 4px solid #dc2626; }
+.sl-mobile-card.row-late    { border-right: 4px solid #d97706; }
+.sl-mobile-card.row-excused { border-right: 4px solid #0891b2; }
+.sl-mobile-body { padding: .85rem 1rem; }
+.sl-mobile-top  { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
+.sl-mobile-meta { display: flex; flex-wrap: wrap; gap: .35rem .7rem; font-size: .8rem; color: #6b7280; align-items: center; }
+.sl-mobile-meta i { color: #94a3b8; }
+
+/* ══ pagination ══ */
+.sl-pagination { display: flex; justify-content: center; align-items: center; gap: .4rem; margin-top: 1.1rem; flex-wrap: wrap; }
+.sl-page-btn {
+    min-width: 36px; height: 36px; border-radius: 9px; font-size: .85rem;
+    font-weight: 600; border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; padding: 0 .6rem;
+    transition: all .15s;
+}
+.sl-page-btn:hover, .sl-page-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+.sl-page-btn.disabled { opacity: .4; pointer-events: none; }
+
+/* فارغة */
+.sl-empty { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.sl-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+@media (max-width: 767.98px) {
+    .sl-stats { grid-template-columns: repeat(2,1fr); }
+    .sl-hero { flex-direction: column; align-items: flex-start; padding: 1rem 1.1rem; }
+    .sl-hero h1 { font-size: 1rem; }
+    .sl-hero-actions { width: 100%; }
+    .btn-hero { flex: 1; justify-content: center; }
+}
+</style>
+
+<!-- ══ هيدر الصفحة ══ -->
+<div class="sl-hero">
+    <div class="sl-hero-left">
+        <div class="sl-hero-icon"><i class="bi bi-people-fill"></i></div>
+        <div>
+            <h1>سجل حضور المعلمين والمشرفين</h1>
+            <p>
+                <i class="bi bi-calendar3 me-1"></i>{{ selected_date }}
+                <span class="mx-2 opacity-50">|</span>
+                {{ total }} سجل مسجّل
+            </p>
+        </div>
+    </div>
+    <div class="sl-hero-actions">
+        {% if request.user.is_general_supervisor or request.user.is_general_manager %}
+        <a href="{% url 'attendance:staff_mark' %}?date={{ selected_date }}" class="btn-hero btn-hero-success">
+            <i class="bi bi-pencil-square"></i>تسجيل حضور
+        </a>
+        {% endif %}
+        <a href="{% url 'attendance:staff_report' %}" class="btn-hero">
+            <i class="bi bi-bar-chart-line"></i>التقارير
+        </a>
+    </div>
 </div>
-<div class="card stat-card mb-4"><div class="card-body"><form method="get" class="row g-3 align-items-end"><div class="col-6 col-md-2"><label class="form-label fw-bold small">التاريخ</label><input type="date" name="date" value="{{ selected_date }}" class="form-control"></div><div class="col-6 col-md-2"><label class="form-label fw-bold small">الدور</label><select name="role" class="form-select"><option value="">الكل</option>{% for val, label in role_choices %}<option value="{{ val }}" {% if request.GET.role == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><div class="col-6 col-md-2"><label class="form-label fw-bold small">الحالة</label><select name="status" class="form-select"><option value="">الكل</option>{% for val, label in status_choices %}<option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><div class="col-6 col-md-3"><label class="form-label fw-bold small">بحث</label><input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="اسم الموظف"></div><div class="col-12 col-md-3 d-flex gap-2"><button type="submit" class="btn btn-primary flex-grow-1">بحث</button><a href="{% url 'attendance:staff' %}" class="btn btn-outline-secondary px-3">×</a>{% if is_general_supervisor or is_general_manager %}<a href="{% url 'attendance:staff_mark' %}?date={{ selected_date }}" class="btn btn-success px-3">+</a>{% endif %}</div></form></div></div>
-<div class="card stat-card"><div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2"><span class="fw-bold">حضور يوم {{ selected_date }} <span class="badge bg-primary ms-1">{{ total }}</span></span><a href="{% url 'attendance:staff_report' %}" class="btn btn-outline-info btn-sm">التقرير الشهري</a></div><div class="card-body p-0"><div class="table-responsive d-none d-md-block"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>#</th><th>الموظف</th><th>الدور</th><th>الحالة</th><th>وقت الحضور</th><th>وقت الانصراف</th><th>ملاحظات</th><th>سجّل بواسطة</th></tr></thead><tbody>{% for rec in records %}<tr><td class="text-muted small">{{ records.start_index|add:forloop.counter0 }}</td><td class="fw-bold">{{ rec.staff.get_full_name }}</td><td><span class="badge {% if rec.staff.role == 'teacher' %}bg-success{% elif rec.staff.role == 'hall_supervisor' %}bg-info{% else %}bg-secondary{% endif %}">{{ rec.staff.get_role_display }}</span></td><td><span class="badge {% if rec.status == 'present' %}bg-success{% elif rec.status == 'late' %}bg-warning text-dark{% elif rec.status == 'absent' %}bg-danger{% else %}bg-info{% endif %}">{{ rec.get_status_display }}</span></td><td class="small">{{ rec.check_in|default:"—" }}</td><td class="small">{{ rec.check_out|default:"—" }}</td><td class="small text-muted">{{ rec.notes|truncatechars:35|default:"—" }}</td><td class="small text-muted">{{ rec.recorded_by.get_full_name|default:"—" }}</td></tr>{% empty %}<tr><td colspan="8" class="text-center text-muted py-5">لا يوجد سجل حضور لهذا اليوم</td></tr>{% endfor %}</tbody></table></div><div class="d-md-none p-3">{% for rec in records %}<div class="card border mb-2" style="border-radius:10px;"><div class="card-body py-2 px-3"><div class="d-flex justify-content-between align-items-start mb-2"><div><div class="fw-bold">{{ rec.staff.get_full_name }}</div><span class="badge {% if rec.staff.role == 'teacher' %}bg-success{% elif rec.staff.role == 'hall_supervisor' %}bg-info{% else %}bg-secondary{% endif %} mt-1">{{ rec.staff.get_role_display }}</span></div><span class="badge {% if rec.status == 'present' %}bg-success{% elif rec.status == 'late' %}bg-warning text-dark{% elif rec.status == 'absent' %}bg-danger{% else %}bg-info{% endif %}">{{ rec.get_status_display }}</span></div><div class="d-flex gap-3 text-muted small">{% if rec.check_in %}<span>{{ rec.check_in }}</span>{% endif %}{% if rec.check_out %}<span>{{ rec.check_out }}</span>{% endif %}</div>{% if rec.notes %}<div class="text-muted small mt-1">{{ rec.notes|truncatechars:50 }}</div>{% endif %}{% if rec.recorded_by %}<div class="text-muted small mt-1">{{ rec.recorded_by.get_full_name }}</div>{% endif %}</div></div>{% empty %}<div class="text-center text-muted py-5">لا يوجد سجل حضور لهذا اليوم</div>{% endfor %}</div></div></div>
-{% include 'components/pagination.html' with page_obj=records %}
+
+<!-- ══ إحصائيات ══ -->
+<div class="sl-stats">
+    <div class="sl-stat present"><div class="sl-stat-num">{{ stats.present }}</div><div class="sl-stat-lbl"><i class="bi bi-check-circle me-1"></i>حاضر</div></div>
+    <div class="sl-stat absent"> <div class="sl-stat-num">{{ stats.absent }}</div> <div class="sl-stat-lbl"><i class="bi bi-x-circle me-1"></i>غائب</div></div>
+    <div class="sl-stat late">   <div class="sl-stat-num">{{ stats.late }}</div>   <div class="sl-stat-lbl"><i class="bi bi-clock me-1"></i>متأخر</div></div>
+    <div class="sl-stat excused"><div class="sl-stat-num">{{ stats.excused }}</div><div class="sl-stat-lbl"><i class="bi bi-shield-check me-1"></i>بعذر</div></div>
+</div>
+
+<!-- ══ فلاتر ══ -->
+<div class="sl-filter">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-6 col-md-2">
+            <div class="sl-filter-label"><i class="bi bi-calendar3 me-1"></i>التاريخ</div>
+            <input type="date" name="date" value="{{ selected_date }}">
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="sl-filter-label"><i class="bi bi-person-badge me-1"></i>الدور</div>
+            <select name="role">
+                <option value="">جميع الأدوار</option>
+                {% for val, label in role_choices %}
+                <option value="{{ val }}" {% if request.GET.role == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="sl-filter-label"><i class="bi bi-toggles me-1"></i>الحالة</div>
+            <select name="status">
+                <option value="">جميع الحالات</option>
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="sl-filter-label"><i class="bi bi-search me-1"></i>بحث</div>
+            <input type="text" name="q" placeholder="اسم الموظف..." value="{{ request.GET.q|default:'' }}">
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="submit" class="btn-sl-filter">
+                <i class="bi bi-funnel-fill"></i>تصفية
+            </button>
+        </div>
+        <div class="col-6 col-md-1">
+            <a href="{% url 'attendance:staff' %}" class="btn-sl-reset">
+                <i class="bi bi-x-circle"></i>مسح
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- ══ جدول ديسكتوب ══ -->
+<div class="sl-table-card d-none d-md-block">
+    <div class="sl-table-header">
+        <div class="sl-table-title">
+            <i class="bi bi-table" style="color:#01696f;"></i>
+            حضور يوم {{ selected_date }}
+            <span class="sl-count-badge">{{ total }}</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table sl-table mb-0">
+            <thead>
+                <tr>
+                    <th style="width:40px">#</th>
+                    <th>الموظف</th>
+                    <th>الدور</th>
+                    <th>الحالة</th>
+                    <th>وقت الحضور</th>
+                    <th>وقت الانصراف</th>
+                    <th>ملاحظات</th>
+                    <th>سجّله</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in records %}
+                <tr class="row-{{ rec.status }}">
+                    <td class="text-muted small fw-bold">{{ records.start_index|add:forloop.counter0 }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="staff-avatar">{{ rec.staff.first_name|first }}{{ rec.staff.last_name|first }}</div>
+                            <span class="staff-name">{{ rec.staff.get_full_name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="role-badge {% if rec.staff.role == 'teacher' %}role-teacher{% else %}role-supervisor{% endif %}">
+                            <i class="bi {% if rec.staff.role == 'teacher' %}bi-person-fill{% else %}bi-person-badge-fill{% endif %}"></i>
+                            {{ rec.staff.get_role_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-pill status-{{ rec.status }}">
+                            {% if rec.status == 'present' %}<i class="bi bi-check-circle"></i>
+                            {% elif rec.status == 'absent'  %}<i class="bi bi-x-circle"></i>
+                            {% elif rec.status == 'late'    %}<i class="bi bi-clock"></i>
+                            {% else %}<i class="bi bi-shield-check"></i>{% endif %}
+                            {{ rec.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if rec.check_in %}
+                            <span class="time-chip"><i class="bi bi-box-arrow-in-right"></i>{{ rec.check_in|time:"H:i" }}</span>
+                        {% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if rec.check_out %}
+                            <span class="time-chip"><i class="bi bi-box-arrow-right"></i>{{ rec.check_out|time:"H:i" }}</span>
+                        {% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td class="text-muted small">{{ rec.notes|truncatechars:40|default:"—" }}</td>
+                    <td class="text-muted small">{{ rec.recorded_by.get_full_name|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">
+                        <div class="sl-empty">
+                            <i class="bi bi-person-x"></i>
+                            <p>لا يوجد سجل حضور لهذا اليوم</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ══ كاردات موبايل ══ -->
+<div class="d-md-none">
+    {% for rec in records %}
+    <div class="sl-mobile-card row-{{ rec.status }}">
+        <div class="sl-mobile-body">
+            <div class="sl-mobile-top">
+                <div class="staff-avatar">{{ rec.staff.first_name|first }}{{ rec.staff.last_name|first }}</div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="staff-name text-truncate">{{ rec.staff.get_full_name }}</div>
+                    <span class="role-badge mt-1 {% if rec.staff.role == 'teacher' %}role-teacher{% else %}role-supervisor{% endif %}" style="font-size:.7rem;">
+                        {{ rec.staff.get_role_display }}
+                    </span>
+                </div>
+                <span class="status-pill status-{{ rec.status }}" style="font-size:.72rem;">{{ rec.get_status_display }}</span>
+            </div>
+            <div class="sl-mobile-meta">
+                {% if rec.check_in %}<span><i class="bi bi-box-arrow-in-right"></i>{{ rec.check_in|time:"H:i" }}</span>{% endif %}
+                {% if rec.check_out %}<span><i class="bi bi-box-arrow-right"></i>{{ rec.check_out|time:"H:i" }}</span>{% endif %}
+                {% if rec.notes %}<span><i class="bi bi-chat-text"></i>{{ rec.notes|truncatechars:40 }}</span>{% endif %}
+                {% if rec.recorded_by %}<span><i class="bi bi-person-fill"></i>{{ rec.recorded_by.get_full_name }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="sl-mobile-card">
+        <div class="sl-empty"><i class="bi bi-person-x"></i><p>لا يوجد سجل حضور لهذا اليوم</p></div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ══ pagination ══ -->
+{% if records.has_other_pages %}
+<div class="sl-pagination">
+    {% if records.has_previous %}
+        <a href="?page={{ records.previous_page_number }}&date={{ selected_date }}&role={{ request.GET.role }}&status={{ request.GET.status }}&q={{ request.GET.q }}" class="sl-page-btn">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    {% else %}
+        <span class="sl-page-btn disabled"><i class="bi bi-chevron-right"></i></span>
+    {% endif %}
+
+    {% for num in records.paginator.page_range %}
+        {% if records.number == num %}
+            <span class="sl-page-btn active">{{ num }}</span>
+        {% elif num > records.number|add:"-3" and num < records.number|add:"3" %}
+            <a href="?page={{ num }}&date={{ selected_date }}&role={{ request.GET.role }}&status={{ request.GET.status }}&q={{ request.GET.q }}" class="sl-page-btn">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if records.has_next %}
+        <a href="?page={{ records.next_page_number }}&date={{ selected_date }}&role={{ request.GET.role }}&status={{ request.GET.status }}&q={{ request.GET.q }}" class="sl-page-btn">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+    {% else %}
+        <span class="sl-page-btn disabled"><i class="bi bi-chevron-left"></i></span>
+    {% endif %}
+</div>
+{% endif %}
+
 {% endblock %}

@@ -2,168 +2,566 @@
 {% block page_title %}تسجيل حضور — {{ hall.name }}{% endblock %}
 
 {% block content %}
-<div class="card stat-card mb-4">
-    <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-2 py-3">
+<style>
+/* ══ متغيرات الحضور ══ */
+:root {
+    --att-present: #16a34a;
+    --att-present-bg: #dcfce7;
+    --att-absent:  #dc2626;
+    --att-absent-bg:  #fee2e2;
+    --att-late:    #d97706;
+    --att-late-bg:    #fef3c7;
+    --att-excused: #0891b2;
+    --att-excused-bg: #cffafe;
+}
+
+/* ══ هيدر الصفحة ══ */
+.att-header {
+    background: linear-gradient(135deg, #01696f 0%, #0a8a91 100%);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.att-header-left { display: flex; align-items: center; gap: 1rem; }
+.att-header-icon {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.att-header-icon i { font-size: 1.3rem; color: #fff; }
+.att-header h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.att-header p { font-size: .85rem; opacity: .85; margin: 0; }
+.att-header-badges { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.att-badge {
+    padding: .35rem .85rem;
+    border-radius: 30px;
+    font-size: .82rem;
+    font-weight: 700;
+    display: flex; align-items: center; gap: .35rem;
+}
+.att-badge-light { background: rgba(255,255,255,0.2); color: #fff; }
+.att-badge-edit  { background: rgba(255,255,255,0.9); color: #01696f; }
+
+/* ══ شريط الأدوات ══ */
+.att-toolbar {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px;
+    padding: .75rem 1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.att-toolbar-left { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+/* ══ إحصائيات سريعة ══ */
+.att-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+.att-stat {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    transition: box-shadow .15s;
+}
+.att-stat-num { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: .2rem; }
+.att-stat-lbl { font-size: .78rem; color: #6b7280; font-weight: 600; }
+.att-stat.present .att-stat-num { color: var(--att-present); }
+.att-stat.absent  .att-stat-num { color: var(--att-absent); }
+.att-stat.late    .att-stat-num { color: var(--att-late); }
+.att-stat.excused .att-stat-num { color: var(--att-excused); }
+
+/* ══ جدول الحضور ══ */
+.att-table-card {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.att-table thead th {
+    background: #f8fafc;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    white-space: nowrap;
+}
+.att-table tbody tr { transition: background .12s; }
+.att-table tbody td { padding: .65rem 1rem; vertical-align: middle; border-bottom: 1px solid rgba(15,23,42,.05); }
+.att-table tbody tr:last-child td { border-bottom: none; }
+
+/* تلوين الصف */
+.att-table tbody tr.row-present { background: #f0fdf4; }
+.att-table tbody tr.row-absent  { background: #fff1f2; }
+.att-table tbody tr.row-late    { background: #fffbeb; }
+.att-table tbody tr.row-excused { background: #ecfeff; }
+
+/* بيانات الطالب */
+.student-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700; color: #475569;
+    flex-shrink: 0;
+}
+.student-name { font-weight: 700; font-size: .9rem; color: #0f172a; line-height: 1.2; }
+.student-parent { font-size: .78rem; color: #94a3b8; }
+
+/* أزرار الحالة */
+.status-pill-group { display: flex; gap: .35rem; flex-wrap: nowrap; }
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .3rem .65rem;
+    border-radius: 30px;
+    font-size: .78rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all .15s;
+    white-space: nowrap;
+    user-select: none;
+}
+.status-pill input[type=radio] { display: none; }
+.status-pill.pill-present { color: var(--att-present); border-color: #bbf7d0; background: #f0fdf4; }
+.status-pill.pill-absent  { color: var(--att-absent);  border-color: #fecaca; background: #fff1f2; }
+.status-pill.pill-late    { color: var(--att-late);    border-color: #fde68a; background: #fffbeb; }
+.status-pill.pill-excused { color: var(--att-excused); border-color: #a5f3fc; background: #ecfeff; }
+.status-pill.pill-present.active { background: var(--att-present); color: #fff; border-color: var(--att-present); }
+.status-pill.pill-absent.active  { background: var(--att-absent);  color: #fff; border-color: var(--att-absent);  }
+.status-pill.pill-late.active    { background: var(--att-late);    color: #fff; border-color: var(--att-late);    }
+.status-pill.pill-excused.active { background: var(--att-excused); color: #fff; border-color: var(--att-excused); }
+
+/* مدخلات ضمن الجدول */
+.att-table input[type=time],
+.att-table input[type=text] {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .3rem .55rem;
+    font-size: .82rem;
+    color: #0f172a;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+}
+.att-table input:focus {
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.1);
+    outline: none;
+}
+
+/* ══ كاردات الموبايل ══ */
+.att-mobile-card {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px;
+    margin-bottom: .9rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    transition: box-shadow .15s;
+}
+.att-mobile-card.row-present { border-right: 4px solid var(--att-present); }
+.att-mobile-card.row-absent  { border-right: 4px solid var(--att-absent);  }
+.att-mobile-card.row-late    { border-right: 4px solid var(--att-late);    }
+.att-mobile-card.row-excused { border-right: 4px solid var(--att-excused); }
+.att-mobile-header {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .85rem 1rem .6rem;
+}
+.att-mobile-body { padding: 0 1rem .85rem; display: flex; flex-direction: column; gap: .6rem; }
+.att-mobile-pills { display: flex; gap: .4rem; flex-wrap: wrap; }
+.att-mobile-pills .status-pill { flex: 1 1 auto; justify-content: center; padding: .4rem .5rem; }
+.att-mobile-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.att-mobile-label { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.att-mobile-row input[type=time],
+.att-mobile-row input[type=text] {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .35rem .6rem;
+    font-size: .82rem;
+    color: #0f172a;
+    background: #fff;
+    width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.att-mobile-row input:focus {
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.1);
+    outline: none;
+}
+.att-mobile-notes { width: 100%; }
+.att-mobile-notes input { width: 100%; }
+
+/* ══ فوتر الحفظ ══ */
+.att-save-bar {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px;
+    padding: .9rem 1.25rem;
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    position: sticky;
+    bottom: 1rem;
+}
+.att-save-info { color: #6b7280; font-size: .88rem; display: flex; align-items: center; gap: .4rem; }
+.att-save-info i { color: #01696f; }
+.att-save-actions { display: flex; gap: .6rem; }
+.btn-att-save {
+    background: #01696f; color: #fff;
+    border: none; border-radius: 10px;
+    padding: .6rem 1.5rem; font-weight: 700;
+    font-size: .92rem; cursor: pointer;
+    display: flex; align-items: center; gap: .4rem;
+    transition: background .15s, box-shadow .15s, transform .1s;
+}
+.btn-att-save:hover { background: #0a8a91; box-shadow: 0 4px 14px rgba(1,105,111,.25); transform: translateY(-1px); }
+.btn-att-back {
+    background: #f1f5f9; color: #475569;
+    border: none; border-radius: 10px;
+    padding: .6rem 1rem; font-weight: 600;
+    font-size: .88rem; cursor: pointer;
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none;
+    transition: background .15s;
+}
+.btn-att-back:hover { background: #e2e8f0; color: #334155; }
+
+/* حالة فارغة */
+.att-empty {
+    text-align: center; padding: 3rem 1rem;
+    color: #94a3b8;
+}
+.att-empty i { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+.att-empty p { font-size: .95rem; margin: 0; }
+
+@media (max-width: 767.98px) {
+    .att-stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .att-header { flex-direction: column; align-items: flex-start; }
+    .att-header h1 { font-size: 1rem; }
+    .att-save-bar { position: static; flex-direction: column; align-items: stretch; }
+    .att-save-actions { flex-direction: column; }
+    .btn-att-save, .btn-att-back { justify-content: center; }
+}
+@media (max-width: 575.98px) {
+    .att-stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+<!-- هيدر الصفحة -->
+<div class="att-header">
+    <div class="att-header-left">
+        <div class="att-header-icon"><i class="bi bi-person-check-fill"></i></div>
         <div>
-            <div class="fw-bold"><i class="fas fa-clipboard-list text-primary me-2"></i>{{ hall.name }}</div>
-            <div class="text-muted small mt-1"><i class="far fa-calendar-alt me-1"></i>{{ today }}{% if hall.age_group %}<span class="mx-2">•</span><i class="fas fa-users me-1"></i>{{ hall.age_group.name }}{% endif %}</div>
+            <h1>تسجيل الحضور — {{ hall.name }}</h1>
+            <p>
+                <i class="bi bi-calendar3 me-1"></i>{{ today }}
+                {% if hall.age_group %}<span class="mx-2 opacity-50">|</span><i class="bi bi-people me-1"></i>{{ hall.age_group.name }}{% endif %}
+            </p>
         </div>
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            {% if already_taken %}<span class="badge bg-info px-3 py-2"><i class="fas fa-edit me-1"></i>تم التسجيل — يمكن التعديل</span>{% endif %}
-            <span class="badge bg-primary px-3 py-2">{{ students_data|length }} طالب</span>
-        </div>
+    </div>
+    <div class="att-header-badges">
+        {% if already_taken %}
+            <span class="att-badge att-badge-edit"><i class="bi bi-pencil-fill"></i>تم التسجيل — قابل للتعديل</span>
+        {% endif %}
+        <span class="att-badge att-badge-light"><i class="bi bi-mortarboard-fill"></i>{{ students_data|length }} طالب</span>
     </div>
 </div>
 
-<form method="post">
+<form method="post" id="attendanceForm">
     {% csrf_token %}
 
+    <!-- إحصائيات سريعة ديناميكية -->
+    <div class="att-stats-bar">
+        <div class="att-stat present"><div class="att-stat-num" id="count-present">0</div><div class="att-stat-lbl"><i class="bi bi-check-circle me-1"></i>حاضر</div></div>
+        <div class="att-stat absent"> <div class="att-stat-num" id="count-absent">0</div> <div class="att-stat-lbl"><i class="bi bi-x-circle me-1"></i>غائب</div></div>
+        <div class="att-stat late">   <div class="att-stat-num" id="count-late">0</div>    <div class="att-stat-lbl"><i class="bi bi-clock me-1"></i>متأخر</div></div>
+        <div class="att-stat excused"><div class="att-stat-num" id="count-excused">0</div> <div class="att-stat-lbl"><i class="bi bi-shield-check me-1"></i>بعذر</div></div>
+    </div>
+
+    <!-- شريط الأدوات -->
     {% if students_data %}
-    <div class="mb-3 d-flex flex-wrap gap-2">
-        <button type="button" id="markAllPresent" class="btn btn-outline-success btn-sm"><i class="fas fa-check-double me-1"></i>تحديد الكل حاضر</button>
-        <a href="{% url 'attendance:students' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-right me-1"></i>رجوع للقاعات</a>
+    <div class="att-toolbar">
+        <div class="att-toolbar-left">
+            <button type="button" id="markAllPresent" class="btn btn-sm btn-success px-3">
+                <i class="bi bi-check-all me-1"></i>تحديد الكل حاضر
+            </button>
+            <button type="button" id="clearAll" class="btn btn-sm btn-outline-secondary px-3">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>مسح الكل
+            </button>
+        </div>
+        <span class="text-muted small">إجمالي الطلاب: <strong>{{ students_data|length }}</strong></span>
     </div>
     {% endif %}
 
-    <div class="card stat-card d-none d-md-block">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>الطالب</th>
-                            {% for status_val, status_label in statuses %}<th class="text-center">{{ status_label }}</th>{% endfor %}
-                            <th>وقت الحضور</th>
-                            <th>ملاحظات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in students_data %}
-                        <tr class="student-row">
-                            <td class="text-muted small">{{ forloop.counter }}</td>
-                            <td>
-                                <div class="fw-bold">{{ item.student.get_full_name }}</div>
-                                <div class="text-muted small">{{ item.student.parent.get_full_name|default:item.student.parent.username }}</div>
-                            </td>
-                            {% for status_val, status_label in statuses %}
-                            <td class="text-center">
-                                <input type="radio" name="status_{{ item.student.id }}" value="{{ status_val }}" class="form-check-input status-radio" {% if item.status == status_val %}checked{% endif %}>
-                            </td>
-                            {% endfor %}
-                            <td>
-                                <input type="time" name="arrival_time_{{ item.student.id }}" value="{{ item.arrival_time|default:'' }}" class="form-control form-control-sm" style="min-width:120px">
-                            </td>
-                            <td>
-                                <input type="text" name="notes_{{ item.student.id }}" value="{{ item.notes|default:'' }}" class="form-control form-control-sm" placeholder="ملاحظة" style="min-width:160px">
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="8" class="text-center text-muted py-5"><i class="fas fa-user-slash fa-2x mb-2 d-block"></i>لا يوجد طلاب نشطون في هذه القاعة</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <!-- جدول ديسكتوب -->
+    <div class="att-table-card d-none d-md-block mb-3">
+        <div class="table-responsive">
+            <table class="table att-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:40px">#</th>
+                        <th>الطالب</th>
+                        <th>الحالة</th>
+                        <th style="width:130px">وقت الحضور</th>
+                        <th style="width:200px">ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in students_data %}
+                    <tr class="student-row" data-id="{{ item.student.id }}">
+                        <td class="text-muted small fw-bold">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="student-avatar">{{ item.student.first_name|first }}{{ item.student.last_name|first }}</div>
+                                <div>
+                                    <div class="student-name">{{ item.student.get_full_name }}</div>
+                                    <div class="student-parent">{{ item.student.parent.get_full_name|default:item.student.parent.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-pill-group">
+                                <label class="status-pill pill-present {% if item.status == 'present' %}active{% endif %}">
+                                    <input type="radio" name="status_{{ item.student.id }}" value="present" {% if item.status == 'present' %}checked{% endif %}>
+                                    <i class="bi bi-check-circle"></i>حاضر
+                                </label>
+                                <label class="status-pill pill-absent {% if item.status == 'absent' %}active{% endif %}">
+                                    <input type="radio" name="status_{{ item.student.id }}" value="absent" {% if item.status == 'absent' %}checked{% endif %}>
+                                    <i class="bi bi-x-circle"></i>غائب
+                                </label>
+                                <label class="status-pill pill-late {% if item.status == 'late' %}active{% endif %}">
+                                    <input type="radio" name="status_{{ item.student.id }}" value="late" {% if item.status == 'late' %}checked{% endif %}>
+                                    <i class="bi bi-clock"></i>متأخر
+                                </label>
+                                <label class="status-pill pill-excused {% if item.status == 'excused' %}active{% endif %}">
+                                    <input type="radio" name="status_{{ item.student.id }}" value="excused" {% if item.status == 'excused' %}checked{% endif %}>
+                                    <i class="bi bi-shield-check"></i>بعذر
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="time" name="arrival_time_{{ item.student.id }}"
+                                   value="{{ item.arrival_time|default:'' }}">
+                        </td>
+                        <td>
+                            <input type="text" name="notes_{{ item.student.id }}"
+                                   value="{{ item.notes|default:'' }}" placeholder="ملاحظة اختيارية...">
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5"><div class="att-empty"><i class="bi bi-person-slash"></i><p>لا يوجد طلاب نشطون في هذه القاعة</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
+    <!-- كاردات الموبايل -->
     <div class="d-md-none">
         {% for item in students_data %}
-        <div class="card stat-card mb-3 student-row">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 flex-shrink-0" style="width:44px;height:44px;"><i class="fas fa-user-graduate text-primary"></i></div>
+        <div class="att-mobile-card student-row" data-id="{{ item.student.id }}">
+            <div class="att-mobile-header">
+                <div class="student-avatar" style="width:40px;height:40px;font-size:.9rem;">
+                    {{ item.student.first_name|first }}{{ item.student.last_name|first }}
+                </div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="student-name">{{ item.student.get_full_name }}</div>
+                    <div class="student-parent">{{ item.student.parent.get_full_name|default:item.student.parent.username }}</div>
+                </div>
+                <span class="status-badge-mobile badge rounded-pill fs-6" style="font-size:.72rem!important;"></span>
+            </div>
+            <div class="att-mobile-body">
+                <div class="att-mobile-pills">
+                    <label class="status-pill pill-present {% if item.status == 'present' %}active{% endif %}">
+                        <input type="radio" name="status_{{ item.student.id }}" value="present" {% if item.status == 'present' %}checked{% endif %}>
+                        <i class="bi bi-check-circle"></i>حاضر
+                    </label>
+                    <label class="status-pill pill-absent {% if item.status == 'absent' %}active{% endif %}">
+                        <input type="radio" name="status_{{ item.student.id }}" value="absent" {% if item.status == 'absent' %}checked{% endif %}>
+                        <i class="bi bi-x-circle"></i>غائب
+                    </label>
+                    <label class="status-pill pill-late {% if item.status == 'late' %}active{% endif %}">
+                        <input type="radio" name="status_{{ item.student.id }}" value="late" {% if item.status == 'late' %}checked{% endif %}>
+                        <i class="bi bi-clock"></i>متأخر
+                    </label>
+                    <label class="status-pill pill-excused {% if item.status == 'excused' %}active{% endif %}">
+                        <input type="radio" name="status_{{ item.student.id }}" value="excused" {% if item.status == 'excused' %}checked{% endif %}>
+                        <i class="bi bi-shield-check"></i>بعذر
+                    </label>
+                </div>
+                <div class="att-mobile-row">
                     <div>
-                        <div class="fw-bold">{{ item.student.get_full_name }}</div>
-                        <div class="text-muted small">{{ item.student.parent.get_full_name|default:item.student.parent.username }}</div>
+                        <div class="att-mobile-label"><i class="bi bi-clock me-1"></i>وقت الحضور</div>
+                        <input type="time" name="arrival_time_{{ item.student.id }}" value="{{ item.arrival_time|default:'' }}">
+                    </div>
+                    <div>
+                        <div class="att-mobile-label"><i class="bi bi-chat-text me-1"></i>ملاحظة</div>
+                        <input type="text" name="notes_{{ item.student.id }}" value="{{ item.notes|default:'' }}" placeholder="اختياري...">
                     </div>
                 </div>
-
-                <div class="d-flex gap-2 flex-wrap mb-3">
-                    {% for status_val, status_label in statuses %}
-                    <label class="status-label flex-grow-1 text-center">
-                        <input type="radio" name="status_{{ item.student.id }}" value="{{ status_val }}" class="d-none status-radio" {% if item.status == status_val %}checked{% endif %}>
-                        <span class="btn btn-sm w-100 {% if status_val == 'present' %}btn-outline-success{% elif status_val == 'absent' %}btn-outline-danger{% elif status_val == 'late' %}btn-outline-warning{% else %}btn-outline-info{% endif %} status-btn" data-val="{{ status_val }}">{{ status_label }}</span>
-                    </label>
-                    {% endfor %}
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label fw-bold small text-muted">وقت الحضور</label>
-                    <input type="time" name="arrival_time_{{ item.student.id }}" value="{{ item.arrival_time|default:'' }}" class="form-control form-control-sm">
-                </div>
-
-                <input type="text" name="notes_{{ item.student.id }}" value="{{ item.notes|default:'' }}" class="form-control form-control-sm" placeholder="ملاحظة اختيارية">
             </div>
         </div>
         {% empty %}
-        <div class="card stat-card"><div class="card-body text-center text-muted py-5"><i class="fas fa-user-slash fa-2x mb-2 d-block"></i>لا يوجد طلاب نشطون في هذه القاعة</div></div>
+        <div class="att-mobile-card"><div class="att-empty"><i class="bi bi-person-slash"></i><p>لا يوجد طلاب نشطون في هذه القاعة</p></div></div>
         {% endfor %}
     </div>
 
+    <!-- شريط الحفظ -->
     {% if students_data %}
-    <div class="card stat-card mt-3">
-        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span class="text-muted small">إجمالي: {{ students_data|length }} طالب</span>
-            <div class="d-flex gap-2">
-                <a href="{% url 'attendance:students' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-right me-1"></i> رجوع</a>
-                <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="fas fa-save me-1"></i> حفظ الحضور</button>
-            </div>
+    <div class="att-save-bar">
+        <div class="att-save-info">
+            <i class="bi bi-info-circle-fill"></i>
+            إجمالي: <strong>{{ students_data|length }}</strong> طالب — سيُحفظ التسجيل ليوم <strong>{{ today }}</strong>
+        </div>
+        <div class="att-save-actions">
+            <a href="{% url 'attendance:students' %}" class="btn-att-back">
+                <i class="bi bi-arrow-right"></i>رجوع
+            </a>
+            <button type="submit" class="btn-att-save">
+                <i class="bi bi-floppy-fill"></i>حفظ الحضور
+            </button>
         </div>
     </div>
     {% endif %}
+
 </form>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function colorRow(radio) {
-    const row = radio.closest('.student-row');
-    if (!row) return;
-    row.classList.remove('table-success','table-warning','table-danger','table-info');
-    const map = { present: 'table-success', late: 'table-warning', absent: 'table-danger', excused: 'table-info' };
-    if (map[radio.value]) row.classList.add(map[radio.value]);
-}
+(function () {
+    const STATUS_COLORS = {
+        present: { row: 'row-present', badge: 'bg-success', text: 'حاضر' },
+        absent:  { row: 'row-absent',  badge: 'bg-danger',  text: 'غائب' },
+        late:    { row: 'row-late',    badge: 'bg-warning text-dark', text: 'متأخر' },
+        excused: { row: 'row-excused', badge: 'bg-info text-dark',    text: 'بعذر' },
+    };
+    const ALL_ROW_CLASSES = Object.values(STATUS_COLORS).map(v => v.row);
 
-document.querySelectorAll('.status-radio').forEach(radio => {
-    if (radio.checked) colorRow(radio);
-    radio.addEventListener('change', () => colorRow(radio));
-});
+    /* تحديث لون الصف والبادج */
+    function applyStatus(row, value) {
+        row.classList.remove(...ALL_ROW_CLASSES);
+        const cfg = STATUS_COLORS[value];
+        if (cfg) row.classList.add(cfg.row);
 
-document.querySelectorAll('.status-label').forEach(label => {
-    const radio = label.querySelector('input[type=radio]');
-    const btn = label.querySelector('.status-btn');
-    function activateBtn() {
+        /* تحديث البادج في الموبايل */
+        const badge = row.querySelector('.status-badge-mobile');
+        if (badge && cfg) {
+            badge.className = `status-badge-mobile badge rounded-pill`;
+            badge.classList.add(...cfg.badge.split(' '));
+            badge.textContent = cfg.text;
+        }
+    }
+
+    /* تفعيل الـ pill الصحيح */
+    function activatePill(radio) {
         const name = radio.name;
         document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
-            const b = r.closest('.status-label')?.querySelector('.status-btn');
-            if (b) b.classList.remove('active','text-white');
+            const pill = r.closest('.status-pill');
+            if (pill) pill.classList.remove('active');
         });
-        btn.classList.add('active','text-white');
-        colorRow(radio);
+        const activePill = radio.closest('.status-pill');
+        if (activePill) activePill.classList.add('active');
     }
-    if (radio.checked) activateBtn();
-    label.addEventListener('click', () => {
-        radio.checked = true;
-        activateBtn();
-    });
-});
 
-const markAllPresent = document.getElementById('markAllPresent');
-if (markAllPresent) {
-    markAllPresent.addEventListener('click', () => {
-        document.querySelectorAll('.status-radio').forEach(r => {
-            if (r.value === 'present') {
-                r.checked = true;
-                colorRow(r);
-                const label = r.closest('.status-label');
-                if (label) {
-                    const btn = label.querySelector('.status-btn');
-                    if (btn) label.click();
+    /* تحديث عدادات الإحصاء */
+    function updateCounts() {
+        const counts = { present: 0, absent: 0, late: 0, excused: 0 };
+        document.querySelectorAll('input[type=radio]:checked').forEach(r => {
+            if (counts[r.value] !== undefined) counts[r.value]++;
+        });
+        Object.entries(counts).forEach(([k, v]) => {
+            const el = document.getElementById(`count-${k}`);
+            if (el) el.textContent = v;
+        });
+    }
+
+    /* ربط الأحداث */
+    function bindRow(row) {
+        const radios = row.querySelectorAll('input[type=radio]');
+        radios.forEach(radio => {
+            if (radio.checked) {
+                applyStatus(row, radio.value);
+                activatePill(radio);
+            }
+            radio.addEventListener('change', () => {
+                applyStatus(row, radio.value);
+                activatePill(radio);
+                updateCounts();
+            });
+        });
+
+        /* نقرة على الـ pill نفسه */
+        row.querySelectorAll('.status-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                const radio = pill.querySelector('input[type=radio]');
+                if (radio) {
+                    radio.checked = true;
+                    applyStatus(row, radio.value);
+                    activatePill(radio);
+                    updateCounts();
                 }
+            });
+        });
+    }
+
+    document.querySelectorAll('.student-row').forEach(bindRow);
+    updateCounts();
+
+    /* تحديد الكل حاضر */
+    document.getElementById('markAllPresent')?.addEventListener('click', () => {
+        document.querySelectorAll('.student-row').forEach(row => {
+            const radio = row.querySelector('input[name^="status_"][value="present"]');
+            if (radio) {
+                radio.checked = true;
+                applyStatus(row, 'present');
+                activatePill(radio);
             }
         });
+        updateCounts();
     });
-}
+
+    /* مسح الكل */
+    document.getElementById('clearAll')?.addEventListener('click', () => {
+        document.querySelectorAll('.student-row').forEach(row => {
+            const radio = row.querySelector('input[name^="status_"][value="absent"]');
+            if (radio) {
+                radio.checked = true;
+                applyStatus(row, 'absent');
+                activatePill(radio);
+            }
+        });
+        updateCounts();
+    });
+})();
 </script>
 {% endblock %}

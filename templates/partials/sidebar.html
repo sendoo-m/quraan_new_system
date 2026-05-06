@@ -88,6 +88,33 @@
                     <i class="bi bi-person-plus ms-2"></i>تسجيل طالب
                 </a>
             {% endif %}
+
+            {# ════ نظام الحضور والانصراف ════ #}
+
+            {% if user.is_hall_supervisor or user.is_general_supervisor or user.is_general_manager %}
+                <div class="small text-uppercase text-white-50 mt-3 mb-1 px-1">الحضور والانصراف</div>
+
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:students' %}">
+                    <i class="bi bi-person-check ms-2"></i>حضور الطلاب
+                </a>
+
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:report' %}">
+                    <i class="bi bi-bar-chart-line ms-2"></i>تقرير حضور الطلاب
+                </a>
+            {% endif %}
+
+            {% if user.is_general_supervisor or user.is_general_manager %}
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:staff' %}">
+                    <i class="bi bi-people-fill ms-2"></i>حضور الموظفين
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:staff_mark' %}">
+                    <i class="bi bi-pencil-square ms-2"></i>تسجيل حضور الموظفين
+                </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:staff_report' %}">
+                    <i class="bi bi-file-earmark-bar-graph ms-2"></i>تقرير حضور الموظفين
+                </a>
+            {% endif %}
+
         </nav>
     </div>
 
@@ -105,12 +132,11 @@
             </button>
         </form>
     </div>
-</aside>
-
+</aside> 
 {% comment %} <aside class="sidebar d-flex flex-column" id="appSidebar">
     <div class="p-3 border-bottom border-secondary border-opacity-25">
         <div class="d-flex align-items-center gap-3">
-            {% if SITE_LOGO %}
+            {% if SITE_LOGO and SITE_LOGO.url %}
                 <img src="{{ SITE_LOGO.url }}" alt="{{ SITE_NAME }}" class="rounded-3" width="52" height="52" style="object-fit: cover;">
             {% else %}
                 <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center text-white" style="width:52px;height:52px;">
@@ -163,6 +189,9 @@
                 <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'dashboard:hall_supervisor' %}">
                     <i class="bi bi-building-check ms-2"></i>لوحة مشرف القاعة
                 </a>
+                <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'evaluations:add_followup' %}">
+                    <i class="bi bi-journal-text ms-2"></i>المتابعة اليومية
+                </a>
             {% endif %}
 
             {% if user.is_teacher %}
@@ -211,4 +240,4 @@
             </button>
         </form>
     </div>
-</aside> {% endcomment %}
+</aside>  {% endcomment %}

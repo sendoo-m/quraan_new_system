@@ -1,415 +1,342 @@
 {% extends "base.html" %}
-
 {% block title %}{{ hall.name }} | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}تفاصيل القاعة{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-        <div>
-            <h2 class="fw-bold mb-2">{{ hall.name }}</h2>
-            <p class="text-muted mb-0">{{ hall.location }}</p>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-            {% if user.is_general_manager or user.is_general_supervisor %}
-                <a href="{% url 'halls:update' hall.pk %}" class="btn btn-outline-warning">تعديل القاعة</a>
-                <a href="{% url 'halls:schedule' hall.pk %}" class="btn btn-outline-secondary">إدارة الجدول</a>
-            {% endif %}
-            {% if user.is_hall_supervisor %}
-                <a href="{% url 'evaluations:add_followup' %}" class="btn btn-primary">متابعة يومية</a>
-            {% endif %}
-            <a href="{% url 'halls:list' %}" class="btn btn-primary">رجوع للقائمة</a>
-        </div>
-    </div>
-</div>
+<style>
+/* ══ هيدر القاعة ══ */
+.hd-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 20px; padding: 1.5rem 1.75rem 0;
+    margin-bottom: 1.4rem; color: #fff; overflow: hidden; position: relative;
+}
+.hd-hero::before {
+    content: ''; position: absolute; top: -50px; left: -50px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,.05); pointer-events: none;
+}
+.hd-hero-body {
+    position: relative; z-index: 1;
+    display: flex; align-items: flex-start;
+    justify-content: space-between; flex-wrap: wrap;
+    gap: 1rem; padding-bottom: 1.5rem;
+}
+.hd-hero-icon {
+    width: 56px; height: 56px; background: rgba(255,255,255,.12);
+    border-radius: 15px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; font-size: 1.5rem;
+}
+.hd-hero-name { font-size: 1.3rem; font-weight: 900; margin: 0 0 .25rem; }
+.hd-hero-loc  { font-size: .88rem; opacity: .75; display: flex; align-items: center; gap: .35rem; margin: 0; }
+.hd-status {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .25rem .85rem; border-radius: 30px; font-size: .8rem; font-weight: 700; margin-top: .4rem;
+}
+.hd-status.active   { background: rgba(22,163,74,.25);  color: #86efac; }
+.hd-status.inactive { background: rgba(220,38,38,.2);   color: #fca5a5; }
+.hd-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-start; }
+.btn-hd {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s; white-space: nowrap;
+}
+.btn-hd:hover         { background: rgba(255,255,255,.28); color: #fff; }
+.btn-hd-primary       { background: rgba(1,105,111,.5); border-color: rgba(1,105,111,.6); }
+.btn-hd-primary:hover { background: rgba(1,105,111,.75); }
+.btn-hd-warning       { background: rgba(217,119,6,.35); border-color: rgba(217,119,6,.5); }
+.btn-hd-warning:hover { background: rgba(217,119,6,.55); }
+.hd-hero-wave { width:100%; margin-top:.5rem; line-height:0; position:relative; z-index:1; }
+.hd-hero-wave svg { display:block; }
 
-<div class="row g-3 mb-4">
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="text-muted">عدد الطلاب النشطين</div>
-            <div class="fs-3 fw-bold">{{ hall.get_current_students_count }}</div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="text-muted">المقاعد المتاحة</div>
-            <div class="fs-3 fw-bold">{{ hall.get_available_seats }}</div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="text-muted">الفئة العمرية</div>
-            <div class="fw-bold fs-5">{{ hall.age_group.name|default:"—" }}</div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="text-muted">الحالة</div>
-            <div class="fw-bold fs-5">
-                {% if hall.is_active %}نشطة{% else %}غير نشطة{% endif %}
+/* ══ إحصائيات ══ */
+.hd-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1.4rem; }
+.hd-stat {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .9rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.hd-stat-icon {
+    width: 38px; height: 38px; border-radius: 10px; margin: 0 auto .5rem;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.hd-stat-num { font-size: 1.4rem; font-weight: 800; line-height: 1; margin-bottom: .15rem; }
+.hd-stat-lbl { font-size: .75rem; color: #6b7280; font-weight: 600; }
+.hd-stat.students .hd-stat-icon { background: #dbeafe; color: #2563eb; }
+.hd-stat.students .hd-stat-num  { color: #1d4ed8; }
+.hd-stat.seats    .hd-stat-icon { background: #dcfce7; color: #16a34a; }
+.hd-stat.seats    .hd-stat-num  { color: #15803d; }
+.hd-stat.age      .hd-stat-icon { background: #fef3c7; color: #d97706; }
+.hd-stat.age      .hd-stat-num  { color: #b45309; font-size: 1rem; padding-top:.25rem; }
+.hd-stat.juz      .hd-stat-icon { background: #ede9fe; color: #7c3aed; }
+.hd-stat.juz      .hd-stat-num  { color: #6d28d9; }
+
+/* ══ بطاقات المحتوى ══ */
+.hd-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05); margin-bottom: 1.25rem;
+}
+.hd-card-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; gap: .6rem;
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+}
+.hd-card-header i { color: #01696f; font-size: 1rem; }
+.hd-card-body { padding: 1.1rem 1.25rem; }
+
+/* ══ صفوف المعلومات ══ */
+.info-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .6rem 0; border-bottom: 1px solid rgba(15,23,42,.05);
+}
+.info-row:last-child { border-bottom: none; padding-bottom: 0; }
+.info-row-icon {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    background: #f1f5f9; display: flex; align-items: center;
+    justify-content: center; font-size: .85rem; color: #64748b;
+}
+.info-row-label { font-size: .78rem; color: #94a3b8; font-weight: 600; }
+.info-row-value { font-size: .9rem; font-weight: 700; color: #0f172a; }
+
+/* ══ جدول الحصص ══ */
+.sch-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem .85rem; border-radius: 12px; margin-bottom: .5rem;
+    border: 1px solid rgba(15,23,42,.07);
+}
+.sch-item:last-child { margin-bottom: 0; }
+.sch-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.sch-day  { font-size: .78rem; font-weight: 700; color: #64748b; min-width: 55px; }
+.sch-subj { font-size: .88rem; font-weight: 800; color: #0f172a; flex: 1; }
+.sch-time { font-size: .78rem; color: #94a3b8; font-weight: 600; white-space: nowrap; }
+.sc-0 { background: #dbeafe; } .sc-dot-0 { background: #3b82f6; }
+.sc-1 { background: #dcfce7; } .sc-dot-1 { background: #16a34a; }
+.sc-2 { background: #fef3c7; } .sc-dot-2 { background: #d97706; }
+.sc-3 { background: #fce7f3; } .sc-dot-3 { background: #db2777; }
+.sc-4 { background: #ede9fe; } .sc-dot-4 { background: #7c3aed; }
+.sc-5 { background: #fee2e2; } .sc-dot-5 { background: #dc2626; }
+
+/* ══ جدول الطلاب ══ */
+.std-table thead th {
+    background: #f8fafc; font-size: .78rem; font-weight: 700;
+    color: #6b7280; text-transform: uppercase; letter-spacing: .04em;
+    padding: .7rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.std-table tbody td {
+    padding: .65rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .9rem;
+}
+.std-table tbody tr:last-child td { border-bottom: none; }
+.std-table tbody tr:hover { background: #f8fafc; }
+.std-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.btn-view {
+    padding: .25rem .75rem; border-radius: 8px; font-size: .8rem; font-weight: 700;
+    background: #f0fdf4; color: #16a34a; border: 1px solid rgba(22,163,74,.2);
+    text-decoration: none; display: inline-flex; align-items: center; gap: .3rem;
+    transition: background .15s;
+}
+.btn-view:hover { background: #dcfce7; color: #15803d; }
+.std-mobile-card {
+    background: #f8fafc; border: 1px solid rgba(15,23,42,.07);
+    border-radius: 12px; padding: .75rem .9rem;
+    display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem;
+}
+.std-mobile-card:last-child { margin-bottom: 0; }
+.std-mobile-name { font-weight: 700; font-size: .9rem; color: #0f172a; }
+.std-mobile-meta { font-size: .78rem; color: #64748b; margin-top: .1rem; }
+.hd-empty { text-align: center; padding: 2.5rem 1rem; color: #94a3b8; }
+.hd-empty i { font-size: 2rem; display: block; margin-bottom: .5rem; }
+
+@media (max-width: 767.98px) {
+    .hd-stats { grid-template-columns: repeat(2,1fr); }
+    .hd-hero { padding: 1.25rem 1.25rem 0; border-radius: 16px; }
+    .hd-hero-name { font-size: 1.1rem; }
+    .hd-actions { width: 100%; }
+    .btn-hd { flex: 1; justify-content: center; font-size: .8rem; padding: .4rem .7rem; }
+}
+</style>
+
+<!-- ══ هيدر القاعة ══ -->
+<div class="hd-hero">
+    <div class="hd-hero-body">
+        <div style="display:flex; align-items:flex-start; gap:1rem;">
+            <div class="hd-hero-icon"><i class="bi bi-building-fill"></i></div>
+            <div>
+                <div class="hd-hero-name">{{ hall.name }}</div>
+                <p class="hd-hero-loc"><i class="bi bi-geo-alt-fill"></i>{{ hall.location|default:"لم يُحدد الموقع" }}</p>
+                <div class="hd-status {% if hall.is_active %}active{% else %}inactive{% endif %}">
+                    {% if hall.is_active %}
+                        <i class="bi bi-check-circle-fill"></i>قاعة نشطة
+                    {% else %}
+                        <i class="bi bi-x-circle-fill"></i>غير نشطة
+                    {% endif %}
+                </div>
             </div>
         </div>
+        <div class="hd-actions">
+            {% if user.is_general_manager or user.is_general_supervisor %}
+            <a href="{% url 'halls:update' hall.pk %}" class="btn-hd btn-hd-warning">
+                <i class="bi bi-pencil-fill"></i>تعديل
+            </a>
+            <a href="{% url 'halls:schedule' hall.pk %}" class="btn-hd">
+                <i class="bi bi-calendar3-week"></i>إدارة الجدول
+            </a>
+            {% endif %}
+            {% if user.is_hall_supervisor %}
+            <a href="{% url 'evaluations:add_followup' %}" class="btn-hd btn-hd-primary">
+                <i class="bi bi-journal-plus"></i>متابعة يومية
+            </a>
+            {% endif %}
+            <a href="{% url 'halls:list' %}" class="btn-hd">
+                <i class="bi bi-arrow-right"></i>رجوع
+            </a>
+        </div>
+    </div>
+    <div class="hd-hero-wave">
+        <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="40">
+            <path d="M0 40 L0 22 Q360 0 720 20 Q1080 40 1440 15 L1440 40 Z" fill="#f1f5f9"/>
+        </svg>
     </div>
 </div>
 
+<!-- ══ إحصائيات ══ -->
+<div class="hd-stats">
+    <div class="hd-stat students">
+        <div class="hd-stat-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="hd-stat-num">{{ hall.get_current_students_count }}</div>
+        <div class="hd-stat-lbl">طالب نشط</div>
+    </div>
+    <div class="hd-stat seats">
+        <div class="hd-stat-icon"><i class="bi bi-person-plus-fill"></i></div>
+        <div class="hd-stat-num">{{ hall.get_available_seats }}</div>
+        <div class="hd-stat-lbl">مقعد متاح</div>
+    </div>
+    <div class="hd-stat age">
+        <div class="hd-stat-icon"><i class="bi bi-calendar-heart"></i></div>
+        <div class="hd-stat-num">{{ hall.age_group.name|default:"—" }}</div>
+        <div class="hd-stat-lbl">الفئة العمرية</div>
+    </div>
+    <div class="hd-stat juz">
+        <div class="hd-stat-icon"><i class="bi bi-book-fill"></i></div>
+        <div class="hd-stat-num">{{ hall.current_juz }}</div>
+        <div class="hd-stat-lbl">الجزء الحالي</div>
+    </div>
+</div>
+
+<!-- ══ المحتوى الرئيسي ══ -->
 <div class="row g-4">
     <div class="col-lg-5">
-        <div class="page-card p-4 mb-4">
-            <div class="section-title">معلومات القاعة</div>
-            <ul class="list-unstyled mb-0">
-                <li class="mb-2"><strong>المعلم:</strong> {{ hall.teacher.get_full_name|default:"—" }}</li>
-                <li class="mb-2"><strong>مشرف القاعة:</strong> {{ hall.supervisor.get_full_name|default:"—" }}</li>
-                <li class="mb-2"><strong>المشرف العام:</strong> {{ hall.general_supervisor.get_full_name|default:"—" }}</li>
-                <li class="mb-2"><strong>أقصى عدد:</strong> {{ hall.max_students }}</li>
-                <li class="mb-2"><strong>الجزء الحالي:</strong> {{ hall.current_juz }}</li>
-                <li class="mb-0"><strong>الأجزاء المطلوبة قبل القبول:</strong> {{ hall.required_completed_juz_count }}</li>
-            </ul>
+
+        <!-- معلومات القاعة -->
+        <div class="hd-card">
+            <div class="hd-card-header"><i class="bi bi-info-circle-fill"></i>معلومات القاعة</div>
+            <div class="hd-card-body">
+                <div class="info-row">
+                    <div class="info-row-icon"><i class="bi bi-person-video2"></i></div>
+                    <div><div class="info-row-label">المعلم</div><div class="info-row-value">{{ hall.teacher.get_full_name|default:"لم يُسند بعد" }}</div></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-row-icon"><i class="bi bi-person-badge-fill"></i></div>
+                    <div><div class="info-row-label">مشرف القاعة</div><div class="info-row-value">{{ hall.supervisor.get_full_name|default:"لم يُسند بعد" }}</div></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-row-icon"><i class="bi bi-shield-fill-check"></i></div>
+                    <div><div class="info-row-label">المشرف العام</div><div class="info-row-value">{{ hall.general_supervisor.get_full_name|default:"لم يُسند بعد" }}</div></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-row-icon"><i class="bi bi-people"></i></div>
+                    <div><div class="info-row-label">الطاقة الاستيعابية</div><div class="info-row-value">{{ hall.get_current_students_count }} / {{ hall.max_students }} طالب</div></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-row-icon"><i class="bi bi-bookmark-check-fill"></i></div>
+                    <div><div class="info-row-label">الأجزاء المطلوبة للقبول</div><div class="info-row-value">{{ hall.required_completed_juz_count }} جزء</div></div>
+                </div>
+            </div>
         </div>
 
-        <div class="page-card p-4">
-            <div class="section-title">جدول القاعة</div>
-            {% if schedules %}
-                <ul class="list-group list-group-flush">
+        <!-- جدول الحصص -->
+        <div class="hd-card">
+            <div class="hd-card-header"><i class="bi bi-calendar3-week-fill"></i>جدول الحصص</div>
+            <div class="hd-card-body">
+                {% if schedules %}
                     {% for sch in schedules %}
-                        <li class="list-group-item px-0">
-                            <div class="fw-semibold">{{ sch.get_day_display }} - {{ sch.subject.name }}</div>
-                            <div class="text-muted small">{{ sch.start_time }} إلى {{ sch.end_time }}</div>
-                        </li>
+                    <div class="sch-item {% cycle 'sc-0' 'sc-1' 'sc-2' 'sc-3' 'sc-4' 'sc-5' %}">
+                        <div class="sch-color-dot {% cycle 'sc-dot-0' 'sc-dot-1' 'sc-dot-2' 'sc-dot-3' 'sc-dot-4' 'sc-dot-5' %}"></div>
+                        <div class="sch-day">{{ sch.get_day_display }}</div>
+                        <div class="sch-subj">{{ sch.subject.name }}</div>
+                        <div class="sch-time"><i class="bi bi-clock me-1"></i>{{ sch.start_time|time:"H:i" }}—{{ sch.end_time|time:"H:i" }}</div>
+                    </div>
                     {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state p-3">لا يوجد جدول مسجل لهذه القاعة.</div>
-            {% endif %}
+                {% else %}
+                    <div class="hd-empty"><i class="bi bi-calendar3"></i><p>لا يوجد جدول مسجّل لهذه القاعة</p></div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
     <div class="col-lg-7">
-        <div class="page-card p-4">
-            <div class="section-title">طلاب القاعة</div>
-            {% if students %}
-                <div class="table-responsive">
-                    <table class="table table-modern align-middle">
+        <div class="hd-card h-100">
+            <div class="hd-card-header" style="justify-content:space-between;">
+                <span style="display:flex; align-items:center; gap:.6rem;"><i class="bi bi-mortarboard-fill"></i>طلاب القاعة</span>
+                <span style="background:#1e293b; color:#fff; border-radius:30px; padding:.15rem .75rem; font-size:.78rem; font-weight:700;">{{ students|length }}</span>
+            </div>
+            <div class="hd-card-body" style="padding:0;">
+                {% if students %}
+                <!-- ديسكتوب -->
+                <div class="d-none d-md-block table-responsive">
+                    <table class="table std-table mb-0">
                         <thead>
-                            <tr>
-                                <th>الطالب</th>
-                                <th>ولي الأمر</th>
-                                <th>الهاتف</th>
-                                <th>الحالة</th>
-                                <th>إجراء</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in students %}
-                                <tr>
-                                    <td>{{ student.get_full_name }}</td>
-                                    <td>{{ student.parent.get_full_name|default:"—" }}</td>
-                                    <td>{{ student.parent.phone|default:"—" }}</td>
-                                    <td><span class="badge text-bg-success">نشط</span></td>
-                                    <td>
-                                        <a href="{% url 'students:detail' student.pk %}" class="btn btn-sm btn-outline-primary">عرض</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="empty-state">لا يوجد طلاب نشطون في هذه القاعة.</div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}{{ hall.name }}{% endblock %}
-
-{% block content %}
-
-<!-- هيدر القاعة -->
-<div class="card stat-card mb-4">
-    <div class="card-body d-flex align-items-center justify-content-between
-                flex-wrap gap-2 py-3">
-        <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center
-                        justify-content-center bg-primary bg-opacity-10
-                        flex-shrink-0"
-                 style="width:52px;height:52px;">
-                <i class="fas fa-door-open text-primary fa-lg"></i>
-            </div>
-            <div>
-                <div class="fw-bold fs-6">{{ hall.name }}</div>
-                <div class="d-flex flex-wrap gap-1 mt-1">
-                    <span class="badge bg-info bg-opacity-75">
-                        {{ hall.get_age_group_display }}
-                    </span>
-                    {% with count=hall.get_current_students_count %}
-                    <span class="badge
-                        {% if count >= hall.max_students %}bg-danger
-                        {% elif hall.get_available_seats <= 2 %}bg-warning text-dark
-                        {% else %}bg-success{% endif %}">
-                        {{ count }} / {{ hall.max_students }} طالب
-                    </span>
-                    {% endwith %}
-                </div>
-            </div>
-        </div>
-        {% if is_general_supervisor or is_general_manager %}
-        <a href="{% url 'halls:schedule' hall.pk %}"
-           class="btn btn-outline-info btn-sm px-3">
-            <i class="fas fa-calendar me-1"></i> الجدول الدراسي
-        </a>
-        {% endif %}
-    </div>
-</div>
-
-<div class="row g-4">
-
-    <!-- ══════ العمود الجانبي ══════ -->
-    <div class="col-12 col-md-4">
-
-        <!-- بيانات القاعة -->
-        <div class="card stat-card mb-4">
-            <div class="card-header fw-bold">
-                <i class="fas fa-info-circle text-primary me-2"></i>
-                بيانات القاعة
-            </div>
-            <div class="card-body d-flex flex-column gap-3">
-
-                {% if hall.location %}
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle d-flex align-items-center
-                                justify-content-center bg-danger bg-opacity-10
-                                flex-shrink-0"
-                         style="width:36px;height:36px;">
-                        <i class="fas fa-map-marker-alt text-danger"
-                           style="font-size:.8rem;"></i>
-                    </div>
-                    <div>
-                        <div class="text-muted" style="font-size:.72rem;">الموقع</div>
-                        <div class="fw-bold small">{{ hall.location }}</div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle d-flex align-items-center
-                                justify-content-center bg-success bg-opacity-10
-                                flex-shrink-0"
-                         style="width:36px;height:36px;">
-                        <i class="fas fa-chalkboard-teacher text-success"
-                           style="font-size:.8rem;"></i>
-                    </div>
-                    <div>
-                        <div class="text-muted" style="font-size:.72rem;">المعلم</div>
-                        <div class="fw-bold small">
-                            {{ hall.teacher.get_full_name|default:"لم يُعيَّن" }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle d-flex align-items-center
-                                justify-content-center bg-info bg-opacity-10
-                                flex-shrink-0"
-                         style="width:36px;height:36px;">
-                        <i class="fas fa-user-shield text-info"
-                           style="font-size:.8rem;"></i>
-                    </div>
-                    <div>
-                        <div class="text-muted" style="font-size:.72rem;">المشرف</div>
-                        <div class="fw-bold small">
-                            {{ hall.supervisor.get_full_name|default:"لم يُعيَّن" }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- شريط الامتلاء -->
-                {% with count=hall.get_current_students_count %}
-                <div>
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span class="text-muted">نسبة الامتلاء</span>
-                        <span class="fw-bold">
-                            {% widthratio count hall.max_students 100 %}%
-                        </span>
-                    </div>
-                    <div class="progress" style="height:8px;border-radius:4px;">
-                        <div class="progress-bar
-                            {% if count >= hall.max_students %}bg-danger
-                            {% elif hall.get_available_seats <= 2 %}bg-warning
-                            {% else %}bg-success{% endif %}"
-                             style="width:{% widthratio count hall.max_students 100 %}%">
-                        </div>
-                    </div>
-                </div>
-                {% endwith %}
-
-            </div>
-        </div>
-
-        <!-- الجدول الدراسي -->
-        {% if schedules %}
-        <div class="card stat-card">
-            <div class="card-header d-flex justify-content-between
-                        align-items-center fw-bold">
-                <span>
-                    <i class="fas fa-calendar text-info me-2"></i>
-                    الجدول الدراسي
-                </span>
-                <span class="badge bg-info bg-opacity-75">
-                    {{ schedules|length }} حصة
-                </span>
-            </div>
-            <div class="list-group list-group-flush">
-                {% for schedule in schedules %}
-                <div class="list-group-item small py-2">
-                    <div class="d-flex justify-content-between
-                                align-items-center gap-2">
-                        <span class="fw-bold">
-                            {{ schedule.get_day_display }}
-                        </span>
-                        <span class="badge bg-light text-dark">
-                            <i class="far fa-clock me-1"
-                               style="font-size:.65rem;"></i>
-                            {{ schedule.start_time|time:"H:i" }}
-                            —
-                            {{ schedule.end_time|time:"H:i" }}
-                        </span>
-                    </div>
-                    <div class="text-primary mt-1">
-                        <i class="fas fa-book me-1"
-                           style="font-size:.7rem;"></i>
-                        {{ schedule.subject.name }}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-    </div>
-
-    <!-- ══════ قائمة الطلاب ══════ -->
-    <div class="col-12 col-md-8">
-        <div class="card stat-card">
-            <div class="card-header d-flex justify-content-between
-                        align-items-center fw-bold flex-wrap gap-2">
-                <span>
-                    <i class="fas fa-user-graduate text-primary me-2"></i>
-                    الطلاب
-                </span>
-                <span class="badge bg-primary px-3 py-2">
-                    {{ students|length }} طالب
-                </span>
-            </div>
-            <div class="card-body p-0">
-
-                <!-- Desktop Table -->
-                <div class="table-responsive d-none d-md-block">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>الطالب</th>
-                                <th class="text-center">العمر</th>
-                                <th class="text-center">السور</th>
-                                <th>ولي الأمر</th>
-                                <th class="text-center">ملف</th>
-                            </tr>
+                            <tr><th>#</th><th>الطالب</th><th>ولي الأمر</th><th>الهاتف</th><th>الحالة</th><th></th></tr>
                         </thead>
                         <tbody>
                             {% for student in students %}
                             <tr>
-                                <td class="text-muted small">
-                                    {{ forloop.counter }}
+                                <td class="text-muted small">{{ forloop.counter }}</td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:.6rem;">
+                                        <div class="std-avatar">{{ student.first_name|first }}{{ student.last_name|first }}</div>
+                                        <span class="fw-bold" style="font-size:.9rem;">{{ student.get_full_name }}</span>
+                                    </div>
                                 </td>
-                                <td class="fw-bold">
-                                    {{ student.get_full_name }}
-                                </td>
-                                <td class="text-center small">
-                                    {{ student.calculate_age }} سنة
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">
-                                        {{ student.memorized_surahs.count }} سورة
-                                    </span>
-                                </td>
-                                <td class="small text-muted">
-                                    {{ student.parent.get_full_name }}
-                                </td>
-                                <td class="text-center">
-                                    <a href="{% url 'students:detail' student.pk %}"
-                                       class="btn btn-sm btn-outline-primary px-2">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6"
-                                    class="text-center text-muted py-5">
-                                    <i class="fas fa-user-slash fa-2x mb-2 d-block"></i>
-                                    لا يوجد طلاب في هذه القاعة
-                                </td>
+                                <td class="text-muted small">{{ student.parent.get_full_name|default:"—" }}</td>
+                                <td class="text-muted small">{{ student.parent.phone|default:"—" }}</td>
+                                <td><span style="background:#dcfce7; color:#16a34a; border-radius:30px; padding:.2rem .65rem; font-size:.75rem; font-weight:700;">نشط</span></td>
+                                <td><a href="{% url 'students:detail' student.pk %}" class="btn-view"><i class="bi bi-eye"></i>عرض</a></td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Mobile Cards -->
-                <div class="d-md-none p-3">
-                    <div class="d-flex flex-column gap-2">
-                        {% for student in students %}
-                        <div class="d-flex align-items-center justify-content-between
-                                    gap-2 border rounded-3 px-3 py-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="rounded-circle d-flex align-items-center
-                                            justify-content-center bg-primary
-                                            bg-opacity-10 flex-shrink-0"
-                                     style="width:38px;height:38px;">
-                                    <i class="fas fa-user-graduate text-primary"
-                                       style="font-size:.75rem;"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-bold small">
-                                        {{ student.get_full_name }}
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-1 mt-1">
-                                        <span class="badge bg-secondary
-                                                     bg-opacity-75"
-                                              style="font-size:.65rem;">
-                                            {{ student.calculate_age }} سنة
-                                        </span>
-                                        <span class="badge bg-success"
-                                              style="font-size:.65rem;">
-                                            {{ student.memorized_surahs.count }} سورة
-                                        </span>
-                                    </div>
-                                    <div class="text-muted mt-1"
-                                         style="font-size:.72rem;">
-                                        {{ student.parent.get_full_name }}
-                                    </div>
-                                </div>
+                <!-- موبايل -->
+                <div class="d-md-none" style="padding:.85rem;">
+                    {% for student in students %}
+                    <div class="std-mobile-card">
+                        <div class="std-avatar">{{ student.first_name|first }}{{ student.last_name|first }}</div>
+                        <div style="flex:1; min-width:0;">
+                            <div class="std-mobile-name">{{ student.get_full_name }}</div>
+                            <div class="std-mobile-meta">
+                                <i class="bi bi-person me-1"></i>{{ student.parent.get_full_name|default:"—" }}
+                                {% if student.parent.phone %}<span class="mx-1">•</span><i class="bi bi-telephone me-1"></i>{{ student.parent.phone }}{% endif %}
                             </div>
-                            <a href="{% url 'students:detail' student.pk %}"
-                               class="btn btn-sm btn-outline-primary flex-shrink-0">
-                                <i class="fas fa-eye"></i>
-                            </a>
                         </div>
-                        {% empty %}
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-user-slash fa-2x mb-2 d-block"></i>
-                            لا يوجد طلاب في هذه القاعة
-                        </div>
-                        {% endfor %}
+                        <a href="{% url 'students:detail' student.pk %}" class="btn-view"><i class="bi bi-eye"></i></a>
                     </div>
+                    {% endfor %}
                 </div>
-
+                {% else %}
+                <div class="hd-empty"><i class="bi bi-person-x"></i><p>لا يوجد طلاب نشطون في هذه القاعة</p></div>
+                {% endif %}
             </div>
         </div>
     </div>
-
 </div>
-{% endblock %} {% endcomment %}
+
+{% endblock %}

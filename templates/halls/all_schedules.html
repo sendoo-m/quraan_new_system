@@ -1,380 +1,269 @@
 {% extends "base.html" %}
-
-{% block title %}كل الجداول | {{ SITE_NAME }}{% endblock %}
-{% block page_title %}كل الجداول{% endblock %}
-
-{% block extra_css %}
-<style>
-    .day-card{
-        border:1px solid var(--border);
-        border-radius:16px;
-        padding:14px;
-        background:#fff;
-        height:100%;
-    }
-    .session-chip{
-        border-radius:12px;
-        padding:10px 12px;
-        color:#111827;
-        margin-bottom:10px;
-        font-size:.92rem;
-    }
-    .sess-0{ background:#dbeafe; }
-    .sess-1{ background:#dcfce7; }
-    .sess-2{ background:#fef3c7; }
-    .sess-3{ background:#fce7f3; }
-    .sess-4{ background:#ede9fe; }
-    .sess-5{ background:#fee2e2; }
-</style>
-{% endblock %}
+{% block title %}جداول القاعات | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}جداول القاعات{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <form method="get" class="row g-3 align-items-end">
-        <div class="col-md-8">
-            <label class="form-label fw-semibold">تصفية حسب القاعة</label>
-            <select name="hall" class="form-select">
+<style>
+/* ══ هيدر ══ */
+.tt-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.4rem 1.75rem;
+    margin-bottom: 1.4rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.tt-hero-left { display: flex; align-items: center; gap: 1rem; }
+.tt-hero-icon {
+    width: 50px; height: 50px; background: rgba(255,255,255,.12);
+    border-radius: 13px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+}
+.tt-hero-icon i { font-size: 1.4rem; color: #fff; }
+.tt-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.tt-hero p  { font-size: .87rem; opacity: .75; margin: 0; }
+
+/* ══ فلتر ══ */
+.tt-filter {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .9rem 1.25rem; margin-bottom: 1.4rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap;
+}
+.tt-filter-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
+.tt-filter-lbl { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.tt-filter select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .45rem .85rem; font-size: .9rem; color: #0f172a;
+    background: #fff; height: 42px; transition: border-color .15s, box-shadow .15s;
+}
+.tt-filter select:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none; }
+.btn-tt-filter {
+    height: 42px; padding: 0 1.5rem; border-radius: 9px;
+    font-weight: 700; font-size: .9rem;
+    background: #1e293b; color: #fff; border: none;
+    display: flex; align-items: center; gap: .45rem;
+    transition: background .15s; cursor: pointer; white-space: nowrap;
+}
+.btn-tt-filter:hover { background: #334155; }
+
+/* ══ بطاقة القاعة ══ */
+.hall-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(15,23,42,.05); margin-bottom: 1.5rem;
+}
+.hall-card-header {
+    background: linear-gradient(135deg, #01696f 0%, #0a8a91 100%);
+    padding: 1.1rem 1.5rem; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: .75rem;
+}
+.hall-card-header-left { display: flex; align-items: center; gap: .9rem; }
+.hall-icon {
+    width: 44px; height: 44px; background: rgba(255,255,255,.15);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; font-size: 1.15rem; color: #fff;
+}
+.hall-name { font-size: 1.05rem; font-weight: 800; margin: 0 0 .15rem; }
+.hall-meta { font-size: .82rem; opacity: .8; display: flex; align-items: center; gap: .5rem; }
+.hall-sessions-badge {
+    background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.3);
+    border-radius: 30px; padding: .25rem .9rem;
+    font-size: .82rem; font-weight: 700;
+    display: flex; align-items: center; gap: .35rem;
+}
+.btn-hall-detail {
+    background: rgba(255,255,255,.18); color: #fff;
+    border: 1px solid rgba(255,255,255,.3); border-radius: 9px;
+    padding: .35rem .9rem; font-size: .83rem; font-weight: 700;
+    text-decoration: none; display: flex; align-items: center; gap: .35rem;
+    transition: background .15s;
+}
+.btn-hall-detail:hover { background: rgba(255,255,255,.3); color: #fff; }
+
+/* ══ شبكة الأيام ══ */
+.tt-days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem; padding: 1.25rem 1.5rem;
+}
+
+/* ══ بطاقة اليوم ══ */
+.day-card {
+    border: 1px solid rgba(15,23,42,.08); border-radius: 14px;
+    background: #fafbfc; overflow: hidden;
+    display: flex; flex-direction: column; transition: box-shadow .15s;
+}
+.day-card:hover { box-shadow: 0 4px 16px rgba(15,23,42,.09); }
+.day-header {
+    background: #f1f5f9; border-bottom: 1px solid rgba(15,23,42,.07);
+    padding: .55rem .85rem; font-weight: 800; font-size: .88rem; color: #334155;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.day-count {
+    background: #1e293b; color: #fff; border-radius: 30px;
+    padding: .1rem .55rem; font-size: .7rem; font-weight: 700;
+}
+.day-sessions { padding: .65rem .7rem; flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+
+/* ══ شريحة الحصة ══ */
+.sess-chip {
+    border-radius: 10px; padding: .55rem .75rem;
+    display: flex; flex-direction: column; gap: .15rem;
+    position: relative; overflow: hidden;
+}
+.sess-chip::before {
+    content: ''; position: absolute; right: 0; top: 0; bottom: 0;
+    width: 3px; border-radius: 0 10px 10px 0;
+    background: rgba(0,0,0,.15);
+}
+.sess-name   { font-size: .82rem; font-weight: 800; color: #111827; }
+.sess-time   { font-size: .73rem; font-weight: 600; color: rgba(0,0,0,.5); display: flex; align-items: center; gap: .25rem; }
+.sess-teacher{ font-size: .72rem; color: rgba(0,0,0,.45); display: flex; align-items: center; gap: .25rem; margin-top: .1rem; }
+
+.sc-0 { background: #dbeafe; } .sc-1 { background: #dcfce7; }
+.sc-2 { background: #fef3c7; } .sc-3 { background: #fce7f3; }
+.sc-4 { background: #ede9fe; } .sc-5 { background: #fee2e2; }
+.sc-6 { background: #ccfbf1; } .sc-7 { background: #ffedd5; }
+
+.day-empty {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 1rem .5rem; color: #cbd5e1; font-size: .8rem; font-weight: 600;
+    flex-direction: column; gap: .3rem;
+}
+.day-empty i { font-size: 1.2rem; }
+
+/* ══ حالة فارغة ══ */
+.tt-empty {
+    text-align: center; padding: 4rem 1.5rem;
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 20px; box-shadow: 0 4px 20px rgba(15,23,42,.04);
+}
+.tt-empty-icon {
+    width: 72px; height: 72px; margin: 0 auto 1.1rem;
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+}
+.tt-empty-icon i { font-size: 2rem; color: #0891b2; }
+.tt-empty h4 { font-weight: 800; color: #1e293b; margin-bottom: .5rem; }
+.tt-empty p  { color: #64748b; font-size: .9rem; }
+
+@media (max-width: 767.98px) {
+    .tt-hero { flex-direction: column; align-items: flex-start; padding: 1.1rem 1.25rem; }
+    .tt-hero h1 { font-size: 1rem; }
+    .hall-card-header { flex-direction: column; align-items: flex-start; }
+    .tt-days-grid { grid-template-columns: repeat(2, 1fr); padding: 1rem; gap: .75rem; }
+    .btn-hall-detail { align-self: flex-start; }
+}
+@media (max-width: 420px) {
+    .tt-days-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="tt-hero">
+    <div class="tt-hero-left">
+        <div class="tt-hero-icon"><i class="bi bi-calendar3-week-fill"></i></div>
+        <div>
+            <h1>جداول القاعات</h1>
+            <p>عرض وتصفية جداول جميع القاعات حسب اليوم والمادة</p>
+        </div>
+    </div>
+    {% if timetable %}
+    <div style="background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:10px; padding:.4rem 1rem; font-size:.85rem; font-weight:700;">
+        <i class="bi bi-building me-1"></i>{{ timetable|length }} قاعة
+    </div>
+    {% endif %}
+</div>
+
+<!-- ══ فلتر ══ -->
+<div class="tt-filter">
+    <form method="get" style="display:flex; align-items:flex-end; gap:.75rem; flex-wrap:wrap; width:100%;">
+        <div class="tt-filter-group">
+            <div class="tt-filter-lbl"><i class="bi bi-building me-1"></i>تصفية حسب القاعة</div>
+            <select name="hall">
                 <option value="">كل القاعات</option>
                 {% for hall in all_halls %}
-                    <option value="{{ hall.id }}" {% if selected_hall == hall.id|stringformat:"s" %}selected{% endif %}>
-                        {{ hall.name }}
-                    </option>
+                <option value="{{ hall.id }}" {% if selected_hall == hall.id|stringformat:"s" %}selected{% endif %}>
+                    {{ hall.name }}
+                </option>
                 {% endfor %}
             </select>
         </div>
-
-        <div class="col-md-4 d-grid">
-            <button class="btn btn-primary">عرض الجداول</button>
-        </div>
+        <button type="submit" class="btn-tt-filter">
+            <i class="bi bi-funnel-fill"></i>عرض الجداول
+        </button>
+        {% if selected_hall %}
+        <a href="{% url 'halls:all_schedules' %}" style="height:42px; padding:0 1rem; border-radius:9px; font-size:.88rem; font-weight:600; background:#f1f5f9; color:#64748b; border:none; text-decoration:none; display:flex; align-items:center; gap:.4rem;">
+            <i class="bi bi-x-circle"></i>مسح
+        </a>
+        {% endif %}
     </form>
 </div>
 
+<!-- ══ قائمة القاعات ══ -->
 {% if timetable %}
-    <div class="row g-4">
-        {% for item in timetable %}
-            <div class="col-12">
-                <div class="page-card p-4">
-                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-4">
-                        <div>
-                            <h3 class="fw-bold mb-1">{{ item.hall.name }}</h3>
-                            <div class="text-muted small">{{ item.hall.location }} | عدد الحصص: {{ item.total_sch }}</div>
-                        </div>
-                        <a href="{% url 'halls:detail' item.hall.pk %}" class="btn btn-sm btn-outline-primary">عرض القاعة</a>
-                    </div>
-
-                    <div class="row g-3">
-                        {% for day in item.days %}
-                            <div class="col-md-6 col-xl">
-                                <div class="day-card">
-                                    <div class="fw-bold mb-3">{{ day.label }}</div>
-
-                                    {% if day.sessions %}
-                                        {% for session in day.sessions %}
-                                            <div class="session-chip {{ session.color }}">
-                                                <div class="fw-semibold">{{ session.subject.name }}</div>
-                                                <div class="small">{{ session.start_time }} - {{ session.end_time }}</div>
-                                            </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div class="text-muted small">لا توجد حصص</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
+    {% for item in timetable %}
+    <div class="hall-card">
+        <div class="hall-card-header">
+            <div class="hall-card-header-left">
+                <div class="hall-icon"><i class="bi bi-building-fill"></i></div>
+                <div>
+                    <div class="hall-name">{{ item.hall.name }}</div>
+                    <div class="hall-meta">
+                        {% if item.hall.location %}<span><i class="bi bi-geo-alt"></i>{{ item.hall.location }}</span><span>•</span>{% endif %}
+                        <span><i class="bi bi-calendar3"></i>{{ item.total_sch }} حصة أسبوعياً</span>
                     </div>
                 </div>
             </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <div class="page-card">
-        <div class="empty-state">لا توجد جداول متاحة حاليًا.</div>
-    </div>
-{% endif %}
-{% endblock %}
-
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}الجدول الدراسي الكامل{% endblock %}
-
-{% block extra_css %}
-<style>
-    :root {
-        --c0:#4e73df; --b0:#eef1fb;
-        --c1:#1cc88a; --b1:#e8f8f2;
-        --c2:#f6c23e; --b2:#fef9ec;
-        --c3:#e74a3b; --b3:#fdf0ee;
-        --c4:#36b9cc; --b4:#eaf7f9;
-        --c5:#858796; --b5:#f5f5f6;
-    }
-    /* Desktop table */
-    .sched-wrap  { overflow-x:auto; border-radius:0 0 12px 12px; }
-    .sched-table { min-width:860px; }
-    .sched-table th {
-        background: linear-gradient(135deg,#1a1a2e,#16213e);
-        color:#fff; text-align:center;
-        font-size:.85rem; padding:10px 8px; white-space:nowrap;
-    }
-    .sched-table td { vertical-align:top; padding:6px; min-width:120px; }
-
-    /* حصة */
-    .sess {
-        border-radius:8px; padding:7px 10px; margin-bottom:4px;
-        border-right:4px solid; font-size:.8rem;
-        box-shadow:0 1px 4px rgba(0,0,0,.07);
-        transition:transform .15s;
-    }
-    .sess:hover     { transform:translateY(-2px); }
-    .sess-0 { border-color:var(--c0); background:var(--b0); }
-    .sess-1 { border-color:var(--c1); background:var(--b1); }
-    .sess-2 { border-color:var(--c2); background:var(--b2); }
-    .sess-3 { border-color:var(--c3); background:var(--b3); }
-    .sess-4 { border-color:var(--c4); background:var(--b4); }
-    .sess-5 { border-color:var(--c5); background:var(--b5); }
-
-    .empty-cell {
-        height:36px; border-radius:6px;
-        background:#f8f9fa; border:1px dashed #dee2e6;
-        display:flex; align-items:center; justify-content:center;
-        color:#ccc; font-size:.75rem;
-    }
-
-    /* Mobile day card */
-    .day-card {
-        border-radius:10px; overflow:hidden;
-    }
-    .day-card .day-header {
-        background:linear-gradient(135deg,#1a1a2e,#16213e);
-        color:#fff; padding:8px 14px;
-        font-size:.85rem; font-weight:bold;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-
-<!-- فلتر -->
-<div class="card stat-card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-12 col-md-5">
-                <label class="form-label fw-bold small text-muted">
-                    <i class="fas fa-door-open text-primary me-1"></i>
-                    تصفية حسب القاعة
-                </label>
-                <select name="hall" class="form-select"
-                        onchange="this.form.submit()">
-                    <option value="">كل القاعات</option>
-                    {% for h in all_halls %}
-                    <option value="{{ h.id }}"
-                        {% if selected_hall == h.id|stringformat:"s" %}selected{% endif %}>
-                        {{ h.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-auto">
-                <a href="{% url 'halls:all_schedules' %}"
-                   class="btn btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i> الكل
+            <div style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+                <div class="hall-sessions-badge"><i class="bi bi-grid-1x2"></i>{{ item.total_sch }} حصة</div>
+                <a href="{% url 'halls:detail' item.hall.pk %}" class="btn-hall-detail">
+                    <i class="bi bi-arrow-up-left-square"></i>تفاصيل القاعة
                 </a>
             </div>
-        </form>
-    </div>
-</div>
-
-<!-- الجداول -->
-{% for item in timetable %}
-<div class="card stat-card mb-4">
-
-    <!-- هيدر القاعة -->
-    <div class="card-header d-flex justify-content-between
-                align-items-center flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="fw-bold">
-                <i class="fas fa-door-open text-primary me-1"></i>
-                {{ item.hall.name }}
-            </span>
-            {% if item.hall.age_group %}
-            <span class="badge bg-warning text-dark">
-                <i class="fas fa-users me-1"></i>
-                {{ item.hall.age_group.name }}
-            </span>
-            {% endif %}
-            {% if item.hall.teacher %}
-            <span class="badge bg-success">
-                <i class="fas fa-chalkboard-teacher me-1"></i>
-                {{ item.hall.teacher.get_full_name }}
-            </span>
-            {% endif %}
-            {% if item.hall.supervisor %}
-            <span class="badge bg-info">
-                <i class="fas fa-user-tie me-1"></i>
-                {{ item.hall.supervisor.get_full_name }}
-            </span>
-            {% endif %}
-            <span class="badge bg-secondary">
-                {{ item.total_sch }} حصة
-            </span>
         </div>
-        <div class="d-flex gap-2 align-items-center flex-wrap">
-            <span class="badge bg-primary">
-                {{ item.hall.students.count }} / {{ item.hall.max_students }} طالب
-            </span>
-            {% if is_general_supervisor or is_general_manager %}
-            <a href="{% url 'halls:schedule' item.hall.pk %}"
-               class="btn btn-outline-success btn-sm">
-                <i class="fas fa-plus me-1"></i> إضافة حصة
-            </a>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- ══════════ Desktop Table ══════════ -->
-    <div class="sched-wrap d-none d-md-block">
-        <table class="table sched-table table-bordered mb-0">
-            <thead>
-                <tr>
-                    {% for day in item.days %}
-                    <th>
-                        <i class="fas fa-calendar-day me-1"></i>
-                        {{ day.label }}
-                    </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    {% for day in item.days %}
-                    <td>
-                        {% if day.sessions %}
-                            {% for sch in day.sessions %}
-                            <div class="sess {{ sch.color }}">
-                                <div class="fw-bold text-truncate mb-1">
-                                    <i class="fas fa-book-open me-1"></i>
-                                    {{ sch.subject.name }}
-                                </div>
-                                <div>
-                                    <span class="badge bg-light text-dark">
-                                        <i class="far fa-clock me-1"></i>
-                                        {{ sch.start_time|time:"H:i" }}
-                                        —
-                                        {{ sch.end_time|time:"H:i" }}
-                                    </span>
-                                </div>
-                                {% if is_general_supervisor or is_general_manager %}
-                                <form method="post"
-                                      action="{% url 'halls:schedule' item.hall.pk %}"
-                                      class="d-inline mt-1">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="delete_id"
-                                           value="{{ sch.pk }}">
-                                    <button type="submit"
-                                            class="btn btn-outline-danger
-                                                   py-0 px-1 mt-1"
-                                            style="font-size:.7rem"
-                                            onclick="return confirm('حذف الحصة؟')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-cell">—</div>
-                        {% endif %}
-                    </td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ══════════ Mobile Days ══════════ -->
-    <div class="d-md-none p-3">
-        <div class="d-flex flex-column gap-3">
+        <div class="tt-days-grid">
             {% for day in item.days %}
-            {% if day.sessions %}
-            <div class="card day-card border">
-                <!-- اسم اليوم -->
+            <div class="day-card">
                 <div class="day-header">
-                    <i class="fas fa-calendar-day me-1"></i>
-                    {{ day.label }}
-                    <span class="badge bg-white text-dark ms-2"
-                          style="font-size:.7rem;">
-                        {{ day.sessions|length }} حصة
-                    </span>
+                    <span>{{ day.label }}</span>
+                    {% if day.sessions %}<span class="day-count">{{ day.sessions|length }}</span>{% endif %}
                 </div>
-                <!-- حصص اليوم -->
-                <div class="p-2 d-flex flex-column gap-2">
-                    {% for sch in day.sessions %}
-                    <div class="sess {{ sch.color }} d-flex align-items-start
-                                justify-content-between gap-2">
-                        <div class="flex-grow-1">
-                            <div class="fw-bold mb-1">
-                                <i class="fas fa-book-open me-1"></i>
-                                {{ sch.subject.name }}
+                <div class="day-sessions">
+                    {% if day.sessions %}
+                        {% for session in day.sessions %}
+                        <div class="sess-chip {% cycle 'sc-0' 'sc-1' 'sc-2' 'sc-3' 'sc-4' 'sc-5' 'sc-6' 'sc-7' %}">
+                            <div class="sess-name">{{ session.subject.name }}</div>
+                            <div class="sess-time">
+                                <i class="bi bi-clock"></i>
+                                {{ session.start_time|time:"H:i" }} - {{ session.end_time|time:"H:i" }}
                             </div>
-                            <span class="badge bg-light text-dark">
-                                <i class="far fa-clock me-1"></i>
-                                {{ sch.start_time|time:"H:i" }}
-                                —
-                                {{ sch.end_time|time:"H:i" }}
-                            </span>
+                            {% if session.teacher %}
+                            <div class="sess-teacher">
+                                <i class="bi bi-person-fill"></i>{{ session.teacher.get_full_name|default:session.teacher.username }}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% if is_general_supervisor or is_general_manager %}
-                        <form method="post"
-                              action="{% url 'halls:schedule' item.hall.pk %}"
-                              class="flex-shrink-0">
-                            {% csrf_token %}
-                            <input type="hidden" name="delete_id"
-                                   value="{{ sch.pk }}">
-                            <button type="submit"
-                                    class="btn btn-outline-danger btn-sm py-0 px-2"
-                                    onclick="return confirm('حذف الحصة؟')">
-                                <i class="fas fa-trash"
-                                   style="font-size:.7rem;"></i>
-                            </button>
-                        </form>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="day-empty">
+                            <i class="bi bi-dash-circle"></i><span>لا توجد حصص</span>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
             {% endfor %}
-
-            <!-- لو مافيش حصص خالص -->
-            {% if not item.total_sch %}
-            <div class="text-center text-muted py-3">
-                <i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>
-                لا توجد حصص مضافة
-            </div>
-            {% endif %}
         </div>
     </div>
+    {% endfor %}
 
+{% else %}
+<div class="tt-empty">
+    <div class="tt-empty-icon"><i class="bi bi-calendar3"></i></div>
+    <h4>لا توجد جداول متاحة</h4>
+    <p>لم يتم إضافة جداول لأي قاعة بعد، أو لا توجد نتائج لهذا الفلتر.</p>
 </div>
-{% empty %}
+{% endif %}
 
-<!-- حالة فارغة -->
-<div class="card stat-card">
-    <div class="card-body text-center py-5 text-muted">
-        <div class="rounded-circle d-inline-flex align-items-center
-                    justify-content-center bg-primary bg-opacity-10 mb-3"
-             style="width:80px;height:80px;">
-            <i class="fas fa-calendar-times fa-2x text-primary"></i>
-        </div>
-        <div class="fw-bold mb-1">لا يوجد جداول مضافة بعد</div>
-        {% if is_general_supervisor or is_general_manager %}
-        <div class="small mb-4">اذهب للقاعات وأضف جدولاً دراسياً</div>
-        <a href="{% url 'halls:list' %}" class="btn btn-success px-4">
-            <i class="fas fa-door-open me-1"></i> القاعات
-        </a>
-        {% endif %}
-    </div>
-</div>
-
-{% endfor %}
-
-{% endblock %} {% endcomment %}
+{% endblock %}

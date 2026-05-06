@@ -2,6 +2,535 @@
 {% block page_title %}تسجيل حضور الموظفين{% endblock %}
 
 {% block content %}
+<style>
+/* ══ هيدر ══ */
+.staff-att-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px;
+    padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.staff-att-hero-left { display: flex; align-items: center; gap: 1rem; }
+.staff-att-hero-icon {
+    width: 50px; height: 50px;
+    background: rgba(255,255,255,.12);
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.staff-att-hero-icon i { font-size: 1.35rem; color: #fff; }
+.staff-att-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.staff-att-hero p  { font-size: .87rem; opacity: .8; margin: 0; }
+.staff-hero-badge {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    padding: .35rem 1rem;
+    border-radius: 30px;
+    font-size: .85rem;
+    font-weight: 700;
+    display: flex; align-items: center; gap: .4rem;
+}
+
+/* ══ إحصائيات ديناميكية ══ */
+.staff-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+.staff-stat {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.staff-stat-num { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: .2rem; }
+.staff-stat-lbl { font-size: .78rem; color: #6b7280; font-weight: 600; }
+.staff-stat.present .staff-stat-num { color: #16a34a; }
+.staff-stat.absent  .staff-stat-num { color: #dc2626; }
+.staff-stat.late    .staff-stat-num { color: #d97706; }
+.staff-stat.excused .staff-stat-num { color: #0891b2; }
+
+/* ══ شريط الأدوات ══ */
+.staff-toolbar {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 13px;
+    padding: .7rem 1rem;
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .6rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+
+/* ══ جدول الديسكتوب ══ */
+.staff-table-card {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.staff-table thead th {
+    background: #f8fafc;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    white-space: nowrap;
+}
+.staff-table tbody td {
+    padding: .65rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05);
+}
+.staff-table tbody tr:last-child td { border-bottom: none; }
+
+/* تلوين الصف */
+.staff-table tbody tr.row-present { background: #f0fdf4; }
+.staff-table tbody tr.row-absent  { background: #fff1f2; }
+.staff-table tbody tr.row-late    { background: #fffbeb; }
+.staff-table tbody tr.row-excused { background: #ecfeff; }
+
+/* أفاتار الموظف */
+.staff-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+}
+.staff-name { font-weight: 700; font-size: .9rem; color: #0f172a; line-height: 1.2; }
+
+/* badge الدور */
+.role-badge {
+    padding: .2rem .65rem;
+    border-radius: 30px;
+    font-size: .75rem;
+    font-weight: 700;
+    display: inline-flex; align-items: center; gap: .3rem;
+}
+.role-teacher  { background: #dcfce7; color: #16a34a; }
+.role-supervisor { background: #cffafe; color: #0891b2; }
+
+/* select الحالة */
+.status-select-wrap { position: relative; }
+.status-select-wrap select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .3rem 2rem .3rem .6rem;
+    font-size: .82rem;
+    color: #0f172a;
+    background: #fff;
+    min-width: 110px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    appearance: auto;
+}
+.status-select-wrap select:focus {
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.1);
+    outline: none;
+}
+select.sel-present { border-color: #86efac; background: #f0fdf4; color: #16a34a; }
+select.sel-absent  { border-color: #fca5a5; background: #fff1f2; color: #dc2626; }
+select.sel-late    { border-color: #fcd34d; background: #fffbeb; color: #d97706; }
+select.sel-excused { border-color: #67e8f9; background: #ecfeff; color: #0891b2; }
+
+/* مدخلات الوقت والملاحظات */
+.staff-table input[type=time],
+.staff-table input[type=text] {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .3rem .55rem;
+    font-size: .82rem;
+    color: #0f172a;
+    background: #fff;
+    width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.staff-table input:focus {
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.1);
+    outline: none;
+}
+
+/* ══ كاردات الموبايل ══ */
+.staff-mobile-card {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px;
+    margin-bottom: .9rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    transition: box-shadow .15s;
+}
+.staff-mobile-card.row-present { border-right: 4px solid #16a34a; }
+.staff-mobile-card.row-absent  { border-right: 4px solid #dc2626; }
+.staff-mobile-card.row-late    { border-right: 4px solid #d97706; }
+.staff-mobile-card.row-excused { border-right: 4px solid #0891b2; }
+.staff-mobile-header {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .85rem 1rem .6rem;
+}
+.staff-mobile-body { padding: 0 1rem .85rem; display: flex; flex-direction: column; gap: .65rem; }
+.staff-mobile-label { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.staff-mobile-body select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .4rem .6rem;
+    font-size: .88rem;
+    color: #0f172a;
+    background: #fff;
+    width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.staff-mobile-body select:focus {
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.1);
+    outline: none;
+}
+.staff-mobile-body select.sel-present { border-color: #86efac; background: #f0fdf4; color: #16a34a; }
+.staff-mobile-body select.sel-absent  { border-color: #fca5a5; background: #fff1f2; color: #dc2626; }
+.staff-mobile-body select.sel-late    { border-color: #fcd34d; background: #fffbeb; color: #d97706; }
+.staff-mobile-body select.sel-excused { border-color: #67e8f9; background: #ecfeff; color: #0891b2; }
+.staff-mobile-times { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.staff-mobile-times input,
+.staff-mobile-notes input {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .38rem .6rem;
+    font-size: .82rem;
+    color: #0f172a;
+    background: #fff;
+    width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.staff-mobile-times input:focus,
+.staff-mobile-notes input:focus {
+    border-color: #01696f;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.1);
+    outline: none;
+}
+
+/* ══ شريط الحفظ ══ */
+.staff-save-bar {
+    background: #fff;
+    border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px;
+    padding: .9rem 1.25rem;
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+    position: sticky;
+    bottom: 1rem;
+}
+.staff-save-info { color: #6b7280; font-size: .88rem; display: flex; align-items: center; gap: .4rem; }
+.staff-save-info i { color: #01696f; }
+.staff-save-actions { display: flex; gap: .6rem; }
+.btn-staff-save {
+    background: #1e293b; color: #fff;
+    border: none; border-radius: 10px;
+    padding: .6rem 1.5rem; font-weight: 700;
+    font-size: .92rem; cursor: pointer;
+    display: flex; align-items: center; gap: .4rem;
+    transition: background .15s, box-shadow .15s, transform .1s;
+}
+.btn-staff-save:hover { background: #334155; box-shadow: 0 4px 14px rgba(15,23,42,.2); transform: translateY(-1px); }
+.btn-staff-back {
+    background: #f1f5f9; color: #475569;
+    border: none; border-radius: 10px;
+    padding: .6rem 1rem; font-weight: 600;
+    font-size: .88rem; cursor: pointer;
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none;
+    transition: background .15s;
+}
+.btn-staff-back:hover { background: #e2e8f0; color: #334155; }
+.btn-staff-present {
+    background: #dcfce7; color: #16a34a;
+    border: none; border-radius: 10px;
+    padding: .6rem 1rem; font-weight: 700;
+    font-size: .88rem; cursor: pointer;
+    display: flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-staff-present:hover { background: #bbf7d0; }
+
+/* حالة فارغة */
+.staff-empty { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.staff-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+@media (max-width: 767.98px) {
+    .staff-stats-bar { grid-template-columns: repeat(2,1fr); }
+    .staff-att-hero { flex-direction: column; align-items: flex-start; padding: 1rem 1.1rem; }
+    .staff-att-hero h1 { font-size: 1rem; }
+    .staff-save-bar { position: static; flex-direction: column; align-items: stretch; }
+    .staff-save-actions { flex-direction: column; }
+    .btn-staff-save, .btn-staff-back, .btn-staff-present { justify-content: center; }
+}
+</style>
+
+<!-- هيدر الصفحة -->
+<div class="staff-att-hero">
+    <div class="staff-att-hero-left">
+        <div class="staff-att-hero-icon">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div>
+            <h1>تسجيل حضور المعلمين والمشرفين</h1>
+            <p>
+                <i class="bi bi-calendar3 me-1"></i>{{ target_date }}
+                <span class="mx-2 opacity-50">|</span>
+                سجّل حضور الطاقم الوظيفي لهذا اليوم
+            </p>
+        </div>
+    </div>
+    {% if staff_data %}
+    <div class="staff-hero-badge">
+        <i class="bi bi-person-badge"></i>
+        {{ staff_data|length }} موظف
+    </div>
+    {% endif %}
+</div>
+
+<form method="post" id="staffAttForm">
+    {% csrf_token %}
+    <input type="hidden" name="date" value="{{ target_date }}">
+    {% for item in staff_data %}
+        <input type="hidden" name="staff_ids" value="{{ item.user.id }}">
+    {% endfor %}
+
+    <!-- إحصائيات ديناميكية -->
+    <div class="staff-stats-bar">
+        <div class="staff-stat present"><div class="staff-stat-num" id="sc-present">0</div><div class="staff-stat-lbl"><i class="bi bi-check-circle me-1"></i>حاضر</div></div>
+        <div class="staff-stat absent"> <div class="staff-stat-num" id="sc-absent">0</div> <div class="staff-stat-lbl"><i class="bi bi-x-circle me-1"></i>غائب</div></div>
+        <div class="staff-stat late">   <div class="staff-stat-num" id="sc-late">0</div>    <div class="staff-stat-lbl"><i class="bi bi-clock me-1"></i>متأخر</div></div>
+        <div class="staff-stat excused"><div class="staff-stat-num" id="sc-excused">0</div> <div class="staff-stat-lbl"><i class="bi bi-shield-check me-1"></i>بعذر</div></div>
+    </div>
+
+    <!-- شريط الأدوات -->
+    {% if staff_data %}
+    <div class="staff-toolbar">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button type="button" id="markAllPresent" class="btn-staff-present">
+                <i class="bi bi-check-all"></i>تحديد الكل حاضر
+            </button>
+            <button type="button" id="markAllAbsent" class="btn btn-sm btn-outline-danger px-3">
+                <i class="bi bi-x-circle me-1"></i>تحديد الكل غائب
+            </button>
+        </div>
+        <span class="text-muted small">إجمالي: <strong>{{ staff_data|length }}</strong> موظف</span>
+    </div>
+    {% endif %}
+
+    <!-- جدول الديسكتوب -->
+    <div class="staff-table-card d-none d-md-block mb-3">
+        <div class="table-responsive">
+            <table class="table staff-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:40px">#</th>
+                        <th>الموظف</th>
+                        <th>الدور</th>
+                        <th style="width:150px">الحالة</th>
+                        <th style="width:120px">وقت الحضور</th>
+                        <th style="width:120px">وقت الانصراف</th>
+                        <th style="width:190px">ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in staff_data %}
+                    <tr class="status-row" data-id="{{ item.user.id }}">
+                        <td class="text-muted small fw-bold">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="staff-avatar">{{ item.user.first_name|first }}{{ item.user.last_name|first }}</div>
+                                <div class="staff-name">{{ item.user.get_full_name }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="role-badge {% if item.user.role == 'teacher' %}role-teacher{% else %}role-supervisor{% endif %}">
+                                <i class="bi {% if item.user.role == 'teacher' %}bi-person-fill{% else %}bi-person-badge-fill{% endif %}"></i>
+                                {{ item.user.get_role_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="status-select-wrap">
+                                <select name="status_{{ item.user.id }}" class="status-select">
+                                    {% for val, label in status_choices %}
+                                    <option value="{{ val }}" {% if item.status == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </td>
+                        <td><input type="time" name="check_in_{{ item.user.id }}"  value="{{ item.check_in|default:'' }}"></td>
+                        <td><input type="time" name="check_out_{{ item.user.id }}" value="{{ item.check_out|default:'' }}"></td>
+                        <td><input type="text" name="notes_{{ item.user.id }}"     value="{{ item.notes|default:'' }}" placeholder="ملاحظة اختيارية..."></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7"><div class="staff-empty"><i class="bi bi-person-x"></i><p>لا يوجد موظفون نشطون</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- كاردات الموبايل -->
+    <div class="d-md-none">
+        {% for item in staff_data %}
+        <div class="staff-mobile-card status-row" data-id="{{ item.user.id }}">
+            <div class="staff-mobile-header">
+                <div class="staff-avatar">{{ item.user.first_name|first }}{{ item.user.last_name|first }}</div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="staff-name text-truncate">{{ item.user.get_full_name }}</div>
+                    <span class="role-badge mt-1 {% if item.user.role == 'teacher' %}role-teacher{% else %}role-supervisor{% endif %}" style="font-size:.72rem;">
+                        {{ item.user.get_role_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="staff-mobile-body">
+                <div>
+                    <div class="staff-mobile-label"><i class="bi bi-toggles me-1"></i>الحالة</div>
+                    <select name="status_{{ item.user.id }}" class="status-select">
+                        {% for val, label in status_choices %}
+                        <option value="{{ val }}" {% if item.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="staff-mobile-times">
+                    <div>
+                        <div class="staff-mobile-label"><i class="bi bi-box-arrow-in-right me-1"></i>وقت الحضور</div>
+                        <input type="time" name="check_in_{{ item.user.id }}"  value="{{ item.check_in|default:'' }}">
+                    </div>
+                    <div>
+                        <div class="staff-mobile-label"><i class="bi bi-box-arrow-right me-1"></i>وقت الانصراف</div>
+                        <input type="time" name="check_out_{{ item.user.id }}" value="{{ item.check_out|default:'' }}">
+                    </div>
+                </div>
+                <div class="staff-mobile-notes">
+                    <div class="staff-mobile-label"><i class="bi bi-chat-text me-1"></i>ملاحظات</div>
+                    <input type="text" name="notes_{{ item.user.id }}" value="{{ item.notes|default:'' }}" placeholder="ملاحظة اختيارية...">
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="staff-mobile-card"><div class="staff-empty"><i class="bi bi-person-x"></i><p>لا يوجد موظفون نشطون</p></div></div>
+        {% endfor %}
+    </div>
+
+    <!-- شريط الحفظ -->
+    {% if staff_data %}
+    <div class="staff-save-bar">
+        <div class="staff-save-info">
+            <i class="bi bi-info-circle-fill"></i>
+            سيُحفظ حضور <strong>{{ staff_data|length }}</strong> موظف ليوم <strong>{{ target_date }}</strong>
+        </div>
+        <div class="staff-save-actions">
+            <a href="{% url 'attendance:staff' %}" class="btn-staff-back">
+                <i class="bi bi-arrow-right"></i>رجوع
+            </a>
+            <button type="submit" class="btn-staff-save">
+                <i class="bi bi-floppy-fill"></i>حفظ الحضور
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const STATUS_MAP = {
+        present: { rowCls: 'row-present', selCls: 'sel-present' },
+        absent:  { rowCls: 'row-absent',  selCls: 'sel-absent'  },
+        late:    { rowCls: 'row-late',    selCls: 'sel-late'    },
+        excused: { rowCls: 'row-excused', selCls: 'sel-excused' },
+    };
+    const ALL_ROW = Object.values(STATUS_MAP).map(v => v.rowCls);
+    const ALL_SEL = Object.values(STATUS_MAP).map(v => v.selCls);
+
+    function applySelect(sel) {
+        const val = sel.value;
+        const row = sel.closest('.status-row');
+        sel.classList.remove(...ALL_SEL);
+        if (STATUS_MAP[val]) sel.classList.add(STATUS_MAP[val].selCls);
+        if (row) {
+            row.classList.remove(...ALL_ROW);
+            if (STATUS_MAP[val]) row.classList.add(STATUS_MAP[val].rowCls);
+        }
+    }
+
+    function updateCounts() {
+        const counts = { present: 0, absent: 0, late: 0, excused: 0 };
+        const seen = new Set();
+        document.querySelectorAll('.status-select').forEach(sel => {
+            const row = sel.closest('.status-row');
+            const id = row?.dataset.id;
+            if (id && seen.has(id)) return;
+            if (id) seen.add(id);
+            if (counts[sel.value] !== undefined) counts[sel.value]++;
+        });
+        ['present','absent','late','excused'].forEach(k => {
+            const el = document.getElementById('sc-' + k);
+            if (el) el.textContent = counts[k];
+        });
+    }
+
+    function syncSelects(changedSel) {
+        const row = changedSel.closest('.status-row');
+        const id = row?.dataset.id;
+        if (!id) return;
+        document.querySelectorAll(`.status-row[data-id="${id}"] .status-select`).forEach(sel => {
+            sel.value = changedSel.value;
+            applySelect(sel);
+        });
+    }
+
+    document.querySelectorAll('.status-select').forEach(sel => {
+        applySelect(sel);
+        sel.addEventListener('change', () => { syncSelects(sel); updateCounts(); });
+    });
+    updateCounts();
+
+    document.getElementById('markAllPresent')?.addEventListener('click', () => {
+        document.querySelectorAll('.status-select').forEach(sel => { sel.value = 'present'; applySelect(sel); });
+        updateCounts();
+    });
+
+    document.getElementById('markAllAbsent')?.addEventListener('click', () => {
+        document.querySelectorAll('.status-select').forEach(sel => { sel.value = 'absent'; applySelect(sel); });
+        updateCounts();
+    });
+})();
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+{% block page_title %}تسجيل حضور الموظفين{% endblock %}
+
+{% block content %}
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="date" value="{{ target_date }}">
@@ -87,4 +616,4 @@ document.querySelectorAll('.status-select').forEach(sel => { sel.addEventListene
 const markAll = document.getElementById('markAllPresent');
 if (markAll) { markAll.addEventListener('click', () => { document.querySelectorAll('.status-select').forEach(sel => { sel.value = 'present'; colorRow(sel); }); }); }
 </script>
-{% endblock %}
+{% endblock %} {% endcomment %}

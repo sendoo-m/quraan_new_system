@@ -2,263 +2,364 @@
 {% block page_title %}تقرير حضور الموظفين{% endblock %}
 
 {% block content %}
+<style>
+/* ══ هيدر ══ */
+.rpt-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 16px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.rpt-hero-left { display: flex; align-items: center; gap: 1rem; }
+.rpt-hero-icon {
+    width: 50px; height: 50px; background: rgba(255,255,255,.12);
+    border-radius: 13px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+}
+.rpt-hero-icon i { font-size: 1.35rem; color: #fff; }
+.rpt-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.rpt-hero p  { font-size: .87rem; opacity: .8; margin: 0; }
+.btn-rpt-hero {
+    background: rgba(255,255,255,.18); color: #fff; border: none;
+    border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
+    font-size: .85rem; text-decoration: none;
+    display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-rpt-hero:hover { background: rgba(255,255,255,.3); color: #fff; }
 
-<!-- إحصائيات -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-4">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-success bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-user-check text-success"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-success">{{ total_present }}</div>
-                    <div class="text-muted small">إجمالي الحضور</div>
-                </div>
-            </div>
+/* ══ بطاقات الإحصائيات الإجمالية ══ */
+.rpt-totals { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1.25rem; }
+.rpt-total {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 12px; padding: .9rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.rpt-total-num { font-size: 1.6rem; font-weight: 800; line-height: 1; margin-bottom: .2rem; }
+.rpt-total-lbl { font-size: .78rem; color: #6b7280; font-weight: 600; }
+.rpt-total.present .rpt-total-num { color: #16a34a; }
+.rpt-total.absent  .rpt-total-num { color: #dc2626; }
+.rpt-total.late    .rpt-total-num { color: #d97706; }
+.rpt-total.excused .rpt-total-num { color: #0891b2; }
+
+/* ══ فلاتر ══ */
+.rpt-filter {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .85rem 1.1rem; margin-bottom: 1.1rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.rpt-filter-lbl { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.rpt-filter input[type=date],
+.rpt-filter select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .4rem .75rem; font-size: .88rem; color: #0f172a;
+    background: #fff; height: 40px; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.rpt-filter input:focus, .rpt-filter select:focus {
+    border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none;
+}
+.btn-rpt-filter {
+    height: 40px; padding: 0 1.1rem; border-radius: 9px; width: 100%;
+    font-weight: 700; font-size: .88rem;
+    background: #1e293b; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: background .15s; cursor: pointer;
+}
+.btn-rpt-filter:hover { background: #334155; }
+.btn-rpt-reset {
+    height: 40px; padding: 0 1rem; border-radius: 9px; width: 100%;
+    font-weight: 600; font-size: .88rem; background: #f1f5f9; color: #64748b;
+    border: none; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-rpt-reset:hover { background: #e2e8f0; color: #334155; }
+
+/* ══ جدول ══ */
+.rpt-table-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.rpt-table-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.rpt-table-title { font-weight: 800; font-size: .95rem; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+.rpt-period-badge {
+    background: #f1f5f9; color: #475569; border-radius: 30px;
+    padding: .2rem .85rem; font-size: .8rem; font-weight: 700;
+    display: flex; align-items: center; gap: .4rem;
+}
+.rpt-table thead th {
+    background: #f8fafc; font-size: .8rem; font-weight: 700;
+    color: #6b7280; text-transform: uppercase; letter-spacing: .04em;
+    padding: .75rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.rpt-table tbody td {
+    padding: .7rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .9rem;
+}
+.rpt-table tbody tr:last-child td { border-bottom: none; }
+.rpt-table tbody tr:hover { background: #f8fafc; }
+
+/* أفاتار */
+.staff-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+
+/* role badge */
+.role-badge {
+    padding: .2rem .65rem; border-radius: 30px; font-size: .75rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: .3rem;
+}
+.role-teacher    { background: #dcfce7; color: #16a34a; }
+.role-supervisor { background: #cffafe; color: #0891b2; }
+
+/* count chips */
+.count-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 32px; height: 24px; border-radius: 30px;
+    font-size: .78rem; font-weight: 800; padding: 0 .5rem;
+}
+.chip-present { background: #dcfce7; color: #16a34a; }
+.chip-late    { background: #fef3c7; color: #d97706; }
+.chip-absent  { background: #fee2e2; color: #dc2626; }
+.chip-excused { background: #cffafe; color: #0891b2; }
+.chip-total   { background: #f1f5f9; color: #334155; }
+
+/* شريط النسبة */
+.pct-wrap { display: flex; align-items: center; gap: .6rem; }
+.pct-bar  { height: 8px; border-radius: 10px; background: #e2e8f0; flex: 1; overflow: hidden; min-width: 80px; }
+.pct-fill { height: 100%; border-radius: 10px; transition: width .4s; }
+.pct-fill.high   { background: linear-gradient(90deg,#16a34a,#22c55e); }
+.pct-fill.medium { background: linear-gradient(90deg,#d97706,#f59e0b); }
+.pct-fill.low    { background: linear-gradient(90deg,#dc2626,#ef4444); }
+.pct-label { font-size: .82rem; font-weight: 800; min-width: 36px; text-align: left; }
+.pct-label.high   { color: #16a34a; }
+.pct-label.medium { color: #d97706; }
+.pct-label.low    { color: #dc2626; }
+
+/* ══ كاردات موبايل ══ */
+.rpt-mobile-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; margin-bottom: .85rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04); overflow: hidden;
+}
+.rpt-mobile-header { display: flex; align-items: center; gap: .75rem; padding: .85rem 1rem .55rem; }
+.rpt-mobile-body { padding: 0 1rem .85rem; }
+.rpt-mini-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .4rem; margin-bottom: .75rem; }
+.rpt-mini-stat { border-radius: 9px; padding: .45rem .3rem; text-align: center; }
+.rpt-mini-num { font-size: 1rem; font-weight: 800; line-height: 1; }
+.rpt-mini-lbl { font-size: .68rem; font-weight: 600; }
+.rpt-mini-stat.present { background: #f0fdf4; }
+.rpt-mini-stat.present .rpt-mini-num { color: #16a34a; }
+.rpt-mini-stat.present .rpt-mini-lbl { color: #4ade80; }
+.rpt-mini-stat.late    { background: #fffbeb; }
+.rpt-mini-stat.late    .rpt-mini-num { color: #d97706; }
+.rpt-mini-stat.late    .rpt-mini-lbl { color: #fbbf24; }
+.rpt-mini-stat.absent  { background: #fff1f2; }
+.rpt-mini-stat.absent  .rpt-mini-num { color: #dc2626; }
+.rpt-mini-stat.absent  .rpt-mini-lbl { color: #f87171; }
+.rpt-mini-stat.excused { background: #ecfeff; }
+.rpt-mini-stat.excused .rpt-mini-num { color: #0891b2; }
+.rpt-mini-stat.excused .rpt-mini-lbl { color: #22d3ee; }
+
+/* فارغة */
+.rpt-empty { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.rpt-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+@media (max-width: 767.98px) {
+    .rpt-totals { grid-template-columns: repeat(2,1fr); }
+    .rpt-hero { flex-direction: column; align-items: flex-start; padding: 1rem 1.1rem; }
+    .rpt-hero h1 { font-size: 1rem; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="rpt-hero">
+    <div class="rpt-hero-left">
+        <div class="rpt-hero-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+        <div>
+            <h1>تقرير حضور المعلمين والمشرفين</h1>
+            <p><i class="bi bi-calendar-range me-1"></i>{{ from_date }} — {{ to_date }}</p>
         </div>
     </div>
-    <div class="col-6 col-lg-4">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-warning bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-user-clock text-warning"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-warning">{{ total_late }}</div>
-                    <div class="text-muted small">إجمالي التأخير</div>
-                </div>
-            </div>
-        </div>
+    <a href="{% url 'attendance:staff' %}" class="btn-rpt-hero">
+        <i class="bi bi-list-ul"></i>السجل اليومي
+    </a>
+</div>
+
+<!-- ══ إحصائيات إجمالية ══ -->
+<div class="rpt-totals">
+    <div class="rpt-total present">
+        <div class="rpt-total-num">{{ total_present }}</div>
+        <div class="rpt-total-lbl"><i class="bi bi-check-circle me-1"></i>إجمالي الحضور</div>
     </div>
-    <div class="col-12 col-lg-4">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-danger bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-user-times text-danger"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-danger">{{ total_absent }}</div>
-                    <div class="text-muted small">إجمالي الغياب</div>
-                </div>
-            </div>
-        </div>
+    <div class="rpt-total late">
+        <div class="rpt-total-num">{{ total_late }}</div>
+        <div class="rpt-total-lbl"><i class="bi bi-clock me-1"></i>إجمالي التأخير</div>
+    </div>
+    <div class="rpt-total absent">
+        <div class="rpt-total-num">{{ total_absent }}</div>
+        <div class="rpt-total-lbl"><i class="bi bi-x-circle me-1"></i>إجمالي الغياب</div>
+    </div>
+    <div class="rpt-total excused">
+        <div class="rpt-total-num">{{ total_excused|default:0 }}</div>
+        <div class="rpt-total-lbl"><i class="bi bi-shield-check me-1"></i>إجمالي الإجازات</div>
     </div>
 </div>
 
-<!-- فلترة -->
-<div class="card stat-card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-6 col-md-3">
-                <label class="form-label fw-bold small">
-                    <i class="far fa-calendar-alt text-primary me-1"></i>
-                    من تاريخ
-                </label>
-                <input type="date" name="from" value="{{ from_date }}"
-                       class="form-control">
-            </div>
-            <div class="col-6 col-md-3">
-                <label class="form-label fw-bold small">
-                    <i class="far fa-calendar-alt text-primary me-1"></i>
-                    إلى تاريخ
-                </label>
-                <input type="date" name="to" value="{{ to_date }}"
-                       class="form-control">
-            </div>
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-bold small">
-                    <i class="fas fa-user-tag text-primary me-1"></i>
-                    الدور
-                </label>
-                <select name="role" class="form-select">
-                    <option value="">الكل</option>
-                    {% for val, label in role_choices %}
-                    <option value="{{ val }}"
-                        {% if request.GET.role == val %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-12 col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="fas fa-search me-1"></i> عرض
-                </button>
-                <a href="{% url 'attendance:staff_report' %}"
-                   class="btn btn-outline-secondary px-3">
-                    <i class="fas fa-times"></i>
-                </a>
-            </div>
-        </form>
-    </div>
+<!-- ══ فلاتر ══ -->
+<div class="rpt-filter">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-6 col-md-3">
+            <div class="rpt-filter-lbl"><i class="bi bi-calendar3 me-1"></i>من تاريخ</div>
+            <input type="date" name="from" value="{{ from_date }}">
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="rpt-filter-lbl"><i class="bi bi-calendar3 me-1"></i>إلى تاريخ</div>
+            <input type="date" name="to" value="{{ to_date }}">
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="rpt-filter-lbl"><i class="bi bi-person-badge me-1"></i>الدور</div>
+            <select name="role">
+                <option value="">جميع الأدوار</option>
+                {% for val, label in role_choices %}
+                <option value="{{ val }}" {% if request.GET.role == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-3 col-md-2">
+            <button type="submit" class="btn-rpt-filter"><i class="bi bi-funnel-fill"></i>عرض</button>
+        </div>
+        <div class="col-3 col-md-1">
+            <a href="{% url 'attendance:staff_report' %}" class="btn-rpt-reset"><i class="bi bi-x-circle"></i>مسح</a>
+        </div>
+    </form>
 </div>
 
-<!-- الجدول -->
-<div class="card stat-card">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span class="fw-bold">
-            <i class="fas fa-chart-bar text-info me-2"></i>
-            تقرير الفترة
-        </span>
-        <span class="text-muted small">
-            {{ from_date }} ← {{ to_date }}
-        </span>
-    </div>
-    <div class="card-body p-0">
-
-        <!-- Desktop Table -->
-        <div class="table-responsive d-none d-md-block">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>الموظف</th>
-                        <th>الدور</th>
-                        <th class="text-center text-success">حاضر</th>
-                        <th class="text-center text-warning">متأخر</th>
-                        <th class="text-center text-danger">غائب</th>
-                        <th class="text-center text-info">إجازة</th>
-                        <th class="text-center">إجمالي</th>
-                        <th style="min-width:150px">نسبة الحضور</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in staff_report %}
-                    <tr>
-                        <td class="text-muted small">{{ forloop.counter }}</td>
-                        <td class="fw-bold">{{ item.user.get_full_name }}</td>
-                        <td>
-                            <span class="badge
-                                {% if item.user.role == 'teacher' %}bg-success
-                                {% else %}bg-info{% endif %}">
-                                {{ item.user.get_role_display }}
-                            </span>
-                        </td>
-                        <td class="text-center text-success fw-bold">{{ item.present }}</td>
-                        <td class="text-center text-warning fw-bold">{{ item.late }}</td>
-                        <td class="text-center text-danger fw-bold">{{ item.absent }}</td>
-                        <td class="text-center text-info fw-bold">{{ item.excused }}</td>
-                        <td class="text-center fw-bold">{{ item.total }}</td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="progress flex-grow-1" style="height:8px;border-radius:4px;">
-                                    <div class="progress-bar
-                                        {% if item.percent >= 80 %}bg-success
-                                        {% elif item.percent >= 60 %}bg-warning
-                                        {% else %}bg-danger{% endif %}"
-                                         style="width:{{ item.percent }}%">
-                                    </div>
-                                </div>
-                                <span class="small fw-bold
-                                    {% if item.percent >= 80 %}text-success
-                                    {% elif item.percent >= 60 %}text-warning
-                                    {% else %}text-danger{% endif %}">
-                                    {{ item.percent }}%
-                                </span>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="9" class="text-center text-muted py-5">
-                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                            لا يوجد سجلات في هذه الفترة
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- ══ جدول ديسكتوب ══ -->
+<div class="rpt-table-card d-none d-md-block">
+    <div class="rpt-table-header">
+        <div class="rpt-table-title">
+            <i class="bi bi-bar-chart-line" style="color:#01696f;"></i>تقرير الفترة
         </div>
-
-        <!-- Mobile Cards -->
-        <div class="d-md-none p-3">
-            {% for item in staff_report %}
-            <div class="card border mb-3" style="border-radius:10px;">
-                <div class="card-body">
-
-                    <!-- اسم + دور -->
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="rounded-circle d-flex align-items-center
-                                    justify-content-center bg-primary bg-opacity-10
-                                    flex-shrink-0"
-                             style="width:44px;height:44px;">
-                            <i class="fas fa-user text-primary"></i>
+        <div class="rpt-period-badge">
+            <i class="bi bi-calendar-range"></i>{{ from_date }} ← {{ to_date }}
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table rpt-table mb-0">
+            <thead>
+                <tr>
+                    <th style="width:40px">#</th>
+                    <th>الموظف</th>
+                    <th>الدور</th>
+                    <th class="text-center">حاضر</th>
+                    <th class="text-center">متأخر</th>
+                    <th class="text-center">غائب</th>
+                    <th class="text-center">بعذر</th>
+                    <th class="text-center">الإجمالي</th>
+                    <th style="min-width:170px">نسبة الالتزام</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in staff_report %}
+                <tr>
+                    <td class="text-muted small fw-bold">{{ forloop.counter }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="staff-avatar">{{ item.user.first_name|first }}{{ item.user.last_name|first }}</div>
+                            <span class="fw-bold">{{ item.user.get_full_name }}</span>
                         </div>
-                        <div>
-                            <div class="fw-bold">{{ item.user.get_full_name }}</div>
-                            <span class="badge
-                                {% if item.user.role == 'teacher' %}bg-success
-                                {% else %}bg-info{% endif %} mt-1">
-                                {{ item.user.get_role_display }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- إحصائيات الموظف -->
-                    <div class="row g-2 mb-3 text-center">
-                        <div class="col-3">
-                            <div class="rounded-3 bg-success bg-opacity-10 py-2">
-                                <div class="fw-bold text-success">{{ item.present }}</div>
-                                <div style="font-size:.7rem;" class="text-muted">حاضر</div>
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="rounded-3 bg-warning bg-opacity-10 py-2">
-                                <div class="fw-bold text-warning">{{ item.late }}</div>
-                                <div style="font-size:.7rem;" class="text-muted">متأخر</div>
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="rounded-3 bg-danger bg-opacity-10 py-2">
-                                <div class="fw-bold text-danger">{{ item.absent }}</div>
-                                <div style="font-size:.7rem;" class="text-muted">غائب</div>
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="rounded-3 bg-info bg-opacity-10 py-2">
-                                <div class="fw-bold text-info">{{ item.excused }}</div>
-                                <div style="font-size:.7rem;" class="text-muted">إجازة</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- نسبة الحضور -->
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="progress flex-grow-1" style="height:10px;border-radius:5px;">
-                            <div class="progress-bar
-                                {% if item.percent >= 80 %}bg-success
-                                {% elif item.percent >= 60 %}bg-warning
-                                {% else %}bg-danger{% endif %}"
-                                 style="width:{{ item.percent }}%">
-                            </div>
-                        </div>
-                        <span class="fw-bold small
-                            {% if item.percent >= 80 %}text-success
-                            {% elif item.percent >= 60 %}text-warning
-                            {% else %}text-danger{% endif %}">
-                            {{ item.percent }}%
+                    </td>
+                    <td>
+                        <span class="role-badge {% if item.user.role == 'teacher' %}role-teacher{% else %}role-supervisor{% endif %}">
+                            <i class="bi {% if item.user.role == 'teacher' %}bi-person-fill{% else %}bi-person-badge-fill{% endif %}"></i>
+                            {{ item.user.get_role_display }}
                         </span>
-                        <span class="text-muted small">({{ item.total }} يوم)</span>
-                    </div>
+                    </td>
+                    <td class="text-center"><span class="count-chip chip-present">{{ item.present }}</span></td>
+                    <td class="text-center"><span class="count-chip chip-late">{{ item.late }}</span></td>
+                    <td class="text-center"><span class="count-chip chip-absent">{{ item.absent }}</span></td>
+                    <td class="text-center"><span class="count-chip chip-excused">{{ item.excused }}</span></td>
+                    <td class="text-center"><span class="count-chip chip-total">{{ item.total }}</span></td>
+                    <td>
+                        <div class="pct-wrap">
+                            <div class="pct-bar">
+                                <div class="pct-fill {% if item.percent >= 80 %}high{% elif item.percent >= 60 %}medium{% else %}low{% endif %}"
+                                     style="width:{{ item.percent }}%"></div>
+                            </div>
+                            <span class="pct-label {% if item.percent >= 80 %}high{% elif item.percent >= 60 %}medium{% else %}low{% endif %}">
+                                {{ item.percent }}%
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9">
+                        <div class="rpt-empty"><i class="bi bi-bar-chart"></i><p>لا توجد سجلات في هذه الفترة</p></div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
+<!-- ══ كاردات موبايل ══ -->
+<div class="d-md-none">
+    {% for item in staff_report %}
+    <div class="rpt-mobile-card">
+        <div class="rpt-mobile-header">
+            <div class="staff-avatar">{{ item.user.first_name|first }}{{ item.user.last_name|first }}</div>
+            <div class="flex-grow-1 min-w-0">
+                <div class="fw-bold text-truncate" style="font-size:.92rem;">{{ item.user.get_full_name }}</div>
+                <span class="role-badge mt-1 {% if item.user.role == 'teacher' %}role-teacher{% else %}role-supervisor{% endif %}" style="font-size:.7rem;">
+                    {{ item.user.get_role_display }}
+                </span>
+            </div>
+            <span class="pct-label {% if item.percent >= 80 %}high{% elif item.percent >= 60 %}medium{% else %}low{% endif %}"
+                  style="font-size:1rem;">{{ item.percent }}%</span>
+        </div>
+        <div class="rpt-mobile-body">
+            <div class="pct-bar mb-3">
+                <div class="pct-fill {% if item.percent >= 80 %}high{% elif item.percent >= 60 %}medium{% else %}low{% endif %}"
+                     style="width:{{ item.percent }}%"></div>
+            </div>
+            <div class="rpt-mini-stats">
+                <div class="rpt-mini-stat present">
+                    <div class="rpt-mini-num">{{ item.present }}</div>
+                    <div class="rpt-mini-lbl">حاضر</div>
+                </div>
+                <div class="rpt-mini-stat late">
+                    <div class="rpt-mini-num">{{ item.late }}</div>
+                    <div class="rpt-mini-lbl">متأخر</div>
+                </div>
+                <div class="rpt-mini-stat absent">
+                    <div class="rpt-mini-num">{{ item.absent }}</div>
+                    <div class="rpt-mini-lbl">غائب</div>
+                </div>
+                <div class="rpt-mini-stat excused">
+                    <div class="rpt-mini-num">{{ item.excused }}</div>
+                    <div class="rpt-mini-lbl">بعذر</div>
                 </div>
             </div>
-            {% empty %}
-            <div class="text-center text-muted py-5">
-                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                لا يوجد سجلات في هذه الفترة
-            </div>
-            {% endfor %}
+            <div class="text-muted small text-center">إجمالي الأيام: <strong>{{ item.total }}</strong></div>
         </div>
-
     </div>
+    {% empty %}
+    <div class="rpt-mobile-card">
+        <div class="rpt-empty"><i class="bi bi-bar-chart"></i><p>لا توجد سجلات في هذه الفترة</p></div>
+    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

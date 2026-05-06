@@ -2,237 +2,337 @@
 {% block page_title %}تقرير حضور الطلاب{% endblock %}
 
 {% block content %}
+<style>
+/* ══ هيدر ══ */
+.srpt-hero {
+    background: linear-gradient(135deg, #01696f 0%, #0a8a91 100%);
+    border-radius: 16px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.srpt-hero-left { display: flex; align-items: center; gap: 1rem; }
+.srpt-hero-icon {
+    width: 50px; height: 50px; background: rgba(255,255,255,.15);
+    border-radius: 13px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+}
+.srpt-hero-icon i { font-size: 1.35rem; color: #fff; }
+.srpt-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.srpt-hero p  { font-size: .87rem; opacity: .85; margin: 0; }
+.btn-srpt-hero {
+    background: rgba(255,255,255,.2); color: #fff; border: none;
+    border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
+    font-size: .85rem; text-decoration: none;
+    display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-srpt-hero:hover { background: rgba(255,255,255,.32); color: #fff; }
 
-<!-- فلترة -->
-<div class="card stat-card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-6 col-md-3">
-                <label class="form-label fw-bold small">
-                    <i class="fas fa-calendar-alt text-primary me-1"></i>
-                    من تاريخ
-                </label>
-                <input type="date" name="from" value="{{ from_date }}"
-                       class="form-control">
-            </div>
-            <div class="col-6 col-md-3">
-                <label class="form-label fw-bold small">
-                    <i class="fas fa-calendar-alt text-primary me-1"></i>
-                    إلى تاريخ
-                </label>
-                <input type="date" name="to" value="{{ to_date }}"
-                       class="form-control">
-            </div>
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-bold small">
-                    <i class="fas fa-door-open text-primary me-1"></i>
-                    القاعة
-                </label>
-                <select name="hall" class="form-select">
-                    <option value="">كل القاعات</option>
-                    {% for hall in halls %}
-                    <option value="{{ hall.id }}"
-                        {% if request.GET.hall == hall.id|stringformat:"s" %}selected{% endif %}>
-                        {{ hall.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-12 col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="fas fa-filter me-1"></i> عرض
-                </button>
-                <a href="{% url 'attendance:report' %}"
-                   class="btn btn-outline-secondary px-3">
-                    <i class="fas fa-times"></i>
-                </a>
-            </div>
-        </form>
+/* ══ فلاتر ══ */
+.srpt-filter {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .85rem 1.1rem; margin-bottom: 1.1rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.srpt-filter-lbl { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.srpt-filter input[type=date],
+.srpt-filter select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .4rem .75rem; font-size: .88rem; color: #0f172a;
+    background: #fff; height: 40px; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.srpt-filter input:focus, .srpt-filter select:focus {
+    border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none;
+}
+.btn-srpt-filter {
+    height: 40px; padding: 0 1.1rem; border-radius: 9px; width: 100%;
+    font-weight: 700; font-size: .88rem;
+    background: #01696f; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: background .15s; cursor: pointer;
+}
+.btn-srpt-filter:hover { background: #0a8a91; }
+.btn-srpt-reset {
+    height: 40px; padding: 0 1rem; border-radius: 9px; width: 100%;
+    font-weight: 600; font-size: .88rem; background: #f1f5f9; color: #64748b;
+    border: none; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-srpt-reset:hover { background: #e2e8f0; color: #334155; }
+
+/* ══ إحصائيات ══ */
+.srpt-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1.25rem; }
+.srpt-stat {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 12px; padding: .75rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.srpt-stat-num { font-size: 1.5rem; font-weight: 800; line-height: 1; margin-bottom: .2rem; }
+.srpt-stat-lbl { font-size: .78rem; color: #6b7280; font-weight: 600; }
+.srpt-stat.total   .srpt-stat-num { color: #334155; }
+.srpt-stat.present .srpt-stat-num { color: #16a34a; }
+.srpt-stat.absent  .srpt-stat-num { color: #dc2626; }
+.srpt-stat.late    .srpt-stat-num { color: #d97706; }
+
+/* ══ جدول ══ */
+.srpt-table-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.srpt-table-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srpt-table-title { font-weight: 800; font-size: .95rem; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+.srpt-count-badge { background: #01696f; color: #fff; border-radius: 30px; padding: .15rem .75rem; font-size: .78rem; font-weight: 700; }
+.srpt-period-badge { background: #f0fdf4; color: #16a34a; border-radius: 30px; padding: .2rem .85rem; font-size: .8rem; font-weight: 700; display: flex; align-items: center; gap: .4rem; }
+.srpt-table thead th {
+    background: #f8fafc; font-size: .8rem; font-weight: 700;
+    color: #6b7280; text-transform: uppercase; letter-spacing: .04em;
+    padding: .75rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.srpt-table tbody td {
+    padding: .65rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .9rem;
+}
+.srpt-table tbody tr:last-child td { border-bottom: none; }
+.srpt-table tbody tr.row-present { background: #f0fdf4; }
+.srpt-table tbody tr.row-absent  { background: #fff1f2; }
+.srpt-table tbody tr.row-late    { background: #fffbeb; }
+.srpt-table tbody tr.row-excused { background: #ecfeff; }
+.srpt-table tbody tr:hover { filter: brightness(.98); }
+.student-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.hall-badge { padding: .2rem .65rem; border-radius: 30px; font-size: .75rem; font-weight: 700; background: #f0fdf4; color: #16a34a; display: inline-flex; align-items: center; gap: .25rem; }
+.status-pill { padding: .25rem .7rem; border-radius: 30px; font-size: .78rem; font-weight: 700; display: inline-flex; align-items: center; gap: .3rem; }
+.status-present { background: #dcfce7; color: #16a34a; }
+.status-absent  { background: #fee2e2; color: #dc2626; }
+.status-late    { background: #fef3c7; color: #d97706; }
+.status-excused { background: #cffafe; color: #0891b2; }
+.time-chip { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; color: #475569; font-weight: 600; }
+.time-chip i { color: #94a3b8; font-size: .78rem; }
+
+/* ══ موبايل ══ */
+.srpt-mobile-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; margin-bottom: .75rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04); overflow: hidden;
+}
+.srpt-mobile-card.row-present { border-right: 4px solid #16a34a; }
+.srpt-mobile-card.row-absent  { border-right: 4px solid #dc2626; }
+.srpt-mobile-card.row-late    { border-right: 4px solid #d97706; }
+.srpt-mobile-card.row-excused { border-right: 4px solid #0891b2; }
+.srpt-mobile-body { padding: .8rem 1rem; }
+.srpt-mobile-top  { display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; }
+.srpt-mobile-meta { display: flex; flex-wrap: wrap; gap: .3rem .65rem; font-size: .8rem; color: #6b7280; align-items: center; }
+.srpt-mobile-meta i { color: #94a3b8; }
+
+/* ══ pagination ══ */
+.srpt-pagination { display: flex; justify-content: center; align-items: center; gap: .4rem; margin-top: 1.1rem; flex-wrap: wrap; }
+.srpt-page-btn {
+    min-width: 36px; height: 36px; border-radius: 9px; font-size: .85rem;
+    font-weight: 600; border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; padding: 0 .6rem;
+    transition: all .15s;
+}
+.srpt-page-btn:hover, .srpt-page-btn.active { background: #01696f; color: #fff; border-color: #01696f; }
+.srpt-page-btn.disabled { opacity: .4; pointer-events: none; }
+.srpt-empty { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.srpt-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+@media (max-width: 767.98px) {
+    .srpt-stats { grid-template-columns: repeat(2,1fr); }
+    .srpt-hero { flex-direction: column; align-items: flex-start; padding: 1rem 1.1rem; }
+    .srpt-hero h1 { font-size: 1rem; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="srpt-hero">
+    <div class="srpt-hero-left">
+        <div class="srpt-hero-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+        <div>
+            <h1>تقرير حضور الطلاب</h1>
+            <p>
+                <i class="bi bi-calendar-range me-1"></i>{{ from_date }} — {{ to_date }}
+                <span class="mx-2 opacity-50">|</span>{{ total }} سجل
+            </p>
+        </div>
+    </div>
+    <a href="{% url 'attendance:students' %}" class="btn-srpt-hero">
+        <i class="bi bi-pencil-square"></i>تسجيل حضور
+    </a>
+</div>
+
+<!-- ══ فلاتر ══ -->
+<div class="srpt-filter">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-6 col-md-3">
+            <div class="srpt-filter-lbl"><i class="bi bi-calendar3 me-1"></i>من تاريخ</div>
+            <input type="date" name="from" value="{{ from_date }}">
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="srpt-filter-lbl"><i class="bi bi-calendar3 me-1"></i>إلى تاريخ</div>
+            <input type="date" name="to" value="{{ to_date }}">
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="srpt-filter-lbl"><i class="bi bi-building me-1"></i>القاعة</div>
+            <select name="hall">
+                <option value="">كل القاعات</option>
+                {% for hall in halls %}
+                <option value="{{ hall.id }}" {% if request.GET.hall == hall.id|stringformat:"s" %}selected{% endif %}>{{ hall.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-3 col-md-2">
+            <button type="submit" class="btn-srpt-filter"><i class="bi bi-funnel-fill"></i>عرض</button>
+        </div>
+        <div class="col-3 col-md-1">
+            <a href="{% url 'attendance:report' %}" class="btn-srpt-reset"><i class="bi bi-x-circle"></i>مسح</a>
+        </div>
+    </form>
+</div>
+
+<!-- ══ إحصائيات ══ -->
+<div class="srpt-stats">
+    <div class="srpt-stat total">
+        <div class="srpt-stat-num">{{ total }}</div>
+        <div class="srpt-stat-lbl"><i class="bi bi-list-ol me-1"></i>إجمالي السجلات</div>
+    </div>
+    <div class="srpt-stat present">
+        <div class="srpt-stat-num">{{ present }}</div>
+        <div class="srpt-stat-lbl"><i class="bi bi-check-circle me-1"></i>حضور</div>
+    </div>
+    <div class="srpt-stat absent">
+        <div class="srpt-stat-num">{{ absent }}</div>
+        <div class="srpt-stat-lbl"><i class="bi bi-x-circle me-1"></i>غياب</div>
+    </div>
+    <div class="srpt-stat late">
+        <div class="srpt-stat-num">{{ late }}</div>
+        <div class="srpt-stat-lbl"><i class="bi bi-clock me-1"></i>تأخير</div>
     </div>
 </div>
 
-<!-- إحصائيات -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-primary bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-list-ol text-primary"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1">{{ total }}</div>
-                    <div class="text-muted small">إجمالي السجلات</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-success bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-user-check text-success"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-success">{{ present }}</div>
-                    <div class="text-muted small">حضور</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-danger bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-user-times text-danger"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-danger">{{ absent }}</div>
-                    <div class="text-muted small">غياب</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center
-                            bg-warning bg-opacity-10 flex-shrink-0"
-                     style="width:48px;height:48px;">
-                    <i class="fas fa-user-clock text-warning"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-warning">{{ late }}</div>
-                    <div class="text-muted small">تأخير</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- جدول التقرير -->
-<div class="card stat-card">
-    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span class="fw-bold">
-            <i class="fas fa-chart-bar text-primary me-2"></i>
+<!-- ══ جدول ديسكتوب ══ -->
+<div class="srpt-table-card d-none d-md-block">
+    <div class="srpt-table-header">
+        <div class="srpt-table-title">
+            <i class="bi bi-table" style="color:#01696f;"></i>
             سجلات الحضور
-            {% if total %}
-            <span class="badge bg-primary ms-1">{{ total }}</span>
-            {% endif %}
-        </span>
-        <span class="text-muted small d-none d-md-inline">
-            {{ from_date }} ← {{ to_date }}
-        </span>
-    </div>
-    <div class="card-body p-0">
-
-        <!-- Desktop Table -->
-        <div class="table-responsive d-none d-md-block">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>الطالب</th>
-                        <th>القاعة</th>
-                        <th>التاريخ</th>
-                        <th>الحالة</th>
-                        <th>وقت الحضور</th>
-                        <th>ملاحظات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for att in attendances %}
-                    <tr>
-                        <td class="text-muted small">
-                            {{ attendances.start_index|add:forloop.counter0 }}
-                        </td>
-                        <td class="fw-bold">{{ att.student.get_full_name }}</td>
-                        <td>
-                            <span class="badge bg-secondary bg-opacity-75">
-                                {{ att.hall.name }}
-                            </span>
-                        </td>
-                        <td class="small">{{ att.date }}</td>
-                        <td>
-                            <span class="badge
-                                {% if att.status == 'present' %}bg-success
-                                {% elif att.status == 'absent' %}bg-danger
-                                {% elif att.status == 'late' %}bg-warning text-dark
-                                {% else %}bg-info{% endif %}">
-                                {{ att.get_status_display }}
-                            </span>
-                        </td>
-                        <td class="small">{{ att.arrival_time|default:"—" }}</td>
-                        <td class="text-muted small">
-                            {{ att.notes|truncatechars:30|default:"—" }}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
-                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                            لا توجد سجلات في هذه الفترة
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% if total %}<span class="srpt-count-badge">{{ total }}</span>{% endif %}
         </div>
-
-        <!-- Mobile Cards -->
-        <div class="d-md-none p-3">
-            {% for att in attendances %}
-            <div class="card border mb-2" style="border-radius:10px;">
-                <div class="card-body py-2 px-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="fw-bold">{{ att.student.get_full_name }}</div>
-                            <div class="text-muted small mt-1">
-                                <i class="fas fa-door-open me-1"></i>
-                                {{ att.hall.name }}
-                                <span class="mx-2">•</span>
-                                <i class="far fa-calendar-alt me-1"></i>
-                                {{ att.date }}
+        <div class="srpt-period-badge">
+            <i class="bi bi-calendar-range"></i>{{ from_date }} ← {{ to_date }}
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table srpt-table mb-0">
+            <thead>
+                <tr>
+                    <th style="width:40px">#</th>
+                    <th>الطالب</th>
+                    <th>القاعة</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                    <th>وقت الحضور</th>
+                    <th>ملاحظات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for att in attendances %}
+                <tr class="row-{{ att.status }}">
+                    <td class="text-muted small fw-bold">{{ attendances.start_index|add:forloop.counter0 }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="student-avatar">{{ att.student.first_name|first }}{{ att.student.last_name|first }}</div>
+                            <div>
+                                <div class="fw-bold" style="font-size:.9rem;">{{ att.student.get_full_name }}</div>
+                                {% if att.student.parent %}
+                                <div class="text-muted" style="font-size:.77rem;">{{ att.student.parent.get_full_name|default:att.student.parent.username }}</div>
+                                {% endif %}
                             </div>
-                            {% if att.arrival_time %}
-                            <div class="text-muted small mt-1">
-                                <i class="far fa-clock me-1"></i>
-                                {{ att.arrival_time }}
-                            </div>
-                            {% endif %}
-                            {% if att.notes %}
-                            <div class="text-muted small mt-1">
-                                <i class="fas fa-sticky-note me-1"></i>
-                                {{ att.notes|truncatechars:40 }}
-                            </div>
-                            {% endif %}
                         </div>
-                        <span class="badge ms-2
-                            {% if att.status == 'present' %}bg-success
-                            {% elif att.status == 'absent' %}bg-danger
-                            {% elif att.status == 'late' %}bg-warning text-dark
-                            {% else %}bg-info{% endif %}">
+                    </td>
+                    <td><span class="hall-badge"><i class="bi bi-building"></i>{{ att.hall.name }}</span></td>
+                    <td class="text-muted small">{{ att.date }}</td>
+                    <td>
+                        <span class="status-pill status-{{ att.status }}">
+                            {% if att.status == 'present' %}<i class="bi bi-check-circle"></i>
+                            {% elif att.status == 'absent'  %}<i class="bi bi-x-circle"></i>
+                            {% elif att.status == 'late'    %}<i class="bi bi-clock"></i>
+                            {% else %}<i class="bi bi-shield-check"></i>{% endif %}
                             {{ att.get_status_display }}
                         </span>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div class="text-center text-muted py-5">
-                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                لا توجد سجلات في هذه الفترة
-            </div>
-            {% endfor %}
-        </div>
-
+                    </td>
+                    <td>
+                        {% if att.arrival_time %}
+                            <span class="time-chip"><i class="bi bi-clock"></i>{{ att.arrival_time|time:"H:i" }}</span>
+                        {% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td class="text-muted small">{{ att.notes|truncatechars:35|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7"><div class="srpt-empty"><i class="bi bi-inbox"></i><p>لا توجد سجلات في هذه الفترة</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-{% include 'components/pagination.html' with page_obj=attendances %}
+<!-- ══ موبايل ══ -->
+<div class="d-md-none">
+    {% for att in attendances %}
+    <div class="srpt-mobile-card row-{{ att.status }}">
+        <div class="srpt-mobile-body">
+            <div class="srpt-mobile-top">
+                <div class="student-avatar">{{ att.student.first_name|first }}{{ att.student.last_name|first }}</div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="fw-bold text-truncate" style="font-size:.9rem;">{{ att.student.get_full_name }}</div>
+                    <span class="hall-badge" style="font-size:.7rem; margin-top:.2rem; display:inline-flex;">
+                        <i class="bi bi-building"></i>{{ att.hall.name }}
+                    </span>
+                </div>
+                <span class="status-pill status-{{ att.status }}" style="font-size:.72rem; white-space:nowrap;">{{ att.get_status_display }}</span>
+            </div>
+            <div class="srpt-mobile-meta">
+                <span><i class="bi bi-calendar3"></i>{{ att.date }}</span>
+                {% if att.arrival_time %}<span><i class="bi bi-clock"></i>{{ att.arrival_time|time:"H:i" }}</span>{% endif %}
+                {% if att.notes %}<span><i class="bi bi-chat-text"></i>{{ att.notes|truncatechars:35 }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="srpt-mobile-card"><div class="srpt-empty"><i class="bi bi-inbox"></i><p>لا توجد سجلات في هذه الفترة</p></div></div>
+    {% endfor %}
+</div>
+
+<!-- ══ pagination ══ -->
+{% if attendances.has_other_pages %}
+<div class="srpt-pagination">
+    {% if attendances.has_previous %}
+        <a href="?page={{ attendances.previous_page_number }}&from={{ from_date }}&to={{ to_date }}&hall={{ request.GET.hall }}" class="srpt-page-btn"><i class="bi bi-chevron-right"></i></a>
+    {% else %}<span class="srpt-page-btn disabled"><i class="bi bi-chevron-right"></i></span>{% endif %}
+
+    {% for num in attendances.paginator.page_range %}
+        {% if attendances.number == num %}<span class="srpt-page-btn active">{{ num }}</span>
+        {% elif num > attendances.number|add:"-3" and num < attendances.number|add:"3" %}
+            <a href="?page={{ num }}&from={{ from_date }}&to={{ to_date }}&hall={{ request.GET.hall }}" class="srpt-page-btn">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if attendances.has_next %}
+        <a href="?page={{ attendances.next_page_number }}&from={{ from_date }}&to={{ to_date }}&hall={{ request.GET.hall }}" class="srpt-page-btn"><i class="bi bi-chevron-left"></i></a>
+    {% else %}<span class="srpt-page-btn disabled"><i class="bi bi-chevron-left"></i></span>{% endif %}
+</div>
+{% endif %}
 
 {% endblock %}

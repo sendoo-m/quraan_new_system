@@ -1,4 +1,308 @@
 {% extends "base.html" %}
+{% block title %}لوحة ولي الأمر | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}لوحة ولي الأمر{% endblock %}
+
+{% block content %}
+<style>
+/* ══ هيدر الترحيب ══ */
+.par-hero {
+    background: linear-gradient(135deg, #01696f 0%, #0a8a91 60%, #059669 100%);
+    border-radius: 20px; padding: 2rem 2rem 0; margin-bottom: 1.5rem;
+    color: #fff; overflow: hidden; position: relative;
+}
+.par-hero::before {
+    content: '';
+    position: absolute; top: -40px; left: -40px;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: rgba(255,255,255,.06); pointer-events: none;
+}
+.par-hero::after {
+    content: '';
+    position: absolute; bottom: -30px; right: 60px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(255,255,255,.05); pointer-events: none;
+}
+.par-hero-body { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-bottom: 1.75rem; }
+.par-hero-greeting { font-size: .9rem; opacity: .85; margin-bottom: .3rem; }
+.par-hero h1 { font-size: 1.5rem; font-weight: 900; margin: 0 0 .4rem; }
+.par-hero-sub { font-size: .88rem; opacity: .8; margin: 0; max-width: 420px; }
+.btn-par-add {
+    background: rgba(255,255,255,.2); color: #fff; border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 12px; padding: .6rem 1.3rem; font-weight: 800; font-size: .9rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+    transition: background .2s, transform .15s; white-space: nowrap;
+}
+.btn-par-add:hover { background: rgba(255,255,255,.32); color: #fff; transform: translateY(-1px); }
+.par-hero-wave {
+    width: 100%; margin-top: .5rem; display: block;
+    line-height: 0; position: relative; z-index: 1;
+}
+.par-hero-wave svg { display: block; }
+
+/* ══ بطاقات الأبناء ══ */
+.child-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(15,23,42,.06);
+    transition: transform .2s, box-shadow .2s; height: 100%;
+    display: flex; flex-direction: column;
+}
+.child-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(15,23,42,.1); }
+
+/* رأس البطاقة */
+.child-card-header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    padding: 1.25rem 1.4rem; color: #fff;
+    display: flex; align-items: center; gap: 1rem;
+}
+.child-avatar {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(255,255,255,.15); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem; font-weight: 900; color: #fff;
+    border: 2px solid rgba(255,255,255,.2);
+}
+.child-name { font-size: 1rem; font-weight: 800; margin: 0 0 .2rem; }
+.child-hall { font-size: .82rem; opacity: .75; display: flex; align-items: center; gap: .3rem; }
+.child-surah-badge {
+    margin-right: auto; background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25); border-radius: 30px;
+    padding: .3rem .85rem; font-size: .82rem; font-weight: 700; white-space: nowrap;
+    display: flex; align-items: center; gap: .35rem;
+}
+
+/* جسم البطاقة */
+.child-card-body { padding: 1.25rem 1.4rem; flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+/* قسم المعلومة */
+.child-section-lbl {
+    font-size: .73rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .06em; color: #94a3b8; margin-bottom: .4rem;
+    display: flex; align-items: center; gap: .35rem;
+}
+
+/* بطاقة المعلومة */
+.info-chip {
+    display: flex; align-items: center; gap: .6rem;
+    background: #f8fafc; border: 1px solid rgba(15,23,42,.07);
+    border-radius: 12px; padding: .6rem .85rem;
+}
+.info-chip-icon {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+}
+.info-chip-label { font-size: .78rem; color: #94a3b8; font-weight: 600; }
+.info-chip-value { font-size: .9rem; font-weight: 700; color: #0f172a; }
+.info-chip-value.muted { color: #94a3b8; font-weight: 500; }
+
+/* حالات الحضور */
+.attend-present { background: #f0fdf4; border-color: rgba(22,163,74,.15); }
+.attend-present .info-chip-icon { background: #dcfce7; color: #16a34a; }
+.attend-present .info-chip-value { color: #16a34a; }
+.attend-absent  { background: #fff1f2; border-color: rgba(220,38,38,.12); }
+.attend-absent  .info-chip-icon { background: #fee2e2; color: #dc2626; }
+.attend-absent  .info-chip-value { color: #dc2626; }
+.attend-late    { background: #fffbeb; border-color: rgba(217,119,6,.12); }
+.attend-late    .info-chip-icon { background: #fef3c7; color: #d97706; }
+.attend-late    .info-chip-value { color: #d97706; }
+.attend-excused { background: #ecfeff; border-color: rgba(8,145,178,.12); }
+.attend-excused .info-chip-icon { background: #cffafe; color: #0891b2; }
+.attend-excused .info-chip-value { color: #0891b2; }
+.attend-none    .info-chip-icon { background: #e2e8f0; color: #94a3b8; }
+
+/* آخر تقييم */
+.eval-chip { background: #faf5ff; border-color: rgba(124,58,237,.1); }
+.eval-chip .info-chip-icon { background: #ede9fe; color: #7c3aed; }
+
+/* متابعات */
+.followup-list { display: flex; flex-direction: column; gap: .5rem; }
+.followup-item {
+    background: #f8fafc; border: 1px solid rgba(15,23,42,.07);
+    border-radius: 11px; padding: .6rem .9rem;
+    display: flex; align-items: flex-start; gap: .65rem;
+}
+.followup-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #01696f; flex-shrink: 0; margin-top: .35rem;
+}
+.followup-date { font-size: .75rem; font-weight: 700; color: #64748b; margin-bottom: .15rem; }
+.followup-note { font-size: .82rem; color: #475569; line-height: 1.4; }
+
+/* حالة فارغة */
+.par-empty {
+    text-align: center; padding: 4rem 1.5rem;
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 20px; box-shadow: 0 4px 20px rgba(15,23,42,.04);
+}
+.par-empty-icon {
+    width: 72px; height: 72px; margin: 0 auto 1.1rem;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+}
+.par-empty-icon i { font-size: 2rem; color: #16a34a; }
+.par-empty h4 { font-weight: 800; color: #1e293b; margin-bottom: .5rem; }
+.par-empty p  { color: #64748b; font-size: .9rem; margin-bottom: 1.25rem; }
+
+@media (max-width: 767.98px) {
+    .par-hero { padding: 1.5rem 1.25rem 0; border-radius: 16px; }
+    .par-hero h1 { font-size: 1.25rem; }
+    .child-card-header { padding: 1rem 1.1rem; }
+    .child-card-body { padding: 1rem 1.1rem; }
+}
+</style>
+
+<!-- ══ هيدر الترحيب ══ -->
+<div class="par-hero">
+    <div class="par-hero-body">
+        <div>
+            <div class="par-hero-greeting"><i class="bi bi-sun me-1"></i>مرحباً بك في بوابة ولي الأمر</div>
+            <h1>أهلاً، {{ user.first_name|default:user.username }} 👋</h1>
+            <p class="par-hero-sub">تابع أبناءك، وراجع التقييمات والحضور والمتابعات اليومية بكل سهولة.</p>
+        </div>
+        <a href="{% url 'students:register' %}" class="btn-par-add">
+            <i class="bi bi-plus-circle-fill"></i>تسجيل طالب جديد
+        </a>
+    </div>
+    <div class="par-hero-wave">
+        <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="50">
+            <path d="M0 50 L0 30 Q360 0 720 25 Q1080 50 1440 20 L1440 50 Z" fill="#f1f5f9"/>
+        </svg>
+    </div>
+</div>
+
+<!-- ══ بطاقات الأبناء ══ -->
+{% if children_data %}
+<div class="row g-4">
+    {% for item in children_data %}
+    <div class="col-12 col-lg-6">
+        <div class="child-card">
+
+            <!-- رأس البطاقة -->
+            <div class="child-card-header">
+                <div class="child-avatar">{{ item.student.first_name|first }}</div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="child-name">{{ item.student.get_full_name }}</div>
+                    <div class="child-hall">
+                        <i class="bi bi-building"></i>
+                        {% if item.student.hall %}{{ item.student.hall.name }}{% else %}لم يتم التسكين بعد{% endif %}
+                    </div>
+                </div>
+                <div class="child-surah-badge">
+                    <i class="bi bi-book-fill"></i>{{ item.surahs_count }} سورة
+                </div>
+            </div>
+
+            <!-- جسم البطاقة -->
+            <div class="child-card-body">
+
+                <!-- حضور اليوم -->
+                <div>
+                    <div class="child-section-lbl"><i class="bi bi-calendar-check"></i>حضور اليوم</div>
+                    {% if item.today_attend %}
+                        {% with s=item.today_attend.status %}
+                        <div class="info-chip attend-{{ s }}">
+                            <div class="info-chip-icon">
+                                {% if s == 'present' %}<i class="bi bi-check-circle-fill"></i>
+                                {% elif s == 'absent'  %}<i class="bi bi-x-circle-fill"></i>
+                                {% elif s == 'late'    %}<i class="bi bi-clock-fill"></i>
+                                {% else %}<i class="bi bi-shield-fill-check"></i>{% endif %}
+                            </div>
+                            <div>
+                                <div class="info-chip-label">الحالة</div>
+                                <div class="info-chip-value">{{ item.today_attend.get_status_display }}</div>
+                            </div>
+                            {% if item.today_attend.arrival_time %}
+                            <div class="me-auto ms-2" style="font-size:.8rem; color:#64748b;">
+                                <i class="bi bi-clock me-1"></i>{{ item.today_attend.arrival_time|time:"H:i" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                    {% else %}
+                        <div class="info-chip attend-none">
+                            <div class="info-chip-icon"><i class="bi bi-dash-circle"></i></div>
+                            <div>
+                                <div class="info-chip-label">الحالة</div>
+                                <div class="info-chip-value muted">لم يُسجَّل بعد</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- آخر تقييم -->
+                <div>
+                    <div class="child-section-lbl"><i class="bi bi-star"></i>آخر تقييم</div>
+                    {% if item.last_eval %}
+                        <div class="info-chip eval-chip">
+                            <div class="info-chip-icon"><i class="bi bi-award-fill"></i></div>
+                            <div>
+                                <div class="info-chip-label">{{ item.last_eval.date }}</div>
+                                <div class="info-chip-value">{{ item.last_eval.score|default:"تم التقييم" }}</div>
+                            </div>
+                            {% if item.last_eval.surah %}
+                            <div class="me-auto ms-2" style="font-size:.8rem; color:#7c3aed; font-weight:700;">
+                                <i class="bi bi-book me-1"></i>{{ item.last_eval.surah }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="info-chip">
+                            <div class="info-chip-icon" style="background:#f1f5f9; color:#94a3b8;"><i class="bi bi-award"></i></div>
+                            <div>
+                                <div class="info-chip-label">الحالة</div>
+                                <div class="info-chip-value muted">لا يوجد تقييم بعد</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- المتابعات -->
+                <div class="flex-grow-1">
+                    <div class="child-section-lbl"><i class="bi bi-journal-text"></i>آخر المتابعات</div>
+                    {% if item.followups %}
+                        <div class="followup-list">
+                            {% for followup in item.followups %}
+                            <div class="followup-item">
+                                <div class="followup-dot"></div>
+                                <div>
+                                    <div class="followup-date">{{ followup.date }}</div>
+                                    <div class="followup-note">{{ followup.notes|default:"لا توجد ملاحظات" }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="info-chip">
+                            <div class="info-chip-icon" style="background:#f1f5f9; color:#94a3b8;"><i class="bi bi-journal"></i></div>
+                            <div>
+                                <div class="info-chip-label">الحالة</div>
+                                <div class="info-chip-value muted">لا توجد متابعات حديثة</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="par-empty">
+    <div class="par-empty-icon"><i class="bi bi-people"></i></div>
+    <h4>لا يوجد أبناء مسجلون</h4>
+    <p>ابدأ بتسجيل ابنك الأول لمتابعة تقدمه في حفظ القرآن الكريم.</p>
+    <a href="{% url 'students:register' %}" class="btn btn-primary px-4">
+        <i class="bi bi-plus-circle me-2"></i>تسجيل طالب جديد
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+
+{% comment %} {% extends "base.html" %}
 
 {% block title %}لوحة ولي الأمر | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}لوحة ولي الأمر{% endblock %}
@@ -77,7 +381,19 @@
         </div>
     </div>
 {% endif %}
-{% endblock %}
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 {% comment %} {% extends 'base.html' %}

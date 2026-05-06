@@ -101,13 +101,13 @@ class Subject(models.Model):
 
 class HallSchedule(models.Model):
     DAYS = [
-        ('saturday', 'السبت'),
+        # ('saturday', 'السبت'),
         ('sunday', 'الأحد'),
-        ('monday', 'الاثنين'),
+        # ('monday', 'الاثنين'),
         ('tuesday', 'الثلاثاء'),
-        ('wednesday', 'الأربعاء'),
+        # ('wednesday', 'الأربعاء'),
         ('thursday', 'الخميس'),
-        ('friday', 'الجمعة'),
+        # ('friday', 'الجمعة'),
     ]
 
     hall = models.ForeignKey(
