@@ -210,6 +210,51 @@ class AgeGroupForm(forms.ModelForm):
             raise forms.ValidationError('السن الأدنى يجب أن يكون أقل من أو يساوي السن الأقصى')
         return cleaned
 
+from django import forms
+from .models import User
+from students.models import Student
+
+class ParentProfileForm(forms.ModelForm):
+    """تعديل بيانات ولي الأمر"""
+    class Meta:
+        model  = User
+        fields = ['first_name', 'last_name', 'phone']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'الاسم الأول'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'اسم العائلة'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '05xxxxxxxx'
+            }),
+        }
+        labels = {
+            'first_name': 'الاسم الأول',
+            'last_name':  'اسم العائلة',
+            'phone':      'رقم الجوال',
+        }
+
+
+class StudentPhotoForm(forms.ModelForm):
+    """تغيير صورة الطالب"""
+    class Meta:
+        model  = Student
+        fields = ['profile_picture']
+        widgets = {
+            'profile_picture': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
+        }
+        labels = {'profile_picture': 'صورة الطالب'}
+
+
+
 # from django import forms
 # from .models import User, SiteSettings
 # from students.models import AgeGroup

@@ -237,3 +237,15 @@ class ParentRegisterForm(forms.ModelForm):
             raise forms.ValidationError('كلمتا المرور غير متطابقتين')
         return cleaned
    
+class StudentPhotoForm(forms.ModelForm):
+    """تغيير صورة الطالب — لولي الأمر فقط"""
+    class Meta:
+        model  = Student
+        fields = ['profile_picture']
+        widgets = {
+            'profile_picture': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*'
+            }),
+        }
+        labels = {'profile_picture': 'صورة الطالب'}

@@ -1,391 +1,478 @@
 {% extends "base.html" %}
-
 {% block title %}تقييم القاعة | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}تقييم القاعة{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+<style>
+/* ══ هيدر ══ */
+.eh-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.eh-hero-left { display: flex; align-items: center; gap: 1rem; }
+.eh-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.eh-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.eh-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-eh {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-eh:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+/* ══ شريط الإحصاء ══ */
+.eh-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: .65rem; margin-bottom: 1.25rem;
+}
+.eh-stat {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 13px; padding: .75rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.eh-stat-num { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.eh-stat-lbl { font-size: .75rem; color: #6b7280; font-weight: 600; margin-top: .15rem; }
+.eh-stat:nth-child(1) .eh-stat-num { color: #1d4ed8; }
+.eh-stat:nth-child(2) .eh-stat-num { color: #16a34a; }
+.eh-stat:nth-child(3) .eh-stat-num { color: #d97706; }
+
+/* ══ sidebar اختيار القاعة ══ */
+.eh-sidebar {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; padding: 1.1rem;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+    position: sticky; top: 88px;
+}
+.eh-sidebar-title {
+    font-size: .82rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .04em; margin-bottom: .6rem;
+    display: flex; align-items: center; gap: .35rem;
+}
+.eh-select {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .5rem .85rem; font-size: .9rem; color: #0f172a;
+    background: #fff; transition: border-color .15s, box-shadow .15s;
+}
+.eh-select:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none; }
+.eh-date-badge {
+    margin-top: .75rem; background: #f0fdf4;
+    border: 1px solid rgba(22,163,74,.2); border-radius: 10px;
+    padding: .55rem .85rem; font-size: .83rem; font-weight: 700; color: #16a34a;
+    display: flex; align-items: center; gap: .4rem;
+}
+
+/* ══ تقدم التقييم ══ */
+.eh-progress-wrap { margin-top: .85rem; }
+.eh-progress-lbl  { font-size: .78rem; color: #64748b; font-weight: 600; margin-bottom: .35rem; display: flex; justify-content: space-between; }
+.eh-progress-bar  { height: 7px; border-radius: 10px; background: #e2e8f0; overflow: hidden; }
+.eh-progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #01696f, #0a8a91); transition: width .4s; }
+
+/* ══ بطاقة الجماعي ══ */
+.eh-bulk-card {
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    border: 1.5px solid rgba(22,163,74,.2); border-radius: 14px;
+    padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.eh-bulk-icon {
+    width: 44px; height: 44px; background: #dcfce7; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: #16a34a; flex-shrink: 0;
+}
+.eh-bulk-title { font-weight: 800; font-size: .95rem; color: #15803d; margin-bottom: .15rem; }
+.eh-bulk-desc  { font-size: .8rem; color: #4ade80; }
+.btn-bulk-apply {
+    margin-right: auto; background: #16a34a; color: #fff; border: none;
+    border-radius: 10px; padding: .5rem 1.25rem; font-weight: 700; font-size: .88rem;
+    display: flex; align-items: center; gap: .4rem; cursor: pointer; transition: background .15s;
+}
+.btn-bulk-apply:hover { background: #15803d; }
+
+/* ══ بطاقة الطالب ══ */
+.eh-student-card {
+    background: #fff; border: 1.5px solid rgba(15,23,42,.08);
+    border-radius: 16px; margin-bottom: .85rem;
+    box-shadow: 0 2px 10px rgba(15,23,42,.04); overflow: hidden;
+    transition: border-color .2s;
+}
+.eh-student-card.is-done  { border-color: rgba(22,163,74,.3); }
+.eh-student-card.has-error { border-color: rgba(220,38,38,.3); }
+.eh-student-header {
+    padding: .75rem 1.1rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.07);
+    display: flex; align-items: center; gap: .75rem;
+}
+.std-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.eh-student-name { font-weight: 800; font-size: .92rem; color: #0f172a; }
+.eh-student-meta { font-size: .78rem; color: #64748b; }
+.eh-student-body { padding: .9rem 1.1rem; }
+
+/* ══ شبكة التقييم ══ */
+.eh-rating-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; margin-bottom: .65rem;
+}
+.eh-rating-item label { font-size: .75rem; font-weight: 700; color: #6b7280; margin-bottom: .25rem; display: block; }
+.eh-rating-item select {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    padding: .35rem .65rem; font-size: .82rem; color: #0f172a;
+    transition: border-color .15s;
+}
+.eh-rating-item select:focus { border-color: #01696f; outline: none; }
+.eh-rating-item select.is-invalid { border-color: #dc2626; }
+
+.eh-notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin-bottom: .65rem; }
+.eh-notes-item label { font-size: .75rem; font-weight: 700; color: #6b7280; margin-bottom: .25rem; display: block; }
+.eh-notes-item textarea {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    padding: .35rem .65rem; font-size: .82rem; resize: none; color: #0f172a;
+    transition: border-color .15s;
+}
+.eh-notes-item textarea:focus { border-color: #01696f; outline: none; }
+
+/* checkboxes */
+.eh-checks { display: flex; gap: 1.25rem; }
+.eh-check-item { display: flex; align-items: center; gap: .4rem; font-size: .83rem; font-weight: 600; cursor: pointer; }
+.eh-check-item input { width: 16px; height: 16px; accent-color: #01696f; cursor: pointer; }
+.eh-check-item.distinguished { color: #d97706; }
+.eh-check-item.attention      { color: #dc2626; }
+
+/* الشريط السفلي */
+.eh-footer {
+    position: sticky; bottom: 0; z-index: 10;
+    background: rgba(255,255,255,.95); backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(15,23,42,.08); padding: .85rem 1.25rem;
+    display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    border-radius: 0 0 16px 16px; margin-top: 1rem;
+}
+.btn-save-all {
+    background: #01696f; color: #fff; border: none; border-radius: 11px;
+    padding: .6rem 1.75rem; font-weight: 800; font-size: .95rem;
+    display: flex; align-items: center; gap: .5rem; cursor: pointer; transition: background .15s;
+}
+.btn-save-all:hover { background: #0a8a91; }
+.btn-save-back {
+    background: #f1f5f9; color: #64748b; border: none; border-radius: 11px;
+    padding: .6rem 1.25rem; font-weight: 700; font-size: .88rem;
+    text-decoration: none; display: flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-save-back:hover { background: #e2e8f0; color: #334155; }
+.eh-save-info { font-size: .82rem; color: #64748b; margin-right: auto; }
+
+/* empty / no hall */
+.eh-empty {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; text-align: center; padding: 4rem 1rem;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.eh-empty i { font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: .75rem; }
+.eh-empty h3 { font-size: 1rem; font-weight: 800; color: #475569; margin-bottom: .4rem; }
+.eh-empty p  { font-size: .85rem; color: #94a3b8; margin: 0; }
+
+@media (max-width: 767.98px) {
+    .eh-rating-grid { grid-template-columns: 1fr; }
+    .eh-notes-grid  { grid-template-columns: 1fr; }
+    .eh-stats       { grid-template-columns: repeat(3, 1fr); }
+    .eh-footer      { border-radius: 0; }
+    .btn-save-all, .btn-save-back { flex: 1; justify-content: center; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="eh-hero">
+    <div class="eh-hero-left">
+        <div class="eh-hero-icon"><i class="bi bi-star-fill"></i></div>
         <div>
-            <h2 class="fw-bold mb-2">تقييم قاعة كاملة</h2>
-            <p class="text-muted mb-0">اختر القاعة ثم راجع الطلاب الذين لم يتم تقييمهم اليوم.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'dashboard:teacher' %}" class="btn btn-outline-secondary">رجوع للوحة</a>
-            {% if selected_hall %}
-                <a href="{% url 'halls:detail' selected_hall.pk %}" class="btn btn-outline-primary">تفاصيل القاعة</a>
-            {% endif %}
+            <h1>تقييم قاعة كاملة</h1>
+            <p>قيّم جميع طلاب القاعة دفعة واحدة وفر وقتك</p>
         </div>
     </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-lg-4">
-        <div class="page-card p-4 position-sticky" style="top: 92px;">
-            <form method="get">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">القاعة</label>
-                    <select name="hall" class="form-select" onchange="this.form.submit()">
-                        <option value="">— اختر القاعة —</option>
-                        {% for hall in halls %}
-                            <option value="{{ hall.id }}" {% if selected_hall and selected_hall.id == hall.id %}selected{% endif %}>{{ hall.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </form>
-
-            <div class="alert alert-info rounded-4 mb-0">
-                التاريخ: {{ today }}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-8">
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
         {% if selected_hall %}
-            <div class="page-card p-0 overflow-hidden">
-                {% if students_data %}
-                    <div class="table-responsive">
-                        <table class="table table-modern align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>الطالب</th>
-                                    <th>العمر</th>
-                                    <th>تم التقييم</th>
-                                    <th>إجراء</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in students_data %}
-                                    <tr>
-                                        <td>{{ row.student.get_full_name }}</td>
-                                        <td>{{ row.student.calculate_age }} سنة</td>
-                                        <td>
-                                            {% if row.evaluated %}
-                                                <span class="badge text-bg-success">نعم</span>
-                                            {% else %}
-                                                <span class="badge text-bg-warning">لا</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'evaluations:evaluate' row.student.id %}" class="btn btn-sm btn-primary">
-                                                {% if row.evaluated %}تحديث التقييم{% else %}تقييم{% endif %}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="empty-state p-5 text-center">لا يوجد طلاب نشطون في هذه القاعة.</div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="page-card p-5 text-center">
-                <h3 class="fw-bold mb-2">اختر قاعة أولًا</h3>
-                <p class="text-muted mb-0">سيظهر لك الطلاب النشطون مع حالة تقييمهم لهذا اليوم.</p>
-            </div>
+        <a href="{% url 'halls:detail' selected_hall.pk %}" class="btn-eh">
+            <i class="bi bi-building"></i>تفاصيل القاعة
+        </a>
         {% endif %}
-    </div>
-</div>
-{% endblock %}
-
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}تقييم الطلاب{% endblock %}
-
-{% block content %}
-
-<!-- هيدر الصفحة -->
-<div class="card stat-card mb-4">
-    <div class="card-body d-flex align-items-center justify-content-between
-                flex-wrap gap-2 py-3">
-        <div>
-            <div class="fw-bold">
-                <i class="fas fa-star text-warning me-2"></i>
-                تقييم الطلاب
-            </div>
-            <div class="text-muted small mt-1">
-                <i class="far fa-calendar-alt me-1"></i>
-                {{ today }}
-            </div>
-        </div>
-        {% if selected_hall %}
-        {% with total=students_data|length evaluated=students_data|dictsortreversed:"evaluated" %}
-        <div class="d-flex gap-2 flex-wrap">
-            <span class="badge bg-primary px-3 py-2">
-                {{ total }} طالب
-            </span>
-            <span class="badge bg-success px-3 py-2" id="evaluated-count">
-                <i class="fas fa-check me-1"></i>
-                تم تقييم
-                {% for item in students_data %}{% if item.evaluated %}{% with forloop.counter as n %}{% endwith %}{% endif %}{% endfor %}
-                {{ students_data|length }}
-            </span>
-        </div>
-        {% endwith %}
-        {% endif %}
+        <a href="{% url 'dashboard:teacher' %}" class="btn-eh">
+            <i class="bi bi-arrow-right"></i>رجوع
+        </a>
     </div>
 </div>
 
-<!-- اختيار القاعة -->
-<div class="card stat-card mb-4">
-    <div class="card-header fw-bold">
-        <i class="fas fa-door-open text-primary me-2"></i>
-        اختيار القاعة
-    </div>
-    <div class="card-body">
-        <form method="get">
-            <label class="form-label fw-bold small text-muted">
-                <i class="fas fa-chalkboard me-1"></i>
-                القاعة
-            </label>
-            <select name="hall"
-                    class="form-select"
-                    onchange="this.form.submit()">
-                <option value="">— اختر القاعة —</option>
-                {% for hall in halls %}
-                <option value="{{ hall.id }}"
-                    {% if selected_hall.id == hall.id %}selected{% endif %}>
-                    {{ hall.name }}
-                    {% if hall.get_age_group_display %}
-                    — {{ hall.get_age_group_display }}
-                    {% endif %}
-                </option>
-                {% endfor %}
-            </select>
-        </form>
-    </div>
-</div>
-
-{% if selected_hall %}
-
-<!-- إحصائية سريعة -->
+<!-- ══ إحصاء سريع ══ -->
+{% if selected_hall and students_data %}
 {% with total=students_data|length %}
-<div class="row g-3 mb-4">
-    <div class="col-6">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center
-                            justify-content-center bg-success bg-opacity-10
-                            flex-shrink-0"
-                     style="width:44px;height:44px;">
-                    <i class="fas fa-check text-success"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-success" id="stat-evaluated">
-                        {% for item in students_data %}{% if item.evaluated %}{{ forloop.counter }}{% endif %}{% endfor %}0
-                    </div>
-                    <div class="text-muted small mt-1">تم تقييمهم</div>
-                </div>
-            </div>
-        </div>
+<div class="eh-stats">
+    <div class="eh-stat">
+        <div class="eh-stat-num">{{ total }}</div>
+        <div class="eh-stat-lbl">إجمالي الطلاب</div>
     </div>
-    <div class="col-6">
-        <div class="card stat-card">
-            <div class="card-body d-flex align-items-center gap-3 py-3">
-                <div class="rounded-circle d-flex align-items-center
-                            justify-content-center bg-warning bg-opacity-10
-                            flex-shrink-0"
-                     style="width:44px;height:44px;">
-                    <i class="fas fa-clock text-warning"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1 text-warning" id="stat-pending">
-                        {% for item in students_data %}{% if not item.evaluated %}{{ forloop.counter }}{% endif %}{% endfor %}0
-                    </div>
-                    <div class="text-muted small mt-1">لم يُقيَّموا</div>
-                </div>
-            </div>
-        </div>
+    <div class="eh-stat">
+        <div class="eh-stat-num" id="countDone">
+            {% for r in students_data %}{% if r.evaluated %}1{% endif %}{% endfor %}</div>
+        <div class="eh-stat-lbl">تم تقييمهم</div>
     </div>
-</div>
-
-<!-- شريط التقدم -->
-<div class="card stat-card mb-4">
-    <div class="card-body py-3">
-        <div class="d-flex justify-content-between small mb-2">
-            <span class="fw-bold">
-                <i class="fas fa-tasks text-primary me-1"></i>
-                تقدم التقييم اليوم
-            </span>
-            <span class="fw-bold text-primary" id="progress-text">
-                جارٍ الحساب...
-            </span>
-        </div>
-        <div class="progress" style="height:12px;border-radius:6px;">
-            <div class="progress-bar bg-success" id="progress-bar"
-                 style="width:0%;transition:width .4s ease;"
-                 role="progressbar">
-            </div>
-        </div>
+    <div class="eh-stat">
+        <div class="eh-stat-num" id="countPending">
+            {% for r in students_data %}{% if not r.evaluated %}1{% endif %}{% endfor %}</div>
+        <div class="eh-stat-lbl">لم يُقيَّموا</div>
     </div>
 </div>
 {% endwith %}
+{% endif %}
 
-<!-- كروت الطلاب -->
-<div class="card stat-card">
-    <div class="card-header d-flex justify-content-between align-items-center
-                flex-wrap gap-2">
-        <span class="fw-bold">
-            <i class="fas fa-users text-primary me-2"></i>
-            طلاب {{ selected_hall.name }}
-        </span>
-        <!-- فلتر سريع -->
-        <div class="d-flex gap-2">
-            <button type="button"
-                    class="btn btn-sm btn-outline-secondary active"
-                    id="filterAll"
-                    onclick="filterCards('all')">
-                الكل
-            </button>
-            <button type="button"
-                    class="btn btn-sm btn-outline-warning"
-                    id="filterPending"
-                    onclick="filterCards('pending')">
-                <i class="fas fa-clock me-1"></i>
-                لم يُقيَّموا
-            </button>
-            <button type="button"
-                    class="btn btn-sm btn-outline-success"
-                    id="filterDone"
-                    onclick="filterCards('done')">
-                <i class="fas fa-check me-1"></i>
-                تم تقييمهم
-            </button>
-        </div>
-    </div>
-
-    <div class="card-body">
-        <div class="row g-3" id="students-grid">
-            {% for item in students_data %}
-            <div class="col-12 col-sm-6 col-lg-4 student-card"
-                 data-status="{% if item.evaluated %}done{% else %}pending{% endif %}">
-                <div class="card h-100
-                    {% if item.evaluated %}border-success{% else %}border-warning{% endif %}"
-                     style="border-width:2px!important;border-radius:10px;">
-                    <div class="card-body d-flex flex-column gap-2">
-
-                        <!-- اسم + حالة -->
-                        <div class="d-flex align-items-center
-                                    justify-content-between gap-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="rounded-circle d-flex align-items-center
-                                            justify-content-center flex-shrink-0
-                                    {% if item.evaluated %}bg-success bg-opacity-10
-                                    {% else %}bg-warning bg-opacity-10{% endif %}"
-                                     style="width:38px;height:38px;">
-                                    <i class="fas fa-user
-                                        {% if item.evaluated %}text-success
-                                        {% else %}text-warning{% endif %}"
-                                       style="font-size:.8rem;"></i>
-                                </div>
-                                <div class="fw-bold small">
-                                    {{ item.student.get_full_name }}
-                                </div>
-                            </div>
-                            {% if item.evaluated %}
-                            <span class="badge bg-success flex-shrink-0">
-                                <i class="fas fa-check"></i>
-                            </span>
-                            {% else %}
-                            <span class="badge bg-warning text-dark flex-shrink-0">
-                                <i class="fas fa-clock"></i>
-                            </span>
-                            {% endif %}
-                        </div>
-
-                        <!-- آخر تقييم -->
-                        {% if item.evaluated and item.last_eval %}
-                        <div class="d-flex gap-1 flex-wrap">
-                            <span class="badge bg-primary bg-opacity-75"
-                                  style="font-size:.65rem;">
-                                {{ item.last_eval.get_memorization_rating_display }}
-                            </span>
-                            <span class="badge bg-info bg-opacity-75"
-                                  style="font-size:.65rem;">
-                                {{ item.last_eval.get_behavior_rating_display }}
-                            </span>
-                        </div>
-                        {% endif %}
-
-                        <!-- زر التقييم -->
-                        <a href="{% url 'evaluations:evaluate' item.student.pk %}"
-                           class="btn btn-sm mt-auto
-                            {% if item.evaluated %}btn-outline-success
-                            {% else %}btn-primary{% endif %} w-100">
-                            <i class="fas fa-{% if item.evaluated %}edit{% else %}star{% endif %} me-1"></i>
-                            {% if item.evaluated %}تعديل التقييم{% else %}تقييم الطالب{% endif %}
-                        </a>
-
-                    </div>
+<div class="row g-4">
+    <!-- ══ Sidebar ══ -->
+    <div class="col-lg-3">
+        <div class="eh-sidebar">
+            <div class="eh-sidebar-title"><i class="bi bi-building"></i>اختر القاعة</div>
+            <form method="get" id="hallSelectForm">
+                <select name="hall" class="eh-select" onchange="document.getElementById('hallSelectForm').submit()">
+                    <option value="">— اختر —</option>
+                    {% for hall in halls %}
+                    <option value="{{ hall.id }}"
+                        {% if selected_hall and selected_hall.id == hall.id %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            <div class="eh-date-badge">
+                <i class="bi bi-calendar3-event"></i>{{ today }}
+            </div>
+            {% if selected_hall and students_data %}
+            <div class="eh-progress-wrap">
+                {% with total=students_data|length %}
+                <div class="eh-progress-lbl">
+                    <span>التقدم</span>
+                    <span id="progressText">
+                        {% with done=0 %}
+                        {% for r in students_data %}{% if r.evaluated %}{% with done=done|add:1 %}{% endwith %}{% endif %}{% endfor %}
+                        {% endwith %}
+                    </span>
+                </div>
+                {% endwith %}
+                <div class="eh-progress-bar">
+                    <div class="eh-progress-fill" id="progressFill" style="width:0%"></div>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12 text-center text-muted py-5">
-                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
-                لا يوجد طلاب في هذه القاعة
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ══ المحتوى الرئيسي ══ -->
+    <div class="col-lg-9">
+        {% if selected_hall %}
+            {% if students_data %}
+            <form method="post" id="hallEvalForm">
+                {% csrf_token %}
+
+                <!-- بطاقة التقييم الجماعي السريع -->
+                <div class="eh-bulk-card">
+                    <div class="eh-bulk-icon"><i class="bi bi-lightning-fill"></i></div>
+                    <div>
+                        <div class="eh-bulk-title">تقييم جماعي سريع</div>
+                        <div class="eh-bulk-desc">طبّق نفس التقييم على كل الطلاب دفعة واحدة</div>
+                    </div>
+                    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-right:auto;">
+                        <select id="bulkMem" class="eh-select" style="width:130px;">
+                            <option value="">الحفظ</option>
+                            {% for val, lbl in rating_choices %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+                        </select>
+                        <select id="bulkBeh" class="eh-select" style="width:130px;">
+                            <option value="">السلوك</option>
+                            {% for val, lbl in rating_choices %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+                        </select>
+                        <select id="bulkCom" class="eh-select" style="width:130px;">
+                            <option value="">الالتزام</option>
+                            {% for val, lbl in rating_choices %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+                        </select>
+                        <button type="button" class="btn-bulk-apply" onclick="applyBulk()">
+                            <i class="bi bi-check2-all"></i>تطبيق
+                        </button>
+                    </div>
+                </div>
+
+                <!-- بطاقات الطلاب -->
+                {% for row in students_data %}
+                <div class="eh-student-card {% if row.evaluated %}is-done{% endif %}"
+                     id="card_{{ row.student.id }}">
+                    <div class="eh-student-header">
+                        <div class="std-avatar">
+                            {{ row.student.first_name|first }}{{ row.student.last_name|first }}
+                        </div>
+                        <div style="flex:1;">
+                            <div class="eh-student-name">{{ row.student.get_full_name }}</div>
+                            <div class="eh-student-meta">
+                                {{ row.student.calculate_age }} سنة
+                                {% if row.student.hall %} · {{ row.student.hall.name }}{% endif %}
+                            </div>
+                        </div>
+                        <span id="badge_{{ row.student.id }}"
+                              class="{% if row.evaluated %}
+                                  " style="background:#dcfce7; color:#16a34a; border-radius:20px; padding:.2rem .75rem; font-size:.75rem; font-weight:700;">
+                                  <i class="bi bi-check-circle-fill me-1"></i>تم التقييم
+                              {% else %}
+                                  " style="background:#fef3c7; color:#d97706; border-radius:20px; padding:.2rem .75rem; font-size:.75rem; font-weight:700;">
+                                  <i class="bi bi-clock me-1"></i>لم يُقيَّم
+                              {% endif %}
+                        </span>
+                    </div>
+                    <div class="eh-student-body">
+                        <!-- التقييمات الثلاثة -->
+                        <div class="eh-rating-grid">
+                            <div class="eh-rating-item">
+                                <label><i class="bi bi-book me-1"></i>الحفظ</label>
+                                {{ row.form.memorization_rating }}
+                                {% if row.form.memorization_rating.errors %}
+                                <div style="color:#dc2626; font-size:.75rem;">{{ row.form.memorization_rating.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="eh-rating-item">
+                                <label><i class="bi bi-emoji-smile me-1"></i>السلوك</label>
+                                {{ row.form.behavior_rating }}
+                                {% if row.form.behavior_rating.errors %}
+                                <div style="color:#dc2626; font-size:.75rem;">{{ row.form.behavior_rating.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="eh-rating-item">
+                                <label><i class="bi bi-clock-history me-1"></i>الالتزام</label>
+                                {{ row.form.commitment_rating }}
+                                {% if row.form.commitment_rating.errors %}
+                                <div style="color:#dc2626; font-size:.75rem;">{{ row.form.commitment_rating.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- ملاحظات -->
+                        <div class="eh-notes-grid">
+                            <div class="eh-notes-item">
+                                <label>ملاحظات الحفظ</label>
+                                {{ row.form.memorization_notes }}
+                            </div>
+                            <div class="eh-notes-item">
+                                <label>ملاحظات السلوك</label>
+                                {{ row.form.behavior_notes }}
+                            </div>
+                        </div>
+                        <div class="eh-notes-grid" style="grid-template-columns:1fr; margin-bottom:.65rem;">
+                            <div class="eh-notes-item">
+                                <label>ملاحظات لولي الأمر</label>
+                                {{ row.form.general_notes }}
+                            </div>
+                        </div>
+                        <!-- checkboxes -->
+                        <div class="eh-checks">
+                            <label class="eh-check-item distinguished">
+                                {{ row.form.is_distinguished }}
+                                <i class="bi bi-star-fill"></i>طالب متميز
+                            </label>
+                            <label class="eh-check-item attention">
+                                {{ row.form.needs_attention }}
+                                <i class="bi bi-exclamation-triangle-fill"></i>يحتاج متابعة
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- شريط الحفظ -->
+                <div class="eh-footer">
+                    <button type="submit" class="btn-save-all">
+                        <i class="bi bi-check2-all"></i>حفظ تقييمات جميع الطلاب
+                    </button>
+                    <a href="{% url 'dashboard:teacher' %}" class="btn-save-back">
+                        <i class="bi bi-arrow-right"></i>رجوع
+                    </a>
+                    <span class="eh-save-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        سيتم حفظ {{ students_data|length }} تقييم ليوم {{ today }}
+                    </span>
+                </div>
+            </form>
+
+            {% else %}
+            <div class="eh-empty">
+                <i class="bi bi-people"></i>
+                <h3>لا يوجد طلاب نشطون</h3>
+                <p>هذه القاعة لا تحتوي على طلاب نشطين حالياً</p>
             </div>
-            {% endfor %}
+            {% endif %}
+        {% else %}
+        <div class="eh-empty">
+            <i class="bi bi-building"></i>
+            <h3>اختر قاعة أولاً</h3>
+            <p>سيظهر لك جميع الطلاب مع نماذج التقييم الكاملة</p>
         </div>
+        {% endif %}
     </div>
 </div>
 
-{% else %}
-
-<!-- حالة لم تُختر قاعة -->
-<div class="card stat-card">
-    <div class="card-body text-center py-5 text-muted">
-        <div class="rounded-circle d-inline-flex align-items-center
-                    justify-content-center bg-warning bg-opacity-10 mb-3"
-             style="width:72px;height:72px;">
-            <i class="fas fa-star fa-2x text-warning"></i>
-        </div>
-        <div class="fw-bold mb-1">اختر قاعة لبدء التقييم</div>
-        <div class="small">اختر القاعة من القائمة بالأعلى</div>
-    </div>
-</div>
-
-{% endif %}
-
-{% endblock %}
-
-{% block extra_js %}
-{% if selected_hall %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const cards    = document.querySelectorAll('.student-card');
-    const total    = cards.length;
-    const done     = [...cards].filter(c => c.dataset.status === 'done').length;
-    const pending  = total - done;
-    const pct      = total ? Math.round((done / total) * 100) : 0;
+// تطبيق التقييم الجماعي السريع
+function applyBulk() {
+    const mem = document.getElementById('bulkMem').value;
+    const beh = document.getElementById('bulkBeh').value;
+    const com = document.getElementById('bulkCom').value;
 
-    // إحصائيات
-    document.getElementById('stat-evaluated').textContent = done;
-    document.getElementById('stat-pending').textContent   = pending;
+    document.querySelectorAll('.eh-student-card').forEach(card => {
+        const selects = card.querySelectorAll('select');
+        selects.forEach(sel => {
+            const name = sel.name || '';
+            if (mem && name.includes('memorization_rating')) sel.value = mem;
+            if (beh && name.includes('behavior_rating'))     sel.value = beh;
+            if (com && name.includes('commitment_rating'))   sel.value = com;
+        });
+    });
 
-    // progress bar
-    const bar  = document.getElementById('progress-bar');
-    const text = document.getElementById('progress-text');
-    bar.style.width   = pct + '%';
-    bar.className     = 'progress-bar ' +
-        (pct === 100 ? 'bg-success' : pct >= 50 ? 'bg-info' : 'bg-warning');
-    text.textContent  = done + ' / ' + total + ' (' + pct + '%)';
-    text.className    = 'fw-bold ' +
-        (pct === 100 ? 'text-success' : pct >= 50 ? 'text-info' : 'text-warning');
+    // تحديث الشارات
+    updateProgress();
+}
+
+// حساب التقدم
+function updateProgress() {
+    const cards = document.querySelectorAll('.eh-student-card');
+    let filled = 0;
+    cards.forEach(card => {
+        const selects = card.querySelectorAll('select');
+        let ok = true;
+        selects.forEach(sel => {
+            if (sel.name && (
+                sel.name.includes('memorization_rating') ||
+                sel.name.includes('behavior_rating') ||
+                sel.name.includes('commitment_rating')
+            ) && !sel.value) ok = false;
+        });
+        if (ok) filled++;
+    });
+
+    const total = cards.length;
+    const pct   = total ? Math.round((filled / total) * 100) : 0;
+    const fill  = document.getElementById('progressFill');
+    const text  = document.getElementById('progressText');
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = filled + ' / ' + total;
+}
+
+// تحديث لون البطاقة عند التغيير
+document.addEventListener('change', function(e) {
+    const card = e.target.closest('.eh-student-card');
+    if (card) updateProgress();
 });
 
-function filterCards(type) {
-    document.querySelectorAll('.student-card').forEach(card => {
-        const show = type === 'all' || card.dataset.status === type;
-        card.style.display = show ? '' : 'none';
-    });
-    ['filterAll','filterPending','filterDone'].forEach(id => {
-        document.getElementById(id)?.classList.remove('active');
-    });
-    const map = { all:'filterAll', pending:'filterPending', done:'filterDone' };
-    document.getElementById(map[type])?.classList.add('active');
-}
+document.addEventListener('DOMContentLoaded', updateProgress);
 </script>
-{% endif %}
-{% endblock %} {% endcomment %}
+{% endblock %}

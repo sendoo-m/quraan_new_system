@@ -43,7 +43,10 @@ class Hall(models.Model):
         verbose_name='مشرف القاعة'
     )
 
-    current_juz = models.PositiveIntegerField(default=30, verbose_name='الجزء الحالي الذي تبدأ منه القاعة')
+    current_juz = models.PositiveIntegerField(
+        default=30,
+        verbose_name='الجزء الحالي الذي تبدأ منه القاعة'
+    )
     required_completed_juz_count = models.PositiveIntegerField(
         default=0,
         verbose_name='عدد الأجزاء المطلوبة قبل دخول القاعة'
@@ -52,6 +55,7 @@ class Hall(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='نشطة')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # ══════════════════════════════════════════
     def get_current_students_count(self):
         return self.students.filter(status='active').count()
 
@@ -62,20 +66,39 @@ class Hall(models.Model):
         return self.max_students - self.get_current_students_count()
 
     def accepts_student(self, student):
+        """
+        تفحص إن كانت القاعة تقبل الطالب بناءً على:
+        1. القاعة نشطة
+        2. يوجد مقاعد متاحة
+        3. عمر الطالب ضمن نطاق الفئة العمرية للقاعة
+        4. عدد الأجزاء المحفوظة يساوي أو يزيد على الحد المطلوب
+        """
         if not self.is_active:
             return False, 'القاعة غير نشطة'
 
         if not self.has_available_seats():
-            return False, 'تم اكتمال العدد بالقاعة'
+            return False, f'تم اكتمال العدد ({self.max_students} طالب)'
 
-        if not self.age_group or student.age_group_id != self.age_group_id:
-            return False, 'الفئة العمرية للطالب لا تناسب القاعة'
+        # ← التغيير: فحص العمر مباشرة بدل مقارنة age_group_id
+        if self.age_group:
+            age = student.calculate_age()
+            if not (self.age_group.min_age <= age <= self.age_group.max_age):
+                return False, (
+                    f'عمر الطالب ({age} سنة) خارج نطاق القاعة '
+                    f'({self.age_group.min_age}–{self.age_group.max_age} سنة)'
+                )
 
-        if student.get_completed_juz_count() < self.required_completed_juz_count:
-            return False, 'مستوى الحفظ الحالي لا يطابق شرط القبول'
+        student_juz = student.get_completed_juz_count()
+        if student_juz < self.required_completed_juz_count:
+            return False, (
+                f'مستوى الحفظ غير كافٍ — '
+                f'الطالب أتمّ {student_juz} جزء '
+                f'والمطلوب {self.required_completed_juz_count} جزء'
+            )
 
         return True, 'الطالب مناسب للقاعة'
 
+    # ══════════════════════════════════════════
     def __str__(self):
         ag = self.age_group.name if self.age_group else 'بدون فئة'
         return f"{self.name} — {ag}"
@@ -101,13 +124,9 @@ class Subject(models.Model):
 
 class HallSchedule(models.Model):
     DAYS = [
-        # ('saturday', 'السبت'),
-        ('sunday', 'الأحد'),
-        # ('monday', 'الاثنين'),
-        ('tuesday', 'الثلاثاء'),
-        # ('wednesday', 'الأربعاء'),
+        ('sunday',   'الأحد'),
+        ('tuesday',  'الثلاثاء'),
         ('thursday', 'الخميس'),
-        # ('friday', 'الجمعة'),
     ]
 
     hall = models.ForeignKey(
@@ -121,17 +140,15 @@ class HallSchedule(models.Model):
         on_delete=models.CASCADE,
         verbose_name='المادة'
     )
-    day = models.CharField(max_length=15, choices=DAYS, verbose_name='اليوم')
+    day        = models.CharField(max_length=15, choices=DAYS, verbose_name='اليوم')
     start_time = models.TimeField(verbose_name='وقت البداية')
-    end_time = models.TimeField(verbose_name='وقت النهاية')
+    end_time   = models.TimeField(verbose_name='وقت النهاية')
 
     def __str__(self):
         return f"{self.hall.name} | {self.subject.name} | {self.get_day_display()}"
 
     class Meta:
-        verbose_name = 'جدول قاعة'
+        verbose_name        = 'جدول قاعة'
         verbose_name_plural = 'جداول القاعات'
-        ordering = ['day', 'start_time']
-        unique_together = ['hall', 'day', 'start_time']
-
-  
+        ordering            = ['day', 'start_time']
+        unique_together     = ['hall', 'day', 'start_time']

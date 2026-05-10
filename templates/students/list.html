@@ -1,190 +1,461 @@
 {% extends "base.html" %}
-
 {% block title %}الطلاب | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}الطلاب{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+<style>
+/* ══ هيدر ══ */
+.sl-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.sl-hero-left { display: flex; align-items: center; gap: 1rem; }
+.sl-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.sl-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.sl-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-sl-add {
+    background: rgba(255,255,255,.18); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.3); border-radius: 11px;
+    padding: .5rem 1.25rem; font-weight: 800; font-size: .88rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .45rem;
+    transition: background .15s;
+}
+.btn-sl-add:hover { background: rgba(255,255,255,.3); color: #fff; }
+
+/* ══ إحصائيات ══ */
+.sl-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1.25rem; }
+.sl-stat {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 13px; padding: .9rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sl-stat-icon {
+    width: 36px; height: 36px; border-radius: 9px; margin: 0 auto .45rem;
+    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+}
+.sl-stat-num { font-size: 1.4rem; font-weight: 800; line-height: 1; margin-bottom: .15rem; }
+.sl-stat-lbl { font-size: .75rem; color: #6b7280; font-weight: 600; }
+.sl-stat:nth-child(1) .sl-stat-icon { background: #dbeafe; color: #2563eb; }
+.sl-stat:nth-child(1) .sl-stat-num  { color: #1d4ed8; }
+.sl-stat:nth-child(2) .sl-stat-icon { background: #dcfce7; color: #16a34a; }
+.sl-stat:nth-child(2) .sl-stat-num  { color: #15803d; }
+.sl-stat:nth-child(3) .sl-stat-icon { background: #fef3c7; color: #d97706; }
+.sl-stat:nth-child(3) .sl-stat-num  { color: #b45309; }
+.sl-stat:nth-child(4) .sl-stat-icon { background: #ede9fe; color: #7c3aed; }
+.sl-stat:nth-child(4) .sl-stat-num  { color: #6d28d9; }
+
+/* ══ فلتر ══ */
+.sl-filter {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .9rem 1.25rem; margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sl-filter-lbl { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.sl-filter input, .sl-filter select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .42rem .85rem; font-size: .88rem; color: #0f172a;
+    background: #fff; height: 40px; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.sl-filter input:focus, .sl-filter select:focus {
+    border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none;
+}
+.btn-sl-filter {
+    height: 40px; padding: 0 1.25rem; border-radius: 9px;
+    font-weight: 700; font-size: .88rem; background: #1e293b; color: #fff;
+    border: none; display: flex; align-items: center; gap: .4rem;
+    cursor: pointer; transition: background .15s; width: 100%; justify-content: center;
+}
+.btn-sl-filter:hover { background: #334155; }
+.btn-sl-clear {
+    height: 40px; padding: 0 1rem; border-radius: 9px;
+    font-size: .88rem; font-weight: 600; background: #f1f5f9; color: #64748b;
+    border: none; text-decoration: none; display: flex; align-items: center; gap: .4rem;
+    width: 100%; justify-content: center; transition: background .15s;
+}
+.btn-sl-clear:hover { background: #e2e8f0; color: #334155; }
+
+/* ══ جدول ══ */
+.sl-table-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.sl-table-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.sl-table-title { font-weight: 800; font-size: .95rem; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+.sl-count-badge { background: #1e293b; color: #fff; border-radius: 30px; padding: .15rem .75rem; font-size: .78rem; font-weight: 700; }
+.sl-table thead th {
+    background: #f8fafc; font-size: .78rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .04em;
+    padding: .7rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.sl-table tbody td {
+    padding: .65rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .9rem;
+}
+.sl-table tbody tr:last-child td { border-bottom: none; }
+.sl-table tbody tr:hover { background: #f8fafc; }
+.std-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.status-pill { padding: .2rem .65rem; border-radius: 30px; font-size: .75rem; font-weight: 700; display: inline-flex; align-items: center; gap: .25rem; }
+.sp-active   { background: #dcfce7; color: #16a34a; }
+.sp-pending  { background: #fef3c7; color: #d97706; }
+.sp-inactive { background: #f1f5f9; color: #64748b; }
+.sp-rejected { background: #fee2e2; color: #dc2626; }
+
+/* أزرار الإجراءات */
+.action-btn {
+    padding: .22rem .65rem; border-radius: 7px; font-size: .78rem; font-weight: 700;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .25rem;
+    border: 1.5px solid; transition: all .15s; white-space: nowrap;
+}
+.ab-view    { border-color: #bfdbfe; background: #eff6ff; color: #2563eb; }
+.ab-view:hover   { background: #dbeafe; color: #1d4ed8; }
+.ab-edit    { border-color: #fde68a; background: #fffbeb; color: #d97706; }
+.ab-edit:hover   { background: #fef3c7; color: #b45309; }
+.ab-eval    { border-color: #bbf7d0; background: #f0fdf4; color: #16a34a; }
+.ab-eval:hover   { background: #dcfce7; color: #15803d; }
+.ab-assign  { border-color: #a7f3d0; background: #ecfdf5; color: #059669; }
+.ab-assign:hover { background: #d1fae5; color: #047857; }
+.ab-manual  { border-color: #c7d2fe; background: #eef2ff; color: #4f46e5; }
+.ab-manual:hover { background: #e0e7ff; color: #3730a3; }
+.ab-transfer{ border-color: #e2e8f0; background: #f8fafc; color: #64748b; }
+.ab-transfer:hover { background: #f1f5f9; color: #334155; }
+
+/* موبايل */
+.sl-mobile-card {
+    border: 1px solid rgba(15,23,42,.08); border-radius: 14px;
+    background: #fff; margin-bottom: .75rem; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sl-mobile-card.s-active   { border-right: 4px solid #16a34a; }
+.sl-mobile-card.s-pending  { border-right: 4px solid #d97706; }
+.sl-mobile-card.s-inactive { border-right: 4px solid #94a3b8; }
+.sl-mobile-card.s-rejected { border-right: 4px solid #dc2626; }
+.sl-mobile-body { padding: .85rem 1rem; }
+.sl-mobile-top  { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
+.sl-mobile-meta { font-size: .8rem; color: #64748b; display: flex; flex-wrap: wrap; gap: .3rem .6rem; margin-bottom: .6rem; }
+.sl-mobile-meta span { display: flex; align-items: center; gap: .25rem; }
+.sl-mobile-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+/* pagination */
+.sl-pagination { display: flex; justify-content: center; align-items: center; gap: .4rem; padding: 1rem; flex-wrap: wrap; border-top: 1px solid rgba(15,23,42,.07); }
+.sl-page-btn {
+    min-width: 36px; height: 36px; border-radius: 9px; font-size: .85rem;
+    font-weight: 600; border: 1.5px solid #e2e8f0; background: #fff; color: #475569;
+    text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 0 .6rem;
+    transition: all .15s;
+}
+.sl-page-btn:hover, .sl-page-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+.sl-empty { text-align: center; padding: 4rem 1rem; color: #94a3b8; }
+.sl-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+@media (max-width: 767.98px) {
+    .sl-stats { grid-template-columns: repeat(2,1fr); }
+    .sl-hero  { flex-direction: column; align-items: flex-start; padding: 1.1rem 1.25rem; }
+    .sl-hero h1 { font-size: 1rem; }
+    .btn-sl-add { width: 100%; justify-content: center; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="sl-hero">
+    <div class="sl-hero-left">
+        <div class="sl-hero-icon"><i class="bi bi-mortarboard-fill"></i></div>
         <div>
-            <h2 class="fw-bold mb-2">إدارة الطلاب</h2>
-            <p class="text-muted mb-0">
-                عرض الطلاب، البحث، التصفية، والوصول إلى التفاصيل أو النقل أو التعديل أو التقييم.
-            </p>
+            <h1>إدارة الطلاب</h1>
+            <p>عرض، بحث، تصفية، تسكين، نقل، وتقييم الطلاب</p>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'students:register' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle ms-2"></i>تسجيل طالب
-            </a>
-        </div>
+    </div>
+    <a href="{% url 'students:register' %}" class="btn-sl-add">
+        <i class="bi bi-plus-circle-fill"></i>تسجيل طالب جديد
+    </a>
+</div>
+
+<!-- ══ إحصائيات ══ -->
+<div class="sl-stats">
+    <div class="sl-stat">
+        <div class="sl-stat-icon"><i class="bi bi-mortarboard"></i></div>
+        <div class="sl-stat-num">{{ total }}</div>
+        <div class="sl-stat-lbl">إجمالي الطلاب</div>
+    </div>
+    <div class="sl-stat">
+        <div class="sl-stat-icon"><i class="bi bi-building"></i></div>
+        <div class="sl-stat-num">{{ halls|length }}</div>
+        <div class="sl-stat-lbl">القاعات المتاحة</div>
+    </div>
+    <div class="sl-stat">
+        <div class="sl-stat-icon"><i class="bi bi-diagram-3"></i></div>
+        <div class="sl-stat-num">{{ age_groups|length }}</div>
+        <div class="sl-stat-lbl">الفئات العمرية</div>
+    </div>
+    <div class="sl-stat">
+        <div class="sl-stat-icon"><i class="bi bi-filter"></i></div>
+        <div class="sl-stat-num">{{ statuses|length }}</div>
+        <div class="sl-stat-lbl">حالات الطلاب</div>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="stat-icon bg-primary"><i class="bi bi-mortarboard"></i></div>
-            <div class="text-muted">إجمالي الطلاب</div>
-            <div class="fs-3 fw-bold">{{ total }}</div>
+<!-- ══ فلتر ══ -->
+<div class="sl-filter">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+            <div class="sl-filter-lbl"><i class="bi bi-search me-1"></i>بحث</div>
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="اسم الطالب أو ولي الأمر">
         </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="stat-icon bg-success"><i class="bi bi-building"></i></div>
-            <div class="text-muted">القاعات المتاحة</div>
-            <div class="fs-3 fw-bold">{{ halls|length }}</div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="stat-icon bg-warning"><i class="bi bi-diagram-3"></i></div>
-            <div class="text-muted">الفئات العمرية</div>
-            <div class="fs-3 fw-bold">{{ age_groups|length }}</div>
-        </div>
-    </div>
-    <div class="col-md-6 col-xl-3">
-        <div class="stat-card">
-            <div class="stat-icon bg-danger"><i class="bi bi-filter"></i></div>
-            <div class="text-muted">حالات الطلاب</div>
-            <div class="fw-bold">{{ statuses|length }}</div>
-        </div>
-    </div>
-</div>
-
-<div class="page-card p-4 mb-4">
-    <form method="get" class="row g-3 align-items-end">
-        <div class="col-md-4">
-            <label class="form-label fw-semibold">بحث</label>
-            <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="اسم الطالب أو ولي الأمر">
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label fw-semibold">الحالة</label>
-            <select name="status" class="form-select">
+        <div class="col-6 col-md-2">
+            <div class="sl-filter-lbl"><i class="bi bi-circle-half me-1"></i>الحالة</div>
+            <select name="status">
                 <option value="">الكل</option>
                 {% for value, label in statuses %}
-                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <div class="col-md-2">
-            <label class="form-label fw-semibold">الفئة العمرية</label>
-            <select name="age_group" class="form-select">
+        <div class="col-6 col-md-2">
+            <div class="sl-filter-lbl"><i class="bi bi-people me-1"></i>الفئة العمرية</div>
+            <select name="age_group">
                 <option value="">الكل</option>
                 {% for ag in age_groups %}
-                    <option value="{{ ag.id }}" {% if request.GET.age_group == ag.id|stringformat:"s" %}selected{% endif %}>{{ ag.name }}</option>
+                <option value="{{ ag.id }}" {% if request.GET.age_group == ag.id|stringformat:"s" %}selected{% endif %}>{{ ag.name }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <div class="col-md-2">
-            <label class="form-label fw-semibold">القاعة</label>
-            <select name="hall" class="form-select">
+        <div class="col-6 col-md-2">
+            <div class="sl-filter-lbl"><i class="bi bi-building me-1"></i>القاعة</div>
+            <select name="hall">
                 <option value="">الكل</option>
                 {% for hall in halls %}
-                    <option value="{{ hall.id }}" {% if request.GET.hall == hall.id|stringformat:"s" %}selected{% endif %}>{{ hall.name }}</option>
+                <option value="{{ hall.id }}" {% if request.GET.hall == hall.id|stringformat:"s" %}selected{% endif %}>{{ hall.name }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-primary">تصفية</button>
+        <div class="col-6 col-md-1">
+            <button type="submit" class="btn-sl-filter"><i class="bi bi-funnel-fill"></i></button>
+        </div>
+        <div class="col-12 col-md-1">
+            <a href="{% url 'students:list' %}" class="btn-sl-clear"><i class="bi bi-x-circle"></i>مسح</a>
         </div>
     </form>
 </div>
 
-<div class="page-card p-0 overflow-hidden">
-    {% if students %}
-        <div class="table-responsive">
-            <table class="table table-modern align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>الطالب</th>
-                        <th>ولي الأمر</th>
-                        <th>الفئة العمرية</th>
-                        <th>القاعة</th>
-                        <th>الحالة</th>
-                        <th>تاريخ التسجيل</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in students %}
-                        <tr>
-                            <td>
-                                <div class="fw-bold">{{ student.get_full_name }}</div>
-                                <div class="text-muted small">{{ student.calculate_age }} سنة</div>
-                            </td>
-                            <td>{{ student.parent.get_full_name|default:"—" }}</td>
-                            <td>{{ student.age_group.name|default:"—" }}</td>
-                            <td>{{ student.hall.name|default:"—" }}</td>
-                            <td>
-                                {% if student.status == 'active' %}
-                                    <span class="badge text-bg-success">نشط</span>
-                                {% elif student.status == 'pending' %}
-                                    <span class="badge text-bg-warning">في الانتظار</span>
-                                {% elif student.status == 'inactive' %}
-                                    <span class="badge text-bg-secondary">غير نشط</span>
-                                {% else %}
-                                    <span class="badge text-bg-danger">مرفوض</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ student.registration_date }}</td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a href="{% url 'students:detail' student.pk %}" class="btn btn-sm btn-outline-primary">عرض</a>
-
-                                    {% if user.is_general_manager or user.is_general_supervisor %}
-                                        <a href="{% url 'students:update' student.pk %}" class="btn btn-sm btn-outline-warning">تعديل</a>
-                                    {% endif %}
-
-                                    {% if user.is_teacher %}
-                                        <a href="{% url 'evaluations:evaluate' student.pk %}" class="btn btn-sm btn-outline-success">تقييم</a>
-                                    {% endif %}
-
-                                    {% if user.is_general_supervisor %}
-                                        <form method="post" action="{% url 'students:assign_hall' student.pk %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-outline-success">تسكين</button>
-                                        </form>
-                                        <a href="{% url 'students:transfer' student.pk %}" class="btn btn-sm btn-outline-secondary">نقل</a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- ══ الجدول ══ -->
+<div class="sl-table-card">
+    <div class="sl-table-header">
+        <div class="sl-table-title">
+            <i class="bi bi-table" style="color:#01696f;"></i>
+            قائمة الطلاب
+            <span class="sl-count-badge">{{ total }}</span>
         </div>
+    </div>
 
-        {% if students.has_other_pages %}
-            <div class="p-3 border-top">
-                <nav>
-                    <ul class="pagination justify-content-center mb-0">
-                        {% if students.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ students.previous_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&age_group={{ request.GET.age_group }}&hall={{ request.GET.hall }}">السابق</a>
-                            </li>
+    {% if students %}
+    <!-- ديسكتوب -->
+    <div class="d-none d-md-block table-responsive">
+        <table class="table sl-table mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الطالب</th>
+                    <th>ولي الأمر</th>
+                    <th>الفئة العمرية</th>
+                    <th>القاعة</th>
+                    <th>الحالة</th>
+                    <th>تاريخ التسجيل</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td class="text-muted small">{{ students.start_index|add:forloop.counter0 }}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:.6rem;">
+                            <div class="std-avatar">{{ student.first_name|first }}{{ student.last_name|first }}</div>
+                            <div>
+                                <div class="fw-bold" style="font-size:.9rem;">{{ student.get_full_name }}</div>
+                                <div class="text-muted" style="font-size:.78rem;">{{ student.calculate_age }} سنة</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-muted small">{{ student.parent.get_full_name|default:"—" }}</td>
+                    <td class="small">{{ student.age_group.name|default:"—" }}</td>
+                    <td>
+                        {% if student.hall %}
+                        <span style="background:#f0fdf4; color:#16a34a; border-radius:20px; padding:.15rem .65rem; font-size:.78rem; font-weight:700;">
+                            <i class="bi bi-building me-1"></i>{{ student.hall.name }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted small">—</span>
                         {% endif %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ students.number }} / {{ students.paginator.num_pages }}</span>
-                        </li>
-                        {% if students.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ students.next_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&age_group={{ request.GET.age_group }}&hall={{ request.GET.hall }}">التالي</a>
-                            </li>
+                    </td>
+                    <td>
+                        {% if student.status == 'active' %}
+                            <span class="status-pill sp-active"><i class="bi bi-check-circle-fill"></i>نشط</span>
+                        {% elif student.status == 'pending' %}
+                            <span class="status-pill sp-pending"><i class="bi bi-clock-fill"></i>انتظار</span>
+                        {% elif student.status == 'inactive' %}
+                            <span class="status-pill sp-inactive"><i class="bi bi-dash-circle"></i>غير نشط</span>
+                        {% else %}
+                            <span class="status-pill sp-rejected"><i class="bi bi-x-circle-fill"></i>مرفوض</span>
                         {% endif %}
-                    </ul>
-                </nav>
+                    </td>
+                    <td class="text-muted small">{{ student.registration_date }}</td>
+                    <td>
+                        <div style="display:flex; flex-wrap:wrap; gap:.35rem;">
+                            <!-- عرض — للجميع -->
+                            <a href="{% url 'students:detail' student.pk %}" class="action-btn ab-view">
+                                <i class="bi bi-eye"></i>عرض
+                            </a>
+
+                            <!-- تعديل — مشرف عام / مدير -->
+                            {% if user.is_general_manager or user.is_general_supervisor %}
+                            <a href="{% url 'students:update' student.pk %}" class="action-btn ab-edit">
+                                <i class="bi bi-pencil"></i>تعديل
+                            </a>
+                            {% endif %}
+
+                            <!-- تقييم — معلم -->
+                            {% if user.is_teacher %}
+                            <a href="{% url 'evaluations:evaluate' student.pk %}" class="action-btn ab-eval">
+                                <i class="bi bi-star"></i>تقييم
+                            </a>
+                            {% endif %}
+
+                            {% if user.is_general_supervisor or user.is_general_manager %}
+                            <!-- تسكين تلقائي — للطلاب في الانتظار أو المرفوضين -->
+                            {% if student.status == 'pending' or student.status == 'rejected' %}
+                            <form method="post" action="{% url 'students:assign_hall' student.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn ab-assign" style="border:none; cursor:pointer;">
+                                    <i class="bi bi-magic"></i>تسكين
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <!-- ★ تسكين يدوي — يظهر دائماً للمشرف والمدير -->
+                            <a href="{% url 'students:manual_assign' student.pk %}" class="action-btn ab-manual"
+                               title="تسكين يدوي بدون قيود">
+                                <i class="bi bi-house-add"></i>يدوي
+                            </a>
+
+                            <!-- نقل — للطلاب النشطين فقط -->
+                            {% if student.status == 'active' %}
+                            <a href="{% url 'students:transfer' student.pk %}" class="action-btn ab-transfer">
+                                <i class="bi bi-arrow-left-right"></i>نقل
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- موبايل -->
+    <div class="d-md-none" style="padding:.85rem;">
+        {% for student in students %}
+        <div class="sl-mobile-card s-{{ student.status }}">
+            <div class="sl-mobile-body">
+                <div class="sl-mobile-top">
+                    <div class="std-avatar">{{ student.first_name|first }}{{ student.last_name|first }}</div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="fw-bold" style="font-size:.92rem;">{{ student.get_full_name }}</div>
+                        <div style="font-size:.78rem; color:#64748b;">{{ student.calculate_age }} سنة</div>
+                    </div>
+                    {% if student.status == 'active' %}
+                        <span class="status-pill sp-active"><i class="bi bi-check-circle-fill"></i>نشط</span>
+                    {% elif student.status == 'pending' %}
+                        <span class="status-pill sp-pending"><i class="bi bi-clock-fill"></i>انتظار</span>
+                    {% elif student.status == 'inactive' %}
+                        <span class="status-pill sp-inactive"><i class="bi bi-dash-circle"></i>غير نشط</span>
+                    {% else %}
+                        <span class="status-pill sp-rejected"><i class="bi bi-x-circle-fill"></i>مرفوض</span>
+                    {% endif %}
+                </div>
+                <div class="sl-mobile-meta">
+                    <span><i class="bi bi-person"></i>{{ student.parent.get_full_name|default:"—" }}</span>
+                    <span><i class="bi bi-building"></i>{{ student.hall.name|default:"بدون قاعة" }}</span>
+                    <span><i class="bi bi-people"></i>{{ student.age_group.name|default:"—" }}</span>
+                </div>
+                <div class="sl-mobile-actions">
+                    <a href="{% url 'students:detail' student.pk %}" class="action-btn ab-view"><i class="bi bi-eye"></i>عرض</a>
+
+                    {% if user.is_teacher %}
+                    <a href="{% url 'evaluations:evaluate' student.pk %}" class="action-btn ab-eval"><i class="bi bi-star"></i>تقييم</a>
+                    {% endif %}
+
+                    {% if user.is_general_supervisor or user.is_general_manager %}
+                    <a href="{% url 'students:update' student.pk %}" class="action-btn ab-edit"><i class="bi bi-pencil"></i>تعديل</a>
+
+                    <!-- ★ التسكين اليدوي في الموبايل -->
+                    <a href="{% url 'students:manual_assign' student.pk %}" class="action-btn ab-manual">
+                        <i class="bi bi-house-add"></i>يدوي
+                    </a>
+
+                    {% if student.status == 'active' %}
+                    <a href="{% url 'students:transfer' student.pk %}" class="action-btn ab-transfer"><i class="bi bi-arrow-left-right"></i>نقل</a>
+                    {% endif %}
+                    {% endif %}
+                </div>
             </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- pagination -->
+    {% if students.has_other_pages %}
+    <div class="sl-pagination">
+        {% if students.has_previous %}
+        <a href="?page={{ students.previous_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&age_group={{ request.GET.age_group }}&hall={{ request.GET.hall }}"
+           class="sl-page-btn"><i class="bi bi-chevron-right"></i></a>
+        {% else %}
+        <span class="sl-page-btn" style="opacity:.4; pointer-events:none;"><i class="bi bi-chevron-right"></i></span>
         {% endif %}
+
+        {% for num in students.paginator.page_range %}
+            {% if students.number == num %}
+            <span class="sl-page-btn active">{{ num }}</span>
+            {% elif num >= students.number|add:"-2" and num <= students.number|add:"2" %}
+            <a href="?page={{ num }}&q={{ request.GET.q }}&status={{ request.GET.status }}&age_group={{ request.GET.age_group }}&hall={{ request.GET.hall }}"
+               class="sl-page-btn">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if students.has_next %}
+        <a href="?page={{ students.next_page_number }}&q={{ request.GET.q }}&status={{ request.GET.status }}&age_group={{ request.GET.age_group }}&hall={{ request.GET.hall }}"
+           class="sl-page-btn"><i class="bi bi-chevron-left"></i></a>
+        {% else %}
+        <span class="sl-page-btn" style="opacity:.4; pointer-events:none;"><i class="bi bi-chevron-left"></i></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% else %}
-        <div class="empty-state">لا يوجد طلاب مطابقون للبحث أو التصفية.</div>
+    <div class="sl-empty">
+        <i class="bi bi-search"></i>
+        <p>لا يوجد طلاب مطابقون للبحث أو التصفية</p>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
-
 
 {% comment %} {% extends 'base.html' %}
 {% block page_title %}قائمة الطلاب{% endblock %}

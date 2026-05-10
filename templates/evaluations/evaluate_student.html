@@ -1,396 +1,420 @@
 {% extends "base.html" %}
-
 {% block title %}تقييم طالب | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}تقييم طالب{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+<style>
+/* ══ هيدر ══ */
+.ev-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.ev-hero-left { display: flex; align-items: center; gap: 1rem; }
+.ev-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 800; flex-shrink: 0;
+}
+.ev-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.ev-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-ev {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-ev:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+/* ══ بطاقات التقييم ══ */
+.ev-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05); margin-bottom: 1rem;
+}
+.ev-card-header {
+    padding: .8rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; gap: .55rem;
+    font-weight: 800; font-size: .92rem; color: #0f172a;
+}
+.ev-card-header i { color: #01696f; font-size: 1rem; }
+.ev-card-body { padding: 1.1rem 1.25rem; }
+
+/* ══ حقول ══ */
+.ev-label {
+    font-size: .8rem; font-weight: 700; color: #374151;
+    margin-bottom: .35rem; display: flex; align-items: center; gap: .35rem;
+}
+.ev-label i { color: #64748b; }
+.ev-select {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .45rem .85rem; font-size: .88rem; color: #0f172a;
+    background: #fff; transition: border-color .15s, box-shadow .15s;
+    appearance: auto;
+}
+.ev-select:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none; }
+.ev-textarea {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .5rem .85rem; font-size: .88rem; color: #0f172a;
+    resize: vertical; min-height: 80px; font-family: inherit; line-height: 1.6;
+    transition: border-color .15s, box-shadow .15s;
+}
+.ev-textarea:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none; }
+
+/* تقييم بصري بالنجوم */
+.ev-rating-row {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin-bottom: .85rem;
+}
+.ev-rating-item { }
+
+/* مؤشر التقييم */
+.ev-score-row { display: flex; gap: .5rem; margin-top: .35rem; }
+.ev-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; transition: background .2s;
+}
+.ev-dot.active-excellent { background: #16a34a; }
+.ev-dot.active-good      { background: #2563eb; }
+.ev-dot.active-average   { background: #d97706; }
+.ev-dot.active-weak      { background: #dc2626; }
+
+/* checkboxes متميز / يحتاج متابعة */
+.ev-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.ev-check-card {
+    border: 2px solid #e2e8f0; border-radius: 12px; padding: .85rem 1rem;
+    cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: .75rem;
+}
+.ev-check-card:hover { border-color: #cbd5e1; background: #f8fafc; }
+.ev-check-card.distinguished:has(input:checked) { border-color: #d97706; background: #fffbeb; }
+.ev-check-card.attention:has(input:checked)     { border-color: #dc2626; background: #fff5f5; }
+.ev-check-icon {
+    width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.distinguished .ev-check-icon { background: #fef3c7; color: #d97706; }
+.attention      .ev-check-icon { background: #fee2e2; color: #dc2626; }
+.ev-check-title { font-weight: 700; font-size: .88rem; color: #0f172a; }
+.ev-check-sub   { font-size: .75rem; color: #64748b; }
+.ev-check-card input { width: 17px; height: 17px; accent-color: #01696f; margin-right: auto; cursor: pointer; }
+
+/* ══ sidebar معلومات الطالب ══ */
+.ev-info-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05);
+    position: sticky; top: 88px;
+}
+.ev-info-top {
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    padding: 1.1rem; text-align: center; color: #fff;
+}
+.ev-info-avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(255,255,255,.2); border: 2px solid rgba(255,255,255,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem; font-weight: 800; margin: 0 auto .5rem;
+}
+.ev-info-name { font-size: .95rem; font-weight: 800; margin-bottom: .1rem; }
+.ev-info-sub  { font-size: .78rem; opacity: .8; }
+.ev-info-body { padding: 1rem; }
+.ev-info-row  {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .5rem 0; border-bottom: 1px solid rgba(15,23,42,.05);
+}
+.ev-info-row:last-of-type { border-bottom: none; }
+.ev-info-row-icon {
+    width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+    background: #f1f5f9; display: flex; align-items: center;
+    justify-content: center; font-size: .78rem; color: #64748b;
+}
+.ev-info-lbl { font-size: .72rem; color: #94a3b8; font-weight: 600; }
+.ev-info-val { font-size: .85rem; font-weight: 700; color: #0f172a; }
+
+/* زر الحفظ */
+.btn-ev-save {
+    width: 100%; background: #01696f; color: #fff; border: none;
+    border-radius: 11px; padding: .7rem; font-weight: 800; font-size: .95rem;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    cursor: pointer; transition: background .15s; margin-top: 1rem;
+}
+.btn-ev-save:hover { background: #0a8a91; }
+.btn-ev-back {
+    width: 100%; background: #f1f5f9; color: #64748b; border: none;
+    border-radius: 11px; padding: .6rem; font-weight: 700; font-size: .88rem;
+    text-decoration: none; display: flex; align-items: center;
+    justify-content: center; gap: .4rem; margin-top: .5rem; transition: background .15s;
+}
+.btn-ev-back:hover { background: #e2e8f0; color: #334155; }
+
+/* تاريخ مميز */
+.ev-date-pill {
+    background: #f0fdf4; border: 1px solid rgba(22,163,74,.2);
+    border-radius: 20px; padding: .3rem .85rem;
+    font-size: .78rem; font-weight: 700; color: #16a34a;
+    display: inline-flex; align-items: center; gap: .35rem;
+}
+.ev-update-pill {
+    background: #fef3c7; border: 1px solid rgba(217,119,6,.2);
+    border-radius: 20px; padding: .3rem .85rem;
+    font-size: .78rem; font-weight: 700; color: #d97706;
+    display: inline-flex; align-items: center; gap: .35rem;
+    margin-top: .5rem;
+}
+
+@media (max-width: 767.98px) {
+    .ev-rating-row  { grid-template-columns: 1fr; }
+    .ev-check-grid  { grid-template-columns: 1fr; }
+    .ev-hero        { flex-direction: column; align-items: flex-start; }
+    .ev-info-card   { position: static; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="ev-hero">
+    <div class="ev-hero-left">
+        <div class="ev-avatar">
+            {{ student.first_name|first }}{{ student.last_name|first }}
+        </div>
         <div>
-            <h2 class="fw-bold mb-2">{{ student.get_full_name }}</h2>
-            <p class="text-muted mb-0">التقييم بتاريخ {{ today }}.</p>
+            <h1>تقييم {{ student.get_full_name }}</h1>
+            <p>
+                {% if student.hall %}<i class="bi bi-building me-1"></i>{{ student.hall.name }} ·{% endif %}
+                <i class="bi bi-calendar3 me-1"></i>{{ today }}
+            </p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline-secondary">رجوع للطالب</a>
-            <a href="{% url 'dashboard:teacher' %}" class="btn btn-outline-primary">لوحة المعلم</a>
-        </div>
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <a href="{% url 'students:detail' student.pk %}" class="btn-ev">
+            <i class="bi bi-person"></i>ملف الطالب
+        </a>
+        <a href="{% url 'dashboard:teacher' %}" class="btn-ev">
+            <i class="bi bi-arrow-right"></i>رجوع
+        </a>
     </div>
 </div>
 
 <form method="post" class="row g-4">
     {% csrf_token %}
 
+    <!-- ══ العمود الرئيسي ══ -->
     <div class="col-lg-8">
-        <div class="page-card p-4 mb-4">
-            <div class="section-title">تقييم الحفظ</div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold">تقييم الحفظ</label>
-                <select name="memorization_rating" class="form-select">
-                    {% for value, label in rating_choices %}
-                        <option value="{{ value }}" {% if existing and existing.memorization_rating == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="mb-0">
-                <label class="form-label fw-semibold">ملاحظات الحفظ</label>
-                <textarea name="memorization_notes" rows="3" class="form-control">{% if existing %}{{ existing.memorization_notes }}{% endif %}</textarea>
-            </div>
-        </div>
 
-        <div class="page-card p-4 mb-4">
-            <div class="section-title">السلوك والالتزام</div>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">تقييم السلوك</label>
-                    <select name="behavior_rating" class="form-select">
-                        {% for value, label in rating_choices %}
-                            <option value="{{ value }}" {% if existing and existing.behavior_rating == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
+        <!-- تقييم الحفظ -->
+        <div class="ev-card">
+            <div class="ev-card-header">
+                <i class="bi bi-book-fill"></i>تقييم الحفظ
+            </div>
+            <div class="ev-card-body">
+                <div class="ev-rating-row">
+                    <div class="ev-rating-item">
+                        <div class="ev-label"><i class="bi bi-star"></i>درجة الحفظ</div>
+                        <select name="memorization_rating" class="ev-select" id="memRating"
+                                onchange="updateDots('memDots', this.value)">
+                            {% for value, label in rating_choices %}
+                            <option value="{{ value }}"
+                                {% if existing and existing.memorization_rating == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="ev-score-row" id="memDots">
+                            <div class="ev-dot"></div>
+                            <div class="ev-dot"></div>
+                            <div class="ev-dot"></div>
+                            <div class="ev-dot"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">تقييم الالتزام</label>
-                    <select name="commitment_rating" class="form-select">
-                        {% for value, label in rating_choices %}
-                            <option value="{{ value }}" {% if existing and existing.commitment_rating == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label fw-semibold">ملاحظات السلوك</label>
-                    <textarea name="behavior_notes" rows="3" class="form-control">{% if existing %}{{ existing.behavior_notes }}{% endif %}</textarea>
+                <div>
+                    <div class="ev-label"><i class="bi bi-chat-left-text"></i>ملاحظات الحفظ</div>
+                    <textarea name="memorization_notes" class="ev-textarea" rows="3"
+                              placeholder="مثال: الطالب أتقن سورة الملك لكن يحتاج مراجعة في المخارج…">{% if existing %}{{ existing.memorization_notes }}{% endif %}</textarea>
                 </div>
             </div>
         </div>
 
-        <div class="page-card p-4">
-            <div class="section-title">ملاحظات عامة</div>
-            <textarea name="general_notes" rows="4" class="form-control mb-3">{% if existing %}{{ existing.general_notes }}{% endif %}</textarea>
-
-            <div class="row g-3">
-                <div class="col-md-6 form-check">
-                    <input class="form-check-input" type="checkbox" name="is_distinguished" id="is_distinguished" {% if existing and existing.is_distinguished %}checked{% endif %}>
-                    <label class="form-check-label" for="is_distinguished">متميز</label>
+        <!-- السلوك والالتزام -->
+        <div class="ev-card">
+            <div class="ev-card-header">
+                <i class="bi bi-emoji-smile-fill"></i>السلوك والالتزام
+            </div>
+            <div class="ev-card-body">
+                <div class="ev-rating-row">
+                    <div class="ev-rating-item">
+                        <div class="ev-label"><i class="bi bi-emoji-smile"></i>تقييم السلوك</div>
+                        <select name="behavior_rating" class="ev-select" id="behRating"
+                                onchange="updateDots('behDots', this.value)">
+                            {% for value, label in rating_choices %}
+                            <option value="{{ value }}"
+                                {% if existing and existing.behavior_rating == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="ev-score-row" id="behDots">
+                            <div class="ev-dot"></div><div class="ev-dot"></div>
+                            <div class="ev-dot"></div><div class="ev-dot"></div>
+                        </div>
+                    </div>
+                    <div class="ev-rating-item">
+                        <div class="ev-label"><i class="bi bi-clock-history"></i>تقييم الالتزام</div>
+                        <select name="commitment_rating" class="ev-select" id="comRating"
+                                onchange="updateDots('comDots', this.value)">
+                            {% for value, label in rating_choices %}
+                            <option value="{{ value }}"
+                                {% if existing and existing.commitment_rating == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="ev-score-row" id="comDots">
+                            <div class="ev-dot"></div><div class="ev-dot"></div>
+                            <div class="ev-dot"></div><div class="ev-dot"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 form-check">
-                    <input class="form-check-input" type="checkbox" name="needs_attention" id="needs_attention" {% if existing and existing.needs_attention %}checked{% endif %}>
-                    <label class="form-check-label" for="needs_attention">يحتاج متابعة</label>
+                <div>
+                    <div class="ev-label"><i class="bi bi-chat-left-text"></i>ملاحظات السلوك والالتزام</div>
+                    <textarea name="behavior_notes" class="ev-textarea" rows="3"
+                              placeholder="مثال: الطالب منضبط ومتعاون، يشارك بفاعلية…">{% if existing %}{{ existing.behavior_notes }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ملاحظات لولي الأمر -->
+        <div class="ev-card">
+            <div class="ev-card-header">
+                <i class="bi bi-chat-dots-fill"></i>ملاحظات لولي الأمر
+            </div>
+            <div class="ev-card-body">
+                <textarea name="general_notes" class="ev-textarea" rows="4"
+                          placeholder="اكتب ما تريد إيصاله لولي الأمر — يظهر له مباشرة في التطبيق…">{% if existing %}{{ existing.general_notes }}{% endif %}</textarea>
+
+                <div style="height:.85rem;"></div>
+
+                <!-- متميز / يحتاج متابعة -->
+                <div class="ev-check-grid">
+                    <label class="ev-check-card distinguished">
+                        <div class="ev-check-icon"><i class="bi bi-star-fill"></i></div>
+                        <div>
+                            <div class="ev-check-title">طالب متميز</div>
+                            <div class="ev-check-sub">إنجاز استثنائي هذا اليوم</div>
+                        </div>
+                        <input type="checkbox" name="is_distinguished"
+                               {% if existing and existing.is_distinguished %}checked{% endif %}>
+                    </label>
+                    <label class="ev-check-card attention">
+                        <div class="ev-check-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        <div>
+                            <div class="ev-check-title">يحتاج متابعة</div>
+                            <div class="ev-check-sub">يستلزم اهتماماً إضافياً</div>
+                        </div>
+                        <input type="checkbox" name="needs_attention"
+                               {% if existing and existing.needs_attention %}checked{% endif %}>
+                    </label>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ══ Sidebar ══ -->
     <div class="col-lg-4">
-        <div class="page-card p-4 position-sticky" style="top: 92px;">
-            <div class="section-title">معلومات سريعة</div>
-            <ul class="list-unstyled mb-0">
-                <li class="mb-2"><strong>الطالب:</strong> {{ student.get_full_name }}</li>
-                <li class="mb-2"><strong>القاعة:</strong> {{ student.hall.name|default:"—" }}</li>
-                <li class="mb-2"><strong>ولي الأمر:</strong> {{ student.parent.get_full_name|default:student.parent.username }}</li>
-                <li class="mb-0"><strong>الفئة:</strong> {{ student.age_group.name|default:"—" }}</li>
-            </ul>
+        <div class="ev-info-card">
+            <div class="ev-info-top">
+                <div class="ev-info-avatar">
+                    {{ student.first_name|first }}{{ student.last_name|first }}
+                </div>
+                <div class="ev-info-name">{{ student.get_full_name }}</div>
+                <div class="ev-info-sub">{{ student.calculate_age }} سنة</div>
+            </div>
+            <div class="ev-info-body">
+                <div class="ev-info-row">
+                    <div class="ev-info-row-icon"><i class="bi bi-building"></i></div>
+                    <div>
+                        <div class="ev-info-lbl">القاعة</div>
+                        <div class="ev-info-val">{{ student.hall.name|default:"—" }}</div>
+                    </div>
+                </div>
+                <div class="ev-info-row">
+                    <div class="ev-info-row-icon"><i class="bi bi-person-fill"></i></div>
+                    <div>
+                        <div class="ev-info-lbl">ولي الأمر</div>
+                        <div class="ev-info-val">{{ student.parent.get_full_name|default:student.parent.username }}</div>
+                    </div>
+                </div>
+                <div class="ev-info-row">
+                    <div class="ev-info-row-icon"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <div class="ev-info-lbl">الفئة العمرية</div>
+                        <div class="ev-info-val">{{ student.age_group.name|default:"—" }}</div>
+                    </div>
+                </div>
+                <div class="ev-info-row">
+                    <div class="ev-info-row-icon"><i class="bi bi-book-fill"></i></div>
+                    <div>
+                        <div class="ev-info-lbl">الأجزاء المحفوظة</div>
+                        <div class="ev-info-val">{{ student.get_completed_juz_count }} جزء</div>
+                    </div>
+                </div>
 
-            <hr>
+                <div style="margin-top:.75rem; text-align:center;">
+                    <span class="ev-date-pill">
+                        <i class="bi bi-calendar3-event"></i>{{ today }}
+                    </span>
+                    {% if existing %}
+                    <br>
+                    <span class="ev-update-pill">
+                        <i class="bi bi-arrow-repeat"></i>تحديث تقييم موجود
+                    </span>
+                    {% endif %}
+                </div>
 
-            <button type="submit" class="btn btn-primary w-100">حفظ التقييم</button>
+                <button type="submit" class="btn-ev-save">
+                    <i class="bi bi-check2-circle"></i>
+                    {% if existing %}تحديث التقييم{% else %}حفظ التقييم{% endif %}
+                </button>
+                <a href="{% url 'students:detail' student.pk %}" class="btn-ev-back">
+                    <i class="bi bi-arrow-right"></i>رجوع لملف الطالب
+                </a>
+            </div>
         </div>
     </div>
 </form>
-{% endblock %}
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}تقييم {{ student.get_full_name }}{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-7">
-
-        <!-- هيدر الطالب -->
-        <div class="card stat-card mb-4">
-            <div class="card-body d-flex align-items-center justify-content-between
-                        flex-wrap gap-2 py-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle d-flex align-items-center
-                                justify-content-center bg-warning bg-opacity-10
-                                flex-shrink-0"
-                         style="width:52px;height:52px;">
-                        <i class="fas fa-user-graduate text-warning fa-lg"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold fs-6">{{ student.get_full_name }}</div>
-                        <div class="d-flex flex-wrap gap-1 mt-1">
-                            <span class="badge bg-info bg-opacity-75">
-                                {{ student.calculate_age }} سنة
-                            </span>
-                            {% if student.hall %}
-                            <span class="badge bg-secondary bg-opacity-75">
-                                <i class="fas fa-door-open me-1"
-                                   style="font-size:.65rem;"></i>
-                                {{ student.hall.name }}
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="text-end">
-                    {% if existing %}
-                    <span class="badge bg-info px-3 py-2">
-                        <i class="fas fa-edit me-1"></i> تعديل تقييم
-                    </span>
-                    {% else %}
-                    <span class="badge bg-warning text-dark px-3 py-2">
-                        <i class="fas fa-star me-1"></i> تقييم جديد
-                    </span>
-                    {% endif %}
-                    <div class="text-muted small mt-1">
-                        <i class="far fa-calendar-alt me-1"></i>
-                        {{ today }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- فورم التقييم -->
-        <div class="card stat-card">
-            <div class="card-header fw-bold d-flex align-items-center
-                        justify-content-between">
-                <span>
-                    <i class="fas fa-clipboard-list text-warning me-2"></i>
-                    بنود التقييم
-                </span>
-                <span class="text-muted small fw-normal">
-                    الحقول المطلوبة مُعلَّمة بـ
-                    <span class="text-danger">*</span>
-                </span>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="row g-4">
-
-                        <!-- ① تقييم الحفظ -->
-                        <div class="col-12">
-                            <div class="rounded-3 border p-3">
-                                <div class="fw-bold mb-3">
-                                    <i class="fas fa-book-open text-success me-2"></i>
-                                    تقييم الحفظ
-                                    <span class="text-danger">*</span>
-                                </div>
-
-                                <!-- أزرار الاختيار -->
-                                <div class="d-flex gap-2 flex-wrap mb-3"
-                                     id="mem-rating-group">
-                                    {% for val, label in rating_choices %}
-                                    <label class="rating-label">
-                                        <input type="radio"
-                                               name="memorization_rating"
-                                               value="{{ val }}"
-                                               class="d-none rating-radio"
-                                               data-group="mem"
-                                               {% if existing.memorization_rating == val %}checked{% endif %}
-                                               required>
-                                        <span class="btn btn-sm btn-outline-success
-                                                     rating-btn"
-                                              data-val="{{ val }}">
-                                            {{ label }}
-                                        </span>
-                                    </label>
-                                    {% endfor %}
-                                </div>
-
-                                <textarea name="memorization_notes"
-                                          class="form-control form-control-sm"
-                                          rows="2"
-                                          placeholder="ما الذي حفظه؟ ما الذي يحتاج مراجعة؟">{{ existing.memorization_notes|default:'' }}</textarea>
-                            </div>
-                        </div>
-
-                        <!-- ② السلوك + الالتزام -->
-                        <div class="col-12">
-                            <div class="rounded-3 border p-3">
-                                <div class="fw-bold mb-3">
-                                    <i class="fas fa-heart text-danger me-2"></i>
-                                    السلوك والالتزام
-                                    <span class="text-danger">*</span>
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-12 col-sm-6">
-                                        <label class="form-label fw-bold small text-muted">
-                                            <i class="fas fa-heart text-danger me-1"></i>
-                                            السلوك
-                                        </label>
-                                        <select name="behavior_rating"
-                                                class="form-select"
-                                                required>
-                                            {% for val, label in rating_choices %}
-                                            <option value="{{ val }}"
-                                                {% if existing.behavior_rating == val %}selected{% endif %}>
-                                                {{ label }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-sm-6">
-                                        <label class="form-label fw-bold small text-muted">
-                                            <i class="fas fa-check-circle text-primary me-1"></i>
-                                            الالتزام
-                                        </label>
-                                        <select name="commitment_rating"
-                                                class="form-select"
-                                                required>
-                                            {% for val, label in rating_choices %}
-                                            <option value="{{ val }}"
-                                                {% if existing.commitment_rating == val %}selected{% endif %}>
-                                                {{ label }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col-12">
-                                        <textarea name="behavior_notes"
-                                                  class="form-control form-control-sm"
-                                                  rows="2"
-                                                  placeholder="ملاحظات السلوك والالتزام...">{{ existing.behavior_notes|default:'' }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ③ تمييز + متابعة -->
-                        <div class="col-12">
-                            <div class="rounded-3 border p-3">
-                                <div class="fw-bold mb-3">
-                                    <i class="fas fa-flag text-info me-2"></i>
-                                    علامات خاصة
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-12 col-sm-6">
-                                        <div class="rounded-3 p-3 border d-flex
-                                                    align-items-center gap-3
-                                                    {% if existing.is_distinguished %}
-                                                    bg-warning bg-opacity-10 border-warning
-                                                    {% endif %}"
-                                             id="distinguished-box">
-                                            <div class="form-check form-switch mb-0">
-                                                <input class="form-check-input"
-                                                       type="checkbox"
-                                                       name="is_distinguished"
-                                                       id="distinguished"
-                                                       {% if existing.is_distinguished %}checked{% endif %}>
-                                            </div>
-                                            <label class="form-check-label fw-bold
-                                                          mb-0 flex-grow-1"
-                                                   for="distinguished"
-                                                   style="cursor:pointer;">
-                                                <i class="fas fa-star text-warning me-1"></i>
-                                                طالب متميز
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="rounded-3 p-3 border d-flex
-                                                    align-items-center gap-3
-                                                    {% if existing.needs_attention %}
-                                                    bg-danger bg-opacity-10 border-danger
-                                                    {% endif %}"
-                                             id="attention-box">
-                                            <div class="form-check form-switch mb-0">
-                                                <input class="form-check-input"
-                                                       type="checkbox"
-                                                       name="needs_attention"
-                                                       id="attention"
-                                                       {% if existing.needs_attention %}checked{% endif %}>
-                                            </div>
-                                            <label class="form-check-label fw-bold
-                                                          mb-0 flex-grow-1"
-                                                   for="attention"
-                                                   style="cursor:pointer;">
-                                                <i class="fas fa-exclamation-triangle
-                                                          text-danger me-1"></i>
-                                                يحتاج متابعة
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ④ رسالة لولي الأمر -->
-                        <div class="col-12">
-                            <div class="rounded-3 border p-3">
-                                <div class="fw-bold mb-3">
-                                    <i class="fas fa-comment-dots text-info me-2"></i>
-                                    رسالة لولي الأمر
-                                </div>
-                                <textarea name="general_notes"
-                                          class="form-control"
-                                          rows="3"
-                                          placeholder="رسالة تظهر لولي الأمر مباشرةً...">{{ existing.general_notes|default:'' }}</textarea>
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle me-1 text-muted"></i>
-                                    ستظهر هذه الرسالة في لوحة ولي الأمر
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- أزرار -->
-                        <div class="col-12">
-                            <div class="d-flex gap-2 justify-content-between
-                                        flex-wrap">
-                                <a href="{% url 'dashboard:teacher' %}"
-                                   class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-right me-1"></i> رجوع
-                                </a>
-                                <button type="submit"
-                                        class="btn btn-warning px-4 fw-bold">
-                                    <i class="fas fa-save me-1"></i>
-                                    {% if existing %}تحديث{% else %}حفظ{% endif %}
-                                    التقييم
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-        </div>
-
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
 <script>
-// أزرار تقييم الحفظ — تفعيل اللون عند الاختيار
-document.querySelectorAll('.rating-label').forEach(label => {
-    const radio = label.querySelector('.rating-radio');
-    const btn   = label.querySelector('.rating-btn');
+const ratingLevels = {
+    'excellent': { count: 4, cls: 'active-excellent' },
+    'good':      { count: 3, cls: 'active-good' },
+    'average':   { count: 2, cls: 'active-average' },
+    'weak':      { count: 1, cls: 'active-weak' },
+};
 
-    function activate() {
-        document.querySelectorAll(`input[name="${radio.name}"]`).forEach(r => {
-            r.closest('.rating-label')
-             ?.querySelector('.rating-btn')
-             ?.classList.remove('active', 'text-white');
-        });
-        btn.classList.add('active', 'text-white');
-    }
-
-    if (radio.checked) activate();
-    label.addEventListener('click', () => { radio.checked = true; activate(); });
-});
-
-// تمييز — تلوين الصندوق
-function toggleBox(checkboxId, boxId, colorClass) {
-    const cb  = document.getElementById(checkboxId);
-    const box = document.getElementById(boxId);
-    if (!cb || !box) return;
-    function update() {
-        box.classList.toggle(colorClass,      cb.checked);
-        box.classList.toggle('border-' + colorClass.split('-')[0], cb.checked);
-    }
-    cb.addEventListener('change', update);
+function updateDots(containerId, value) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const dots = container.querySelectorAll('.ev-dot');
+    const level = ratingLevels[value] || { count: 0, cls: '' };
+    dots.forEach((dot, i) => {
+        dot.className = 'ev-dot';
+        if (i < level.count) dot.classList.add(level.cls);
+    });
 }
 
-toggleBox('distinguished', 'distinguished-box', 'bg-warning');
-toggleBox('attention',     'attention-box',      'bg-danger');
+// تهيئة عند التحميل
+document.addEventListener('DOMContentLoaded', () => {
+    const fields = [
+        { selectId: 'memRating', dotsId: 'memDots' },
+        { selectId: 'behRating', dotsId: 'behDots' },
+        { selectId: 'comRating', dotsId: 'comDots' },
+    ];
+    fields.forEach(({ selectId, dotsId }) => {
+        const sel = document.getElementById(selectId);
+        if (sel) updateDots(dotsId, sel.value);
+    });
+});
 </script>
-{% endblock %} {% endcomment %}
+{% endblock %}

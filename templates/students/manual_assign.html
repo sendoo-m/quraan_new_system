@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block page_title %}تسكين يدوي{% endblock %}
+
+{% block content %}
+<style>
+.assign-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center; gap: 1rem;
+}
+.assign-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.assign-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.assign-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+
+.assign-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(15,23,42,.05);
+}
+.assign-card-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+}
+.assign-card-header i { color: #01696f; }
+.assign-card-body { padding: 1.25rem; }
+
+/* معلومات الطالب */
+.student-info {
+    display: flex; align-items: center; gap: 1rem;
+    background: #f8fafc; border: 1px solid rgba(15,23,42,.07);
+    border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+}
+.student-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.student-name  { font-size: 1rem; font-weight: 800; color: #0f172a; margin-bottom: .25rem; }
+.student-meta  { font-size: .82rem; color: #64748b; display: flex; flex-wrap: wrap; gap: .5rem; }
+.student-meta span { display: flex; align-items: center; gap: .25rem; }
+.current-hall-badge {
+    margin-right: auto; padding: .3rem .9rem; border-radius: 30px;
+    font-size: .8rem; font-weight: 700; white-space: nowrap;
+}
+.badge-pending  { background: #fef3c7; color: #d97706; }
+.badge-active   { background: #dcfce7; color: #16a34a; }
+
+/* بطاقات القاعات */
+.halls-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: .85rem;
+}
+.hall-option {
+    border: 2px solid rgba(15,23,42,.08); border-radius: 14px;
+    padding: 1rem 1.1rem; cursor: pointer;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+    position: relative; background: #fff;
+}
+.hall-option:hover { border-color: #01696f; background: #f0fdf4; box-shadow: 0 4px 14px rgba(1,105,111,.1); }
+.hall-option input[type=radio] { position: absolute; opacity: 0; }
+.hall-option.selected { border-color: #01696f; background: #f0fdf4; }
+.hall-option-name { font-weight: 800; font-size: .95rem; color: #0f172a; margin-bottom: .35rem; }
+.hall-option-meta { font-size: .78rem; color: #64748b; display: flex; flex-direction: column; gap: .2rem; }
+.hall-option-meta span { display: flex; align-items: center; gap: .3rem; }
+.hall-capacity {
+    margin-top: .5rem; height: 5px; border-radius: 10px; background: #e2e8f0; overflow: hidden;
+}
+.hall-capacity-fill { height: 100%; border-radius: 10px; background: #01696f; transition: width .3s; }
+.hall-capacity-fill.warn { background: #d97706; }
+.hall-capacity-fill.full { background: #dc2626; }
+.hall-option-check {
+    position: absolute; top: .75rem; left: .75rem;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #01696f; color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: .75rem;
+}
+.hall-option.selected .hall-option-check { display: flex; }
+
+/* أزرار */
+.assign-actions { display: flex; gap: .75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.btn-assign {
+    height: 44px; padding: 0 1.75rem; border-radius: 11px;
+    font-weight: 800; font-size: .92rem; border: none; cursor: pointer;
+    display: flex; align-items: center; gap: .5rem; transition: all .15s;
+}
+.btn-assign-primary { background: #01696f; color: #fff; }
+.btn-assign-primary:hover { background: #0a8a91; }
+.btn-assign-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-assign-back {
+    height: 44px; padding: 0 1.25rem; border-radius: 11px;
+    font-weight: 700; font-size: .88rem; background: #f1f5f9; color: #64748b;
+    border: none; text-decoration: none;
+    display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-assign-back:hover { background: #e2e8f0; color: #334155; }
+
+/* فارغة */
+.no-halls { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.no-halls i { font-size: 2rem; display: block; margin-bottom: .5rem; }
+
+@media (max-width: 575.98px) {
+    .halls-grid { grid-template-columns: 1fr; }
+    .assign-actions { flex-direction: column; }
+    .btn-assign, .btn-assign-back { width: 100%; justify-content: center; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="assign-hero">
+    <div class="assign-hero-icon"><i class="bi bi-house-fill"></i></div>
+    <div>
+        <h1>تسكين يدوي للطالب</h1>
+        <p>اختر القاعة المناسبة بدون قيود التحقق التلقائي</p>
+    </div>
+</div>
+
+<div class="assign-card">
+    <div class="assign-card-header">
+        <i class="bi bi-person-fill"></i>بيانات الطالب
+    </div>
+    <div class="assign-card-body">
+
+        <!-- معلومات الطالب -->
+        <div class="student-info">
+            <div class="student-avatar">{{ student.first_name|first }}{{ student.last_name|first }}</div>
+            <div style="flex:1; min-width:0;">
+                <div class="student-name">{{ student.get_full_name }}</div>
+                <div class="student-meta">
+                    <span><i class="bi bi-calendar3"></i>{{ student.calculate_age }} سنة</span>
+                    {% if student.age_group %}
+                    <span><i class="bi bi-people"></i>{{ student.age_group.name }}</span>
+                    {% endif %}
+                    <span><i class="bi bi-book"></i>{{ student.get_completed_juz_count }} جزء محفوظ</span>
+                </div>
+            </div>
+            <div class="current-hall-badge {% if student.hall %}badge-active{% else %}badge-pending{% endif %}">
+                {% if student.hall %}
+                    <i class="bi bi-building me-1"></i>{{ student.hall.name }}
+                {% else %}
+                    <i class="bi bi-dash-circle me-1"></i>بدون قاعة
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- اختيار القاعة -->
+        <div class="assign-card-header" style="margin: 0 -1.25rem 1rem; padding-right:1.25rem; padding-left:1.25rem; border-top: 1px solid rgba(15,23,42,.08);">
+            <i class="bi bi-building-fill"></i>اختر القاعة
+            <span style="margin-right:auto; font-size:.78rem; color:#94a3b8; font-weight:500;">{{ halls|length }} قاعة متاحة</span>
+        </div>
+
+        <form method="post" id="assignForm">
+            {% csrf_token %}
+            <input type="hidden" name="hall_id" id="selectedHallId" value="">
+
+            {% if halls %}
+            <div class="halls-grid">
+                {% for hall in halls %}
+                {% with current=hall.get_current_students_count available=hall.get_available_seats %}
+                <div class="hall-option {% if student.hall and student.hall.pk == hall.pk %}selected{% endif %}"
+                     onclick="selectHall(this, '{{ hall.pk }}')">
+                    <div class="hall-option-check"><i class="bi bi-check"></i></div>
+                    <input type="radio" name="hall_id" value="{{ hall.pk }}"
+                           {% if student.hall and student.hall.pk == hall.pk %}checked{% endif %}>
+                    <div class="hall-option-name">{{ hall.name }}</div>
+                    <div class="hall-option-meta">
+                        {% if hall.age_group %}
+                        <span><i class="bi bi-people"></i>{{ hall.age_group.name }}</span>
+                        {% endif %}
+                        {% if hall.location %}
+                        <span><i class="bi bi-geo-alt"></i>{{ hall.location }}</span>
+                        {% endif %}
+                        <span><i class="bi bi-person-fill"></i>{{ current }} / {{ hall.max_students }} طالب ({{ available }} متاح)</span>
+                    </div>
+                    {% widthratio current hall.max_students 100 as pct %}
+                    <div class="hall-capacity">
+                        <div class="hall-capacity-fill {% if pct >= 90 %}full{% elif pct >= 70 %}warn{% endif %}"
+                             style="width:{{ pct }}%"></div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-halls">
+                <i class="bi bi-building-slash"></i>
+                <p>لا توجد قاعات متاحة ضمن صلاحياتك</p>
+            </div>
+            {% endif %}
+
+            <div class="assign-actions">
+                <button type="submit" class="btn-assign btn-assign-primary" id="submitBtn" disabled>
+                    <i class="bi bi-check-circle-fill"></i>تأكيد التسكين
+                </button>
+                <a href="{% url 'students:list' %}" class="btn-assign-back">
+                    <i class="bi bi-arrow-right"></i>رجوع
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function selectHall(el, hallId) {
+    document.querySelectorAll('.hall-option').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    el.querySelector('input[type=radio]').checked = true;
+    document.getElementById('selectedHallId').value = hallId;
+    document.getElementById('submitBtn').disabled = false;
+}
+// تفعيل الزر إن كانت قاعة محددة مسبقاً
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('.hall-option.selected')) {
+        document.getElementById('submitBtn').disabled = false;
+    }
+});
+</script>
+{% endblock %}

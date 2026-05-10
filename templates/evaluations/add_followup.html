@@ -1,304 +1,291 @@
 {% extends "base.html" %}
-
 {% block title %}المتابعة اليومية | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}المتابعة اليومية{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+<style>
+.fu-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.fu-hero-left { display: flex; align-items: center; gap: 1rem; }
+.fu-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.fu-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.fu-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-fu {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-fu:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+/* sidebar */
+.fu-sidebar {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; padding: 1.1rem;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+    position: sticky; top: 88px;
+}
+.fu-sidebar-title {
+    font-size: .78rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .04em;
+    margin-bottom: .6rem; display: flex; align-items: center; gap: .35rem;
+}
+.fu-select {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .5rem .85rem; font-size: .9rem; color: #0f172a;
+    background: #fff; transition: border-color .15s, box-shadow .15s;
+}
+.fu-select:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none; }
+.fu-date-badge {
+    margin-top: .75rem; background: #f0fdf4;
+    border: 1px solid rgba(22,163,74,.2); border-radius: 10px;
+    padding: .55rem .85rem; font-size: .83rem; font-weight: 700; color: #16a34a;
+    display: flex; align-items: center; gap: .4rem;
+}
+.fu-history-btn {
+    margin-top: .65rem; width: 100%; background: #f8fafc;
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .5rem; font-size: .85rem; font-weight: 700; color: #475569;
+    text-decoration: none; display: flex; align-items: center;
+    justify-content: center; gap: .4rem; transition: background .15s;
+}
+.fu-history-btn:hover { background: #f1f5f9; color: #334155; }
+
+/* نموذج */
+.fu-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05);
+}
+.fu-card-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.fu-card-title { font-weight: 800; font-size: .95rem; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+.fu-card-title i { color: #01696f; }
+.fu-update-badge {
+    background: #fef3c7; color: #d97706; border-radius: 20px;
+    padding: .2rem .75rem; font-size: .75rem; font-weight: 700;
+    display: flex; align-items: center; gap: .3rem;
+}
+.fu-card-body { padding: 1.25rem; }
+
+/* حقول النموذج */
+.fu-field { margin-bottom: 1.1rem; }
+.fu-field:last-of-type { margin-bottom: 0; }
+.fu-label {
+    font-size: .82rem; font-weight: 700; color: #374151;
+    margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem;
+}
+.fu-label i { color: #01696f; font-size: .9rem; }
+.fu-label .fu-badge {
+    background: #dbeafe; color: #2563eb; border-radius: 20px;
+    padding: .1rem .55rem; font-size: .72rem; font-weight: 700; margin-right: auto;
+}
+.fu-label .fu-badge.green  { background: #dcfce7; color: #16a34a; }
+.fu-label .fu-badge.orange { background: #fef3c7; color: #d97706; }
+.fu-textarea {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: .65rem .9rem; font-size: .9rem; color: #0f172a;
+    resize: vertical; min-height: 90px; line-height: 1.6;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+}
+.fu-textarea:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none; }
+.fu-hint { font-size: .75rem; color: #94a3b8; margin-top: .3rem; }
+
+/* فاصل -->
+.fu-divider {
+    height: 1px; background: rgba(15,23,42,.07);
+    margin: 1.1rem 0;
+}
+
+/* footer */
+.fu-footer {
+    padding: 1rem 1.25rem; border-top: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    background: #fafbfc;
+}
+.btn-fu-save {
+    background: #01696f; color: #fff; border: none; border-radius: 11px;
+    padding: .6rem 1.75rem; font-weight: 800; font-size: .92rem;
+    display: flex; align-items: center; gap: .5rem; cursor: pointer; transition: background .15s;
+}
+.btn-fu-save:hover { background: #0a8a91; }
+.btn-fu-back {
+    background: #f1f5f9; color: #64748b; border: none; border-radius: 11px;
+    padding: .6rem 1.1rem; font-weight: 700; font-size: .88rem;
+    text-decoration: none; display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-fu-back:hover { background: #e2e8f0; color: #334155; }
+
+/* empty */
+.fu-empty {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; text-align: center; padding: 4rem 1rem;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.fu-empty i { font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: .75rem; }
+.fu-empty h3 { font-size: 1rem; font-weight: 800; color: #475569; margin-bottom: .4rem; }
+.fu-empty p  { font-size: .85rem; color: #94a3b8; margin: 0; }
+
+@media (max-width: 767.98px) {
+    .fu-hero { flex-direction: column; align-items: flex-start; }
+    .btn-fu-save, .btn-fu-back { flex: 1; justify-content: center; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="fu-hero">
+    <div class="fu-hero-left">
+        <div class="fu-hero-icon"><i class="bi bi-journal-text"></i></div>
         <div>
-            <h2 class="fw-bold mb-2">إضافة / تحديث المتابعة اليومية</h2>
-            <p class="text-muted mb-0">اختر القاعة ثم أدخل الواجب والمطلوب حفظه والملاحظات.</p>
+            <h1>المتابعة اليومية للقاعة</h1>
+            <p>سجّل ما تم تناوله اليوم، والمطلوب حفظه، وأي ملاحظات لأولياء الأمور</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'dashboard:hall_supervisor' %}" class="btn btn-outline-secondary">رجوع للوحة</a>
-            {% if hall_id %}
-                <a href="{% url 'evaluations:hall_followups' hall_id %}" class="btn btn-outline-primary">عرض المتابعات</a>
-            {% endif %}
-        </div>
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        {% if hall_id %}
+        <a href="{% url 'evaluations:hall_followups' hall_id %}" class="btn-fu">
+            <i class="bi bi-clock-history"></i>السجل السابق
+        </a>
+        {% endif %}
+        <a href="{% url 'dashboard:hall_supervisor' %}" class="btn-fu">
+            <i class="bi bi-arrow-right"></i>رجوع
+        </a>
     </div>
 </div>
 
 <div class="row g-4">
+    <!-- ══ Sidebar ══ -->
     <div class="col-lg-4">
-        <div class="page-card p-4 position-sticky" style="top: 92px;">
-            <form method="get">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">القاعة</label>
-                    <select name="hall" class="form-select" onchange="this.form.submit()">
-                        <option value="">— اختر القاعة —</option>
-                        {% for hall in halls %}
-                            <option value="{{ hall.id }}" {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>{{ hall.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+        <div class="fu-sidebar">
+            <div class="fu-sidebar-title"><i class="bi bi-building"></i>اختر القاعة</div>
+            <form method="get" id="hallForm">
+                <select name="hall" class="fu-select" onchange="document.getElementById('hallForm').submit()">
+                    <option value="">— اختر القاعة —</option>
+                    {% for hall in halls %}
+                    <option value="{{ hall.id }}"
+                        {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                    {% endfor %}
+                </select>
             </form>
 
-            <div class="alert alert-info rounded-4 mb-0">
-                التاريخ: {{ today }}
+            <div class="fu-date-badge">
+                <i class="bi bi-calendar3-event"></i>
+                يوم {{ today }}
             </div>
+
+            {% if hall_id %}
+            <a href="{% url 'evaluations:hall_followups' hall_id %}" class="fu-history-btn">
+                <i class="bi bi-clock-history"></i>عرض المتابعات السابقة
+            </a>
+            {% endif %}
         </div>
     </div>
 
+    <!-- ══ النموذج ══ -->
     <div class="col-lg-8">
         {% if hall_id %}
-            <form method="post" class="page-card p-4">
-                {% csrf_token %}
-                <input type="hidden" name="hall" value="{{ hall_id }}">
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">الواجب المطلوب</label>
-                    <textarea name="homework" rows="4" class="form-control">{% if existing %}{{ existing.homework }}{% endif %}</textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">المطلوب حفظه</label>
-                    <textarea name="memorization_task" rows="4" class="form-control">{% if existing %}{{ existing.memorization_task }}{% endif %}</textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">ملاحظات إضافية</label>
-                    <textarea name="extra_notes" rows="3" class="form-control">{% if existing %}{{ existing.extra_notes }}{% endif %}</textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary">حفظ المتابعة</button>
-            </form>
-        {% else %}
-            <div class="page-card p-5 text-center">
-                <h3 class="fw-bold mb-2">اختر قاعة أولًا</h3>
-                <p class="text-muted mb-0">بعد اختيار القاعة سيظهر نموذج المتابعة اليومية.</p>
-            </div>
-        {% endif %}
-    </div>
-</div>
-{% endblock %}
-
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}المتابعة اليومية{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-7">
-
-        <!-- هيدر الصفحة -->
-        <div class="card stat-card mb-4">
-            <div class="card-body d-flex align-items-center justify-content-between
-                        flex-wrap gap-2 py-3">
-                <div>
-                    <div class="fw-bold">
-                        <i class="fas fa-tasks text-primary me-2"></i>
-                        المتابعة اليومية
-                    </div>
-                    <div class="text-muted small mt-1">
-                        <i class="far fa-calendar-alt me-1"></i>
-                        {{ today }}
-                    </div>
+        <div class="fu-card">
+            <div class="fu-card-header">
+                <div class="fu-card-title">
+                    <i class="bi bi-pencil-square"></i>
+                    {% if existing %}تحديث متابعة اليوم{% else %}إضافة متابعة جديدة{% endif %}
                 </div>
                 {% if existing %}
-                <span class="badge bg-info px-3 py-2">
-                    <i class="fas fa-edit me-1"></i>
-                    تعديل على متابعة موجودة
-                </span>
-                {% else %}
-                <span class="badge bg-success px-3 py-2">
-                    <i class="fas fa-plus me-1"></i>
-                    متابعة جديدة
-                </span>
+                <div class="fu-update-badge">
+                    <i class="bi bi-arrow-repeat"></i>تحديث سجل موجود
+                </div>
                 {% endif %}
             </div>
-        </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="hall" value="{{ hall_id }}">
+                <div class="fu-card-body">
 
-        <!-- اختيار القاعة -->
-        <div class="card stat-card mb-4">
-            <div class="card-header fw-bold">
-                <i class="fas fa-door-open text-primary me-2"></i>
-                اختيار القاعة
-            </div>
-            <div class="card-body">
-                <form method="get">
-                    <label class="form-label fw-bold small text-muted">
-                        <i class="fas fa-chalkboard me-1"></i>
-                        القاعة
-                    </label>
-                    <select name="hall"
-                            class="form-select"
-                            onchange="this.form.submit()">
-                        <option value="">— اختر القاعة —</option>
-                        {% for hall in halls %}
-                        <option value="{{ hall.id }}"
-                            {% if hall_id == hall.id|stringformat:"s" %}selected{% endif %}>
-                            {{ hall.name }}
-                            {% if hall.get_age_group_display %}
-                            — {{ hall.get_age_group_display }}
-                            {% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </form>
-            </div>
-        </div>
-
-        <!-- فورم المتابعة -->
-        {% if hall_id %}
-        <div class="card stat-card">
-            <div class="card-header fw-bold d-flex align-items-center
-                        justify-content-between flex-wrap gap-2">
-                <span>
-                    <i class="fas fa-pen-to-square text-primary me-2"></i>
-                    تفاصيل المتابعة
-                </span>
-                <span class="text-muted small fw-normal">
-                    الحقول المطلوبة مُعلَّمة بـ
-                    <span class="text-danger">*</span>
-                </span>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="hall" value="{{ hall_id }}">
-
-                    <!-- الواجب المطلوب -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-book text-warning me-1"></i>
-                            الواجب المطلوب
-                            <span class="text-danger">*</span>
-                        </label>
-                        <textarea name="homework"
-                                  class="form-control"
-                                  rows="3"
-                                  placeholder="اكتب الواجب المطلوب من الطلاب..."
-                                  required>{{ existing.homework|default:'' }}</textarea>
-                        <div class="form-text">
-                            <i class="fas fa-info-circle me-1 text-muted"></i>
-                            سيظهر هذا الواجب لأولياء الأمور في لوحتهم
+                    <!-- ① ما تم تناوله اليوم -->
+                    <div class="fu-field">
+                        <div class="fu-label">
+                            <i class="bi bi-journal-check"></i>
+                            ما تم تناوله اليوم
+                            <span class="fu-badge green">إلزامي</span>
                         </div>
+                        <textarea
+                            name="homework"
+                            class="fu-textarea"
+                            rows="4"
+                            placeholder="مثال: راجعنا سورة الملك كاملة وبدأنا بتفسير الآيات الأولى…">{% if existing %}{{ existing.homework }}{% endif %}</textarea>
+                        <div class="fu-hint"><i class="bi bi-info-circle me-1"></i>سجّل الدروس والسور التي تمت مراجعتها أو تدريسها اليوم</div>
                     </div>
 
-                    <!-- المطلوب حفظه -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-book-open text-success me-1"></i>
-                            المطلوب حفظه
-                        </label>
-                        <textarea name="memorization_task"
-                                  class="form-control"
-                                  rows="2"
-                                  placeholder="السور أو الآيات المطلوب حفظها...">{{ existing.memorization_task|default:'' }}</textarea>
+                    <div class="fu-divider"></div>
+
+                    <!-- ② المطلوب حفظه -->
+                    <div class="fu-field">
+                        <div class="fu-label">
+                            <i class="bi bi-bookmark-star"></i>
+                            المطلوب حفظه للجلسة القادمة
+                            <span class="fu-badge orange">اختياري</span>
+                        </div>
+                        <textarea
+                            name="memorization_task"
+                            class="fu-textarea"
+                            rows="3"
+                            placeholder="مثال: حفظ سورة تبارك من الآية 1 إلى 15…">{% if existing %}{{ existing.memorization_task }}{% endif %}</textarea>
+                        <div class="fu-hint"><i class="bi bi-info-circle me-1"></i>ما يجب على الطالب حفظه قبل الجلسة القادمة</div>
                     </div>
 
-                    <!-- ملاحظات إضافية -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="fas fa-sticky-note text-info me-1"></i>
-                            ملاحظات إضافية
-                        </label>
-                        <textarea name="extra_notes"
-                                  class="form-control"
-                                  rows="2"
-                                  placeholder="أي ملاحظات أخرى لأولياء الأمور...">{{ existing.extra_notes|default:'' }}</textarea>
+                    <div class="fu-divider"></div>
+
+                    <!-- ③ ملاحظات -->
+                    <div class="fu-field">
+                        <div class="fu-label">
+                            <i class="bi bi-chat-dots"></i>
+                            ملاحظات لأولياء الأمور
+                            <span class="fu-badge">اختياري</span>
+                        </div>
+                        <textarea
+                            name="extra_notes"
+                            class="fu-textarea"
+                            rows="3"
+                            placeholder="مثال: الرجاء التأكد من مراجعة الطالب يومياً، موعد الاختبار القادم…">{% if existing %}{{ existing.extra_notes }}{% endif %}</textarea>
+                        <div class="fu-hint"><i class="bi bi-info-circle me-1"></i>أي تعليمات أو تنبيهات تظهر لولي الأمر في تطبيقه</div>
                     </div>
 
-                    <!-- معاينة قبل الحفظ -->
-                    <div id="preview-box"
-                         class="alert alert-light border d-none mb-4"
-                         style="border-radius:10px;">
-                        <div class="fw-bold mb-2 text-primary">
-                            <i class="fas fa-eye me-1"></i>
-                            معاينة ما سيراه ولي الأمر
-                        </div>
-                        <div class="small mb-1">
-                            <i class="fas fa-book text-warning me-1"></i>
-                            <strong>الواجب: </strong>
-                            <span id="preview-homework" class="text-muted">—</span>
-                        </div>
-                        <div class="small mb-1">
-                            <i class="fas fa-book-open text-success me-1"></i>
-                            <strong>الحفظ: </strong>
-                            <span id="preview-memorization" class="text-muted">—</span>
-                        </div>
-                        <div class="small">
-                            <i class="fas fa-sticky-note text-info me-1"></i>
-                            <strong>ملاحظات: </strong>
-                            <span id="preview-notes" class="text-muted">—</span>
-                        </div>
-                    </div>
-
-                    <!-- أزرار -->
-                    <div class="d-flex gap-2 justify-content-between flex-wrap">
-                        <a href="{% url 'dashboard:hall_supervisor' %}"
-                           class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-right me-1"></i> رجوع
-                        </a>
-                        <div class="d-flex gap-2">
-                            <button type="button"
-                                    id="previewBtn"
-                                    class="btn btn-outline-info">
-                                <i class="fas fa-eye me-1"></i> معاينة
-                            </button>
-                            <button type="submit" class="btn btn-primary px-4 fw-bold">
-                                <i class="fas fa-save me-1"></i>
-                                {% if existing %}تحديث{% else %}نشر{% endif %} المتابعة
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
+                </div>
+                <div class="fu-footer">
+                    <button type="submit" class="btn-fu-save">
+                        <i class="bi bi-check2-circle"></i>
+                        {% if existing %}تحديث المتابعة{% else %}حفظ المتابعة{% endif %}
+                    </button>
+                    <a href="{% url 'dashboard:hall_supervisor' %}" class="btn-fu-back">
+                        <i class="bi bi-arrow-right"></i>رجوع
+                    </a>
+                </div>
+            </form>
         </div>
 
         {% else %}
-
-        <!-- حالة لم تُختر قاعة -->
-        <div class="card stat-card">
-            <div class="card-body text-center py-5 text-muted">
-                <div class="rounded-circle d-inline-flex align-items-center
-                            justify-content-center bg-primary bg-opacity-10 mb-3"
-                     style="width:72px;height:72px;">
-                    <i class="fas fa-door-open fa-2x text-primary"></i>
-                </div>
-                <div class="fw-bold mb-1">اختر قاعة أولاً</div>
-                <div class="small">اختر القاعة من القائمة بالأعلى لبدء تسجيل المتابعة</div>
-            </div>
+        <div class="fu-empty">
+            <i class="bi bi-building"></i>
+            <h3>اختر القاعة أولاً</h3>
+            <p>بعد اختيار القاعة سيظهر نموذج المتابعة اليومية</p>
         </div>
-
         {% endif %}
-
     </div>
 </div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-const homeworkEl      = document.querySelector('textarea[name="homework"]');
-const memorizationEl  = document.querySelector('textarea[name="memorization_task"]');
-const notesEl         = document.querySelector('textarea[name="extra_notes"]');
-const previewBox      = document.getElementById('preview-box');
-const previewBtn      = document.getElementById('previewBtn');
-
-function updatePreview() {
-    document.getElementById('preview-homework').textContent =
-        homeworkEl?.value.trim()     || '—';
-    document.getElementById('preview-memorization').textContent =
-        memorizationEl?.value.trim() || '—';
-    document.getElementById('preview-notes').textContent =
-        notesEl?.value.trim()        || '—';
-}
-
-previewBtn?.addEventListener('click', () => {
-    updatePreview();
-    previewBox.classList.toggle('d-none');
-    const showing = !previewBox.classList.contains('d-none');
-    previewBtn.innerHTML = showing
-        ? '<i class="fas fa-eye-slash me-1"></i> إخفاء'
-        : '<i class="fas fa-eye me-1"></i> معاينة';
-});
-
-[homeworkEl, memorizationEl, notesEl].forEach(el => {
-    el?.addEventListener('input', () => {
-        if (!previewBox.classList.contains('d-none')) updatePreview();
-    });
-});
-</script>
-{% endblock %} {% endcomment %}

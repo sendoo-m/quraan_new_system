@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}اختر القاعة{% endblock %}
+{% block page_title %}تقييم القاعات{% endblock %}
+
+{% block content %}
+<div style="background:linear-gradient(135deg,#1e293b,#334155);border-radius:18px;
+            padding:1.35rem 1.75rem;margin-bottom:1.25rem;color:#fff;
+            display:flex;align-items:center;gap:1rem;">
+    <div style="width:48px;height:48px;background:rgba(255,255,255,.12);border-radius:12px;
+                display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+        <i class="bi bi-star-fill"></i>
+    </div>
+    <div>
+        <div style="font-size:1.1rem;font-weight:800;margin-bottom:.2rem;">اختر القاعة للتقييم</div>
+        <div style="font-size:.85rem;opacity:.75;">اضغط على القاعة التي تريد تقييم طلابها</div>
+    </div>
+</div>
+
+<div class="row g-3">
+    {% for hall in halls %}
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'evaluations:evaluate_hall' hall.pk %}"
+           style="display:block;background:#fff;border:1.5px solid rgba(15,23,42,.08);
+                  border-radius:16px;padding:1.25rem;text-decoration:none;
+                  box-shadow:0 2px 12px rgba(15,23,42,.04);transition:all .15s;"
+           onmouseover="this.style.borderColor='#01696f';this.style.boxShadow='0 4px 20px rgba(1,105,111,.15)'"
+           onmouseout="this.style.borderColor='rgba(15,23,42,.08)';this.style.boxShadow='0 2px 12px rgba(15,23,42,.04)'">
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.65rem;">
+                <div style="width:40px;height:40px;background:#f0fdf4;border-radius:10px;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:1rem;color:#16a34a;flex-shrink:0;">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div style="font-weight:800;font-size:.95rem;color:#0f172a;">{{ hall.name }}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.8rem;color:#64748b;">
+                <span><i class="bi bi-people me-1"></i>{{ hall.get_current_students_count }} طالب</span>
+                <span style="background:#dcfce7;color:#16a34a;border-radius:20px;
+                             padding:.15rem .65rem;font-weight:700;">
+                    <i class="bi bi-arrow-left-short"></i>تقييم
+                </span>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5" style="color:#94a3b8;">
+        <i class="bi bi-building" style="font-size:2.5rem;display:block;margin-bottom:.75rem;"></i>
+        لا توجد قاعات متاحة
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

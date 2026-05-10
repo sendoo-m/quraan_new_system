@@ -10,5 +10,5 @@ urlpatterns = [
     path('<int:pk>/update/',        views.StudentUpdateView.as_view(),   name='update'),   # ← جديد
     path('<int:pk>/assign-hall/', views.AssignHallView.as_view(),     name='assign_hall'),
     path('<int:pk>/transfer/',    views.TransferStudentView.as_view(),name='transfer'),
-
+    path('<int:pk>/manual-assign/', views.ManualAssignHallView.as_view(), name='manual_assign'),
 ]

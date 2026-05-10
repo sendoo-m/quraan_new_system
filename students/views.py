@@ -89,7 +89,6 @@ class StudentListView(StaffRequiredMixin, View):
         }
         return render(request, 'students/list.html', context)
 
-
 class StudentRegisterView(LoginRequiredMixin, View):
     template_name = 'students/register.html'
 
@@ -102,6 +101,12 @@ class StudentRegisterView(LoginRequiredMixin, View):
             messages.error(request, 'ليس لديك صلاحية تسجيل طالب')
             return redirect('dashboard')
 
+        # ← جديد: تحقق من حالة التسجيل لولي الأمر فقط
+        if request.user.is_parent:
+            settings = SiteSettings.get_settings()
+            if not settings.allow_registration:
+                return render(request, 'students/registration_closed.html')
+
         form = StudentRegistrationForm()
         parents = User.objects.filter(role=User.ROLE_PARENT, is_active=True)
 
@@ -111,6 +116,13 @@ class StudentRegisterView(LoginRequiredMixin, View):
         })
 
     def post(self, request):
+        # ← جديد: تحقق من حالة التسجيل لولي الأمر فقط
+        if request.user.is_parent:
+            settings = SiteSettings.get_settings()
+            if not settings.allow_registration:
+                messages.error(request, '❌ التسجيل مغلق حالياً، لا يمكن إضافة طلاب جدد')
+                return redirect('dashboard:parent')
+
         form = StudentRegistrationForm(request.POST, request.FILES)
         parents = User.objects.filter(role=User.ROLE_PARENT, is_active=True)
 
@@ -143,6 +155,60 @@ class StudentRegisterView(LoginRequiredMixin, View):
             return redirect('dashboard:parent' if request.user.is_parent else 'students:list')
 
         return render(request, self.template_name, {'form': form, 'parents': parents})
+
+# class StudentRegisterView(LoginRequiredMixin, View):
+#     template_name = 'students/register.html'
+
+#     def get(self, request):
+#         if not (
+#             request.user.is_parent or
+#             request.user.is_general_manager or
+#             request.user.is_general_supervisor
+#         ):
+#             messages.error(request, 'ليس لديك صلاحية تسجيل طالب')
+#             return redirect('dashboard')
+
+#         form = StudentRegistrationForm()
+#         parents = User.objects.filter(role=User.ROLE_PARENT, is_active=True)
+
+#         return render(request, self.template_name, {
+#             'form': form,
+#             'parents': parents,
+#         })
+
+#     def post(self, request):
+#         form = StudentRegistrationForm(request.POST, request.FILES)
+#         parents = User.objects.filter(role=User.ROLE_PARENT, is_active=True)
+
+#         if form.is_valid():
+#             student = form.save(commit=False)
+
+#             if request.user.is_parent:
+#                 student.parent = request.user
+#             else:
+#                 parent_id = request.POST.get('parent_id')
+#                 if not parent_id:
+#                     messages.error(request, 'يجب اختيار ولي أمر')
+#                     return render(request, self.template_name, {'form': form, 'parents': parents})
+#                 student.parent = get_object_or_404(User, id=parent_id, role=User.ROLE_PARENT)
+
+#             student.status = Student.STATUS_PENDING
+#             student.save()
+#             form.save_m2m()
+
+#             settings = SiteSettings.get_settings()
+#             if settings.auto_assign_halls:
+#                 hall, msg = auto_assign_hall(student)
+#                 if hall:
+#                     messages.success(request, f'✅ تم تسجيل {student.get_full_name()} وتسكينه في {hall.name}')
+#                 else:
+#                     messages.warning(request, f'✅ تم التسجيل — ⚠️ {msg}')
+#             else:
+#                 messages.success(request, f'✅ تم تسجيل {student.get_full_name()} بنجاح')
+
+#             return redirect('dashboard:parent' if request.user.is_parent else 'students:list')
+
+#         return render(request, self.template_name, {'form': form, 'parents': parents})
 
 
 class StudentDetailView(LoginRequiredMixin, View):
@@ -313,6 +379,55 @@ class PublicRegisterView(View):
             'student_form': student_form,
         })
 
+
+class ManualAssignHallView(GeneralSupervisorRequiredMixin, View):
+    template_name = 'students/manual_assign.html'
+
+    def get(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
+
+        if not user_can_access_student(request.user, student):
+            messages.error(request, 'ليس لديك صلاحية تسكين هذا الطالب')
+            return redirect('students:list')
+
+        # جلب كل القاعات المتاحة بدون قيود
+        halls = Hall.objects.filter(is_active=True).select_related('age_group')
+        if request.user.is_general_supervisor and not request.user.is_general_manager:
+            hall_ids = request.user.hall_assignments.values_list('hall_id', flat=True)
+            halls = halls.filter(id__in=hall_ids)
+
+        return render(request, self.template_name, {
+            'student': student,
+            'halls': halls,
+        })
+
+    def post(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
+
+        if not user_can_access_student(request.user, student):
+            messages.error(request, 'ليس لديك صلاحية تسكين هذا الطالب')
+            return redirect('students:list')
+
+        hall_id = request.POST.get('hall_id')
+        if not hall_id:
+            messages.error(request, 'يجب اختيار قاعة')
+            return redirect('students:manual_assign', pk=pk)
+
+        hall = get_object_or_404(Hall, pk=hall_id)
+
+        old_hall = student.hall.name if student.hall else 'بدون قاعة'
+
+        student.hall = hall
+        student.status = Student.STATUS_ACTIVE
+        student.save(update_fields=['hall', 'status'])
+
+        messages.success(
+            request,
+            f'✅ تم تسكين {student.get_full_name()} في {hall.name} '
+            f'(كان في: {old_hall})'
+        )
+        return redirect('students:list')
+    
 # from django.shortcuts import render, redirect, get_object_or_404
 # from django.contrib.auth.mixins import LoginRequiredMixin
 # from django.contrib import messages

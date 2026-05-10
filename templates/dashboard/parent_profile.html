@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% block title %}بياناتي | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}بياناتي الشخصية{% endblock %}
+
+{% block content %}
+<style>
+.pp-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.pp-avatar-big {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: rgba(255,255,255,.15); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 1.75rem; font-weight: 900; color: #fff;
+    border: 2px solid rgba(255,255,255,.25); flex-shrink: 0;
+}
+.pp-hero h1 { font-size: 1.1rem; font-weight: 900; margin: 0 0 .25rem; }
+.pp-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-pp-back {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.3); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-pp-back:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+.pp-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04); margin-bottom: 1.1rem;
+}
+.pp-card-header {
+    padding: .8rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+}
+.pp-card-header i { color: #01696f; }
+.pp-card-body { padding: 1.25rem; }
+
+.pp-form-group { margin-bottom: 1.1rem; }
+.pp-label {
+    font-size: .78rem; font-weight: 700; color: #64748b;
+    margin-bottom: .4rem; display: flex; align-items: center; gap: .3rem;
+}
+.pp-input {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: .6rem .9rem; font-size: .9rem; color: #0f172a;
+    transition: border-color .15s; outline: none;
+}
+.pp-input:focus { border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.08); }
+.pp-input.error { border-color: #dc2626; }
+
+.btn-save {
+    background: #01696f; color: #fff; border: none;
+    border-radius: 11px; padding: .65rem 1.75rem;
+    font-weight: 800; font-size: .92rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    cursor: pointer; transition: background .15s;
+}
+.btn-save:hover { background: #0a8a91; }
+
+/* بطاقات الأبناء للصورة */
+.child-photo-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(15,23,42,.04);
+}
+.child-photo-header {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    padding: .75rem 1rem; color: #fff;
+    display: flex; align-items: center; gap: .65rem;
+}
+.child-mini-avatar {
+    width: 40px; height: 40px; border-radius: 10px;
+    overflow: hidden; flex-shrink: 0;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 900; color: #fff;
+}
+.child-mini-avatar img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.child-photo-name { font-weight: 800; font-size: .9rem; margin: 0 0 .15rem; }
+.child-photo-hall { font-size: .75rem; opacity: .7; }
+.child-photo-body { padding: .9rem 1rem; }
+
+.upload-area {
+    border: 2px dashed #cbd5e1; border-radius: 10px;
+    padding: .75rem 1rem; text-align: center;
+    background: #f8fafc; cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative; overflow: hidden;
+}
+.upload-area:hover { border-color: #01696f; background: #f0fdf4; }
+.upload-area input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+}
+.upload-area-icon { font-size: 1.3rem; color: #94a3b8; display: block; margin-bottom: .3rem; }
+.upload-area-text { font-size: .78rem; color: #64748b; font-weight: 600; }
+.upload-area-hint { font-size: .7rem; color: #94a3b8; }
+
+.btn-upload {
+    width: 100%; background: #01696f; color: #fff; border: none;
+    border-radius: 9px; padding: .5rem; font-weight: 700; font-size: .85rem;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    cursor: pointer; margin-top: .6rem; transition: background .15s;
+}
+.btn-upload:hover { background: #0a8a91; }
+
+@media (max-width:767.98px) {
+    .pp-hero { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show rounded-3 mb-3" role="alert">
+    {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- ══ هيدر ══ -->
+<div class="pp-hero">
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <div class="pp-avatar-big">{{ user.first_name|first|default:user.username|first }}</div>
+        <div>
+            <h1>{{ user.get_full_name|default:user.username }}</h1>
+            <p>{{ user.username }} — {{ user.get_role_display }}</p>
+        </div>
+    </div>
+    <a href="{% url 'dashboard:parent' %}" class="btn-pp-back">
+        <i class="bi bi-arrow-right"></i>رجوع للوحة
+    </a>
+</div>
+
+<div class="row g-3">
+
+    <!-- ══ عمود يمين: تعديل البيانات ══ -->
+    <div class="col-12 col-lg-5">
+        <div class="pp-card">
+            <div class="pp-card-header">
+                <i class="bi bi-person-fill"></i>بياناتي الشخصية
+            </div>
+            <div class="pp-card-body">
+                <form method="post" action="{% url 'dashboard:parent_profile' %}">
+                    {% csrf_token %}
+
+                    <div class="pp-form-group">
+                        <label class="pp-label">
+                            <i class="bi bi-person"></i>الاسم الأول
+                        </label>
+                        <input type="text" name="first_name"
+                               value="{{ form.first_name.value|default:'' }}"
+                               class="pp-input {% if form.first_name.errors %}error{% endif %}"
+                               placeholder="الاسم الأول" required>
+                        {% if form.first_name.errors %}
+                        <div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">
+                            {{ form.first_name.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pp-form-group">
+                        <label class="pp-label">
+                            <i class="bi bi-person"></i>اسم العائلة
+                        </label>
+                        <input type="text" name="last_name"
+                               value="{{ form.last_name.value|default:'' }}"
+                               class="pp-input {% if form.last_name.errors %}error{% endif %}"
+                               placeholder="اسم العائلة" required>
+                        {% if form.last_name.errors %}
+                        <div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">
+                            {{ form.last_name.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pp-form-group">
+                        <label class="pp-label">
+                            <i class="bi bi-phone"></i>رقم الجوال
+                        </label>
+                        <input type="text" name="phone"
+                               value="{{ form.phone.value|default:'' }}"
+                               class="pp-input {% if form.phone.errors %}error{% endif %}"
+                               placeholder="05xxxxxxxx">
+                        {% if form.phone.errors %}
+                        <div style="color:#dc2626;font-size:.75rem;margin-top:.3rem;">
+                            {{ form.phone.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- بيانات ثابتة للعرض فقط -->
+                    <div style="background:#f8fafc;border:1px solid rgba(15,23,42,.07);
+                                border-radius:11px;padding:.75rem 1rem;margin-bottom:1.1rem;">
+                        <div style="font-size:.72rem;font-weight:700;color:#94a3b8;margin-bottom:.5rem;">
+                            معلومات الحساب — للقراءة فقط
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:.35rem;">
+                            <div style="font-size:.85rem;color:#475569;">
+                                <i class="bi bi-person-badge me-2" style="color:#01696f;"></i>
+                                {{ user.username }}
+                            </div>
+                            {% if user.email %}
+                            <div style="font-size:.85rem;color:#475569;">
+                                <i class="bi bi-envelope me-2" style="color:#01696f;"></i>
+                                {{ user.email }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check-circle-fill"></i>حفظ التغييرات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ عمود يسار: صور الأبناء ══ -->
+    <div class="col-12 col-lg-7">
+        <div class="pp-card">
+            <div class="pp-card-header">
+                <i class="bi bi-images"></i>صور الأبناء
+            </div>
+            <div class="pp-card-body">
+                {% if children %}
+                <div class="row g-3">
+                    {% for child in children %}
+                    <div class="col-12 col-sm-6">
+                        <div class="child-photo-card">
+                            <div class="child-photo-header">
+                                <div class="child-mini-avatar">
+                                    {% if child.profile_picture %}
+                                        <img src="{{ child.profile_picture.url }}"
+                                             alt="{{ child.get_full_name }}">
+                                    {% else %}
+                                        {{ child.first_name|first }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="child-photo-name">{{ child.get_full_name }}</div>
+                                    <div class="child-photo-hall">
+                                        {% if child.hall %}{{ child.hall.name }}{% else %}لم يتم التسكين{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="child-photo-body">
+                                <form method="post"
+                                      action="{% url 'dashboard:student_photo' child.pk %}"
+                                      enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="upload-area" id="area-{{ child.pk }}">
+                                        <input type="file" name="profile_picture"
+                                               accept="image/*"
+                                               onchange="previewPhoto(this, {{ child.pk }})">
+                                        <span class="upload-area-icon">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </span>
+                                        <div class="upload-area-text">اضغط لاختيار صورة</div>
+                                        <div class="upload-area-hint">JPG, PNG — حجم أقصى 2MB</div>
+                                    </div>
+
+                                    <!-- معاينة الصورة -->
+                                    <div id="preview-{{ child.pk }}"
+                                         style="display:none;margin-top:.6rem;text-align:center;">
+                                        <img id="preview-img-{{ child.pk }}"
+                                             style="width:80px;height:80px;object-fit:cover;
+                                                    border-radius:12px;border:2px solid #01696f;">
+                                    </div>
+
+                                    <button type="submit" class="btn-upload">
+                                        <i class="bi bi-upload"></i>رفع الصورة
+                                    </button>
+                                </form>
+
+                                {% if child.profile_picture %}
+                                <div style="margin-top:.5rem;text-align:center;">
+                                    <img src="{{ child.profile_picture.url }}"
+                                         style="width:60px;height:60px;object-fit:cover;
+                                                border-radius:10px;border:2px solid #e2e8f0;">
+                                    <div style="font-size:.72rem;color:#94a3b8;margin-top:.25rem;">الصورة الحالية</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align:center;padding:2rem;color:#94a3b8;">
+                    <i class="bi bi-people" style="font-size:2rem;display:block;margin-bottom:.5rem;"></i>
+                    لا يوجد أبناء مسجلون بعد
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function previewPhoto(input, childId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = document.getElementById(`preview-${childId}`);
+            const img     = document.getElementById(`preview-img-${childId}`);
+            img.src       = e.target.result;
+            preview.style.display = 'block';
+
+            // تحديث نص منطقة الرفع
+            const area = document.getElementById(`area-${childId}`);
+            area.querySelector('.upload-area-text').textContent = input.files[0].name;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

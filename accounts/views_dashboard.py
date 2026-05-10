@@ -113,22 +113,139 @@ class ParentDashboard(ParentRequiredMixin, View):
         for child in children:
             last_eval    = child.evaluations.order_by('-date').first()
             today_attend = child.attendances.filter(date=today).first()
-
-            # المتابعات اليومية لقاعة الطالب
-            followups = DailyFollowUp.objects.filter(
+            followups    = DailyFollowUp.objects.filter(
                 hall=child.hall
             ).order_by('-date')[:5] if child.hall else []
 
             children_data.append({
-                'student':       child,
-                'last_eval':     last_eval,
-                'today_attend':  today_attend,
-                'followups':     followups,
-                'surahs_count':  child.memorized_surahs.count(),
+                'student':      child,
+                'last_eval':    last_eval,
+                'today_attend': today_attend,
+                'followups':    followups,
+                'surahs_count': child.memorized_surahs.count(),
             })
 
         context = {
             'children_data': children_data,
+            'children':      children,   # ← جديد للـ sidebar
             'today':         today,
         }
         return render(request, 'dashboard/parent.html', context)
+    
+# class ParentDashboard(ParentRequiredMixin, View):
+#     def get(self, request):
+#         today    = date.today()
+#         children = Student.objects.filter(
+#             parent=request.user
+#         ).prefetch_related('memorized_surahs', 'evaluations')
+
+#         children_data = []
+#         for child in children:
+#             last_eval    = child.evaluations.order_by('-date').first()
+#             today_attend = child.attendances.filter(date=today).first()
+
+#             # المتابعات اليومية لقاعة الطالب
+#             followups = DailyFollowUp.objects.filter(
+#                 hall=child.hall
+#             ).order_by('-date')[:5] if child.hall else []
+
+#             children_data.append({
+#                 'student':       child,
+#                 'last_eval':     last_eval,
+#                 'today_attend':  today_attend,
+#                 'followups':     followups,
+#                 'surahs_count':  child.memorized_surahs.count(),
+#             })
+
+#         context = {
+#             'children_data': children_data,
+#             'today':         today,
+#         }
+#         return render(request, 'dashboard/parent.html', context)
+
+from django.db.models import Count, Q
+from calendar import month_name
+
+class ParentStudentReportView(ParentRequiredMixin, View):
+    def get(self, request, student_id):
+        # تأكد أن الطالب ينتمي لولي الأمر هذا
+        child = get_object_or_404(
+            Student,
+            pk=student_id,
+            parent=request.user
+        )
+
+        # ══ إحصائيات الحضور الإجمالية ══
+        all_attendance = child.attendances.all()
+        attend_stats = {
+            'present': all_attendance.filter(status='present').count(),
+            'absent':  all_attendance.filter(status='absent').count(),
+            'late':    all_attendance.filter(status='late').count(),
+            'excused': all_attendance.filter(status='excused').count(),
+            'total':   all_attendance.count(),
+        }
+
+        # ══ إحصائيات التقييمات الإجمالية ══
+        all_evals = child.evaluations.all()
+        eval_stats = {
+            'total':       all_evals.count(),
+            'excellent':   all_evals.filter(memorization_rating='excellent').count(),
+            'good':        all_evals.filter(memorization_rating='good').count(),
+            'average':     all_evals.filter(memorization_rating='average').count(),
+            'weak':        all_evals.filter(memorization_rating='weak').count(),
+            'distinguished': all_evals.filter(is_distinguished=True).count(),
+            'needs_attention': all_evals.filter(needs_attention=True).count(),
+        }
+
+        # ══ آخر 20 تقييم للجدول ══
+        recent_evals = all_evals.select_related('teacher').order_by('-date')[:20]
+
+        # ══ إحصائيات المتابعات ══
+        followups = DailyFollowUp.objects.filter(
+            hall=child.hall
+        ).order_by('-date') if child.hall else []
+
+        context = {
+            'child':          child,
+            'attend_stats':   attend_stats,
+            'eval_stats':     eval_stats,
+            'recent_evals':   recent_evals,
+            'followups':      followups[:10],
+            'surahs_count':   child.memorized_surahs.count(),
+        }
+        return render(request, 'dashboard/student_report.html', context)
+    
+
+from accounts.forms_settings import ParentProfileForm
+from students.forms import StudentPhotoForm   # أو من accounts.forms لو حطيتها هناك
+from django.contrib import messages
+from django.shortcuts import redirect
+
+
+class ParentProfileView(ParentRequiredMixin, View):
+    template_name = 'dashboard/parent_profile.html'
+
+    def get(self, request):
+        form = ParentProfileForm(instance=request.user)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = ParentProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '✅ تم تحديث بياناتك بنجاح')
+            return redirect('dashboard:parent_profile')
+        return render(request, self.template_name, {'form': form})
+
+
+class StudentPhotoUpdateView(ParentRequiredMixin, View):
+    def post(self, request, student_id):
+        # تأكد أن الطالب ينتمي لولي الأمر هذا
+        child = get_object_or_404(Student, pk=student_id, parent=request.user)
+        form  = StudentPhotoForm(request.POST, request.FILES, instance=child)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'✅ تم تحديث صورة {child.get_full_name()}')
+        else:
+            messages.error(request, '❌ حدث خطأ، تأكد من صيغة الصورة')
+        return redirect('dashboard:parent')

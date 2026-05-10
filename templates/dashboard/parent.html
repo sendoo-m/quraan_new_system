@@ -4,154 +4,208 @@
 
 {% block content %}
 <style>
-/* ══ هيدر الترحيب ══ */
+/* ══ هيدر ══ */
 .par-hero {
     background: linear-gradient(135deg, #01696f 0%, #0a8a91 60%, #059669 100%);
-    border-radius: 20px; padding: 2rem 2rem 0; margin-bottom: 1.5rem;
-    color: #fff; overflow: hidden; position: relative;
+    border-radius: 20px; padding: 2rem 2rem 0;
+    margin-bottom: 1.5rem; color: #fff;
+    overflow: hidden; position: relative;
 }
 .par-hero::before {
-    content: '';
-    position: absolute; top: -40px; left: -40px;
-    width: 220px; height: 220px; border-radius: 50%;
-    background: rgba(255,255,255,.06); pointer-events: none;
+    content:''; position:absolute; top:-40px; left:-40px;
+    width:220px; height:220px; border-radius:50%;
+    background:rgba(255,255,255,.06); pointer-events:none;
 }
 .par-hero::after {
-    content: '';
-    position: absolute; bottom: -30px; right: 60px;
-    width: 160px; height: 160px; border-radius: 50%;
-    background: rgba(255,255,255,.05); pointer-events: none;
+    content:''; position:absolute; bottom:-30px; right:60px;
+    width:160px; height:160px; border-radius:50%;
+    background:rgba(255,255,255,.05); pointer-events:none;
 }
-.par-hero-body { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-bottom: 1.75rem; }
-.par-hero-greeting { font-size: .9rem; opacity: .85; margin-bottom: .3rem; }
-.par-hero h1 { font-size: 1.5rem; font-weight: 900; margin: 0 0 .4rem; }
-.par-hero-sub { font-size: .88rem; opacity: .8; margin: 0; max-width: 420px; }
+.par-hero-body {
+    position:relative; z-index:1;
+    display:flex; align-items:flex-start;
+    justify-content:space-between; flex-wrap:wrap; gap:1rem;
+    padding-bottom:1.75rem;
+}
+.par-hero-greeting { font-size:.9rem; opacity:.85; margin-bottom:.3rem; }
+.par-hero h1 { font-size:1.5rem; font-weight:900; margin:0 0 .4rem; }
+.par-hero-sub { font-size:.88rem; opacity:.8; margin:0; max-width:420px; }
 .btn-par-add {
-    background: rgba(255,255,255,.2); color: #fff; border: 1.5px solid rgba(255,255,255,.35);
-    border-radius: 12px; padding: .6rem 1.3rem; font-weight: 800; font-size: .9rem;
-    text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
-    transition: background .2s, transform .15s; white-space: nowrap;
+    background:rgba(255,255,255,.2); color:#fff;
+    border:1.5px solid rgba(255,255,255,.35); border-radius:12px;
+    padding:.6rem 1.3rem; font-weight:800; font-size:.9rem;
+    text-decoration:none; display:inline-flex; align-items:center; gap:.5rem;
+    transition:background .2s,transform .15s; white-space:nowrap;
 }
-.btn-par-add:hover { background: rgba(255,255,255,.32); color: #fff; transform: translateY(-1px); }
-.par-hero-wave {
-    width: 100%; margin-top: .5rem; display: block;
-    line-height: 0; position: relative; z-index: 1;
-}
-.par-hero-wave svg { display: block; }
+.btn-par-add:hover { background:rgba(255,255,255,.32); color:#fff; transform:translateY(-1px); }
+.par-hero-wave { width:100%; margin-top:.5rem; display:block; line-height:0; position:relative; z-index:1; }
+.par-hero-wave svg { display:block; }
 
-/* ══ بطاقات الأبناء ══ */
+/* ══ البطاقة الرئيسية ══ */
 .child-card {
-    background: #fff; border: 1px solid rgba(15,23,42,.08);
-    border-radius: 20px; overflow: hidden;
-    box-shadow: 0 4px 20px rgba(15,23,42,.06);
-    transition: transform .2s, box-shadow .2s; height: 100%;
-    display: flex; flex-direction: column;
+    background:#fff; border:1px solid rgba(15,23,42,.08);
+    border-radius:20px; overflow:hidden;
+    box-shadow:0 4px 20px rgba(15,23,42,.06);
+    transition:transform .2s,box-shadow .2s;
+    height:100%; display:flex; flex-direction:column;
 }
-.child-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(15,23,42,.1); }
+.child-card:hover { transform:translateY(-3px); box-shadow:0 8px 32px rgba(15,23,42,.1); }
 
 /* رأس البطاقة */
 .child-card-header {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    padding: 1.25rem 1.4rem; color: #fff;
-    display: flex; align-items: center; gap: 1rem;
+    background:linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    padding:1.25rem 1.4rem; color:#fff;
+    display:flex; align-items:center; gap:1rem;
 }
 .child-avatar {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: rgba(255,255,255,.15); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.35rem; font-weight: 900; color: #fff;
-    border: 2px solid rgba(255,255,255,.2);
+    width:52px; height:52px; border-radius:14px;
+    background:rgba(255,255,255,.15); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.35rem; font-weight:900; color:#fff;
+    border:2px solid rgba(255,255,255,.2);
 }
-.child-name { font-size: 1rem; font-weight: 800; margin: 0 0 .2rem; }
-.child-hall { font-size: .82rem; opacity: .75; display: flex; align-items: center; gap: .3rem; }
+.child-name  { font-size:1rem; font-weight:800; margin:0 0 .2rem; }
+.child-hall  { font-size:.82rem; opacity:.75; display:flex; align-items:center; gap:.3rem; }
 .child-surah-badge {
-    margin-right: auto; background: rgba(255,255,255,.15);
-    border: 1px solid rgba(255,255,255,.25); border-radius: 30px;
-    padding: .3rem .85rem; font-size: .82rem; font-weight: 700; white-space: nowrap;
-    display: flex; align-items: center; gap: .35rem;
+    margin-right:auto;
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+    border-radius:30px; padding:.3rem .85rem;
+    font-size:.82rem; font-weight:700; white-space:nowrap;
+    display:flex; align-items:center; gap:.35rem;
 }
 
-/* جسم البطاقة */
-.child-card-body { padding: 1.25rem 1.4rem; flex: 1; display: flex; flex-direction: column; gap: 1rem; }
-
-/* قسم المعلومة */
-.child-section-lbl {
-    font-size: .73rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: .06em; color: #94a3b8; margin-bottom: .4rem;
-    display: flex; align-items: center; gap: .35rem;
+/* تابز */
+.child-tabs {
+    display:flex; border-bottom:1px solid rgba(15,23,42,.08);
+    background:#fafbfc; overflow-x:auto;
 }
+.child-tab {
+    padding:.6rem 1.1rem; font-size:.83rem; font-weight:700;
+    color:#64748b; cursor:pointer; white-space:nowrap;
+    border-bottom:2.5px solid transparent;
+    transition:color .15s,border-color .15s;
+    display:flex; align-items:center; gap:.35rem;
+    background:none; border-top:none; border-left:none; border-right:none;
+}
+.child-tab:hover  { color:#0f172a; }
+.child-tab.active { color:#01696f; border-bottom-color:#01696f; }
 
-/* بطاقة المعلومة */
+/* جسم التابز */
+.child-tab-content { display:none; padding:1.1rem 1.25rem; }
+.child-tab-content.active { display:block; }
+
+/* info-chip */
 .info-chip {
-    display: flex; align-items: center; gap: .6rem;
-    background: #f8fafc; border: 1px solid rgba(15,23,42,.07);
-    border-radius: 12px; padding: .6rem .85rem;
+    display:flex; align-items:center; gap:.6rem;
+    background:#f8fafc; border:1px solid rgba(15,23,42,.07);
+    border-radius:12px; padding:.6rem .85rem; margin-bottom:.55rem;
 }
 .info-chip-icon {
-    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: .9rem;
+    width:34px; height:34px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:.9rem;
 }
-.info-chip-label { font-size: .78rem; color: #94a3b8; font-weight: 600; }
-.info-chip-value { font-size: .9rem; font-weight: 700; color: #0f172a; }
-.info-chip-value.muted { color: #94a3b8; font-weight: 500; }
+.info-chip-label { font-size:.75rem; color:#94a3b8; font-weight:600; }
+.info-chip-value { font-size:.9rem; font-weight:700; color:#0f172a; }
+.info-chip-value.muted { color:#94a3b8; font-weight:500; font-style:italic; }
 
 /* حالات الحضور */
-.attend-present { background: #f0fdf4; border-color: rgba(22,163,74,.15); }
-.attend-present .info-chip-icon { background: #dcfce7; color: #16a34a; }
-.attend-present .info-chip-value { color: #16a34a; }
-.attend-absent  { background: #fff1f2; border-color: rgba(220,38,38,.12); }
-.attend-absent  .info-chip-icon { background: #fee2e2; color: #dc2626; }
-.attend-absent  .info-chip-value { color: #dc2626; }
-.attend-late    { background: #fffbeb; border-color: rgba(217,119,6,.12); }
-.attend-late    .info-chip-icon { background: #fef3c7; color: #d97706; }
-.attend-late    .info-chip-value { color: #d97706; }
-.attend-excused { background: #ecfeff; border-color: rgba(8,145,178,.12); }
-.attend-excused .info-chip-icon { background: #cffafe; color: #0891b2; }
-.attend-excused .info-chip-value { color: #0891b2; }
-.attend-none    .info-chip-icon { background: #e2e8f0; color: #94a3b8; }
+.attend-present { background:#f0fdf4; border-color:rgba(22,163,74,.15); }
+.attend-present .info-chip-icon { background:#dcfce7; color:#16a34a; }
+.attend-present .info-chip-value { color:#16a34a; }
+.attend-absent  { background:#fff1f2; border-color:rgba(220,38,38,.12); }
+.attend-absent  .info-chip-icon { background:#fee2e2; color:#dc2626; }
+.attend-absent  .info-chip-value { color:#dc2626; }
+.attend-late    { background:#fffbeb; border-color:rgba(217,119,6,.12); }
+.attend-late    .info-chip-icon { background:#fef3c7; color:#d97706; }
+.attend-late    .info-chip-value { color:#d97706; }
+.attend-excused { background:#ecfeff; border-color:rgba(8,145,178,.12); }
+.attend-excused .info-chip-icon { background:#cffafe; color:#0891b2; }
+.attend-excused .info-chip-value { color:#0891b2; }
 
-/* آخر تقييم */
-.eval-chip { background: #faf5ff; border-color: rgba(124,58,237,.1); }
-.eval-chip .info-chip-icon { background: #ede9fe; color: #7c3aed; }
+/* rating chips */
+.rating-excellent { background:#f0fdf4; border-color:rgba(22,163,74,.15); }
+.rating-excellent .info-chip-icon { background:#dcfce7; color:#16a34a; }
+.rating-excellent .info-chip-value { color:#16a34a; }
+.rating-good      { background:#f0f9ff; border-color:rgba(14,165,233,.15); }
+.rating-good      .info-chip-icon { background:#e0f2fe; color:#0ea5e9; }
+.rating-good      .info-chip-value { color:#0ea5e9; }
+.rating-average   { background:#fffbeb; border-color:rgba(217,119,6,.12); }
+.rating-average   .info-chip-icon { background:#fef3c7; color:#d97706; }
+.rating-average   .info-chip-value { color:#d97706; }
+.rating-weak      { background:#fff1f2; border-color:rgba(220,38,38,.12); }
+.rating-weak      .info-chip-icon { background:#fee2e2; color:#dc2626; }
+.rating-weak      .info-chip-value { color:#dc2626; }
 
-/* متابعات */
-.followup-list { display: flex; flex-direction: column; gap: .5rem; }
+/* شارات التميز */
+.badge-distinguished {
+    background:#fef3c7; color:#b45309; border:1px solid rgba(180,83,9,.15);
+    border-radius:20px; padding:.25rem .85rem; font-size:.78rem; font-weight:700;
+    display:inline-flex; align-items:center; gap:.35rem;
+}
+.badge-attention {
+    background:#fee2e2; color:#dc2626; border:1px solid rgba(220,38,38,.15);
+    border-radius:20px; padding:.25rem .85rem; font-size:.78rem; font-weight:700;
+    display:inline-flex; align-items:center; gap:.35rem;
+}
+
+/* المتابعات */
 .followup-item {
-    background: #f8fafc; border: 1px solid rgba(15,23,42,.07);
-    border-radius: 11px; padding: .6rem .9rem;
-    display: flex; align-items: flex-start; gap: .65rem;
+    background:#f8fafc; border:1px solid rgba(15,23,42,.07);
+    border-radius:12px; padding:.75rem 1rem; margin-bottom:.5rem;
+    border-right:3px solid #01696f;
 }
-.followup-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #01696f; flex-shrink: 0; margin-top: .35rem;
+.followup-date { font-size:.75rem; font-weight:700; color:#01696f; margin-bottom:.4rem; display:flex; align-items:center; gap:.35rem; }
+.followup-row  { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.4rem; }
+.followup-lbl  { font-size:.72rem; font-weight:700; color:#94a3b8; margin-bottom:.2rem; }
+.followup-val  { font-size:.83rem; color:#1e293b; line-height:1.5; }
+.followup-val.empty { color:#94a3b8; font-style:italic; }
+.followup-note {
+    margin-top:.4rem; font-size:.82rem; color:#475569;
+    background:#fef3c7; border-radius:8px; padding:.4rem .7rem;
+    border:1px solid rgba(217,119,6,.15); display:flex; gap:.4rem;
 }
-.followup-date { font-size: .75rem; font-weight: 700; color: #64748b; margin-bottom: .15rem; }
-.followup-note { font-size: .82rem; color: #475569; line-height: 1.4; }
+.followup-note i { color:#d97706; flex-shrink:0; }
 
-/* حالة فارغة */
+/* بطاقة النص العام */
+.notes-card {
+    background:#f0fdf4; border:1px solid rgba(22,163,74,.15);
+    border-radius:11px; padding:.7rem 1rem;
+    font-size:.85rem; color:#166534; line-height:1.6;
+    display:flex; gap:.5rem; margin-top:.65rem;
+}
+.notes-card i { color:#16a34a; flex-shrink:0; }
+
+/* empty small */
+.mini-empty {
+    text-align:center; padding:1.5rem 1rem;
+    background:#f8fafc; border-radius:12px;
+    font-size:.85rem; color:#94a3b8;
+}
+.mini-empty i { font-size:1.4rem; display:block; margin-bottom:.4rem; }
+
+/* empty state */
 .par-empty {
-    text-align: center; padding: 4rem 1.5rem;
-    background: #fff; border: 1px solid rgba(15,23,42,.08);
-    border-radius: 20px; box-shadow: 0 4px 20px rgba(15,23,42,.04);
+    text-align:center; padding:4rem 1.5rem;
+    background:#fff; border:1px solid rgba(15,23,42,.08);
+    border-radius:20px; box-shadow:0 4px 20px rgba(15,23,42,.04);
 }
 .par-empty-icon {
-    width: 72px; height: 72px; margin: 0 auto 1.1rem;
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    width:72px; height:72px; margin:0 auto 1.1rem;
+    background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+    border-radius:20px; display:flex; align-items:center; justify-content:center;
 }
-.par-empty-icon i { font-size: 2rem; color: #16a34a; }
-.par-empty h4 { font-weight: 800; color: #1e293b; margin-bottom: .5rem; }
-.par-empty p  { color: #64748b; font-size: .9rem; margin-bottom: 1.25rem; }
+.par-empty-icon i { font-size:2rem; color:#16a34a; }
+.par-empty h4  { font-weight:800; color:#1e293b; margin-bottom:.5rem; }
+.par-empty p   { color:#64748b; font-size:.9rem; margin-bottom:1.25rem; }
 
-@media (max-width: 767.98px) {
-    .par-hero { padding: 1.5rem 1.25rem 0; border-radius: 16px; }
-    .par-hero h1 { font-size: 1.25rem; }
-    .child-card-header { padding: 1rem 1.1rem; }
-    .child-card-body { padding: 1rem 1.1rem; }
+@media (max-width:767.98px) {
+    .par-hero { padding:1.5rem 1.25rem 0; border-radius:16px; }
+    .par-hero h1 { font-size:1.25rem; }
+    .followup-row { grid-template-columns:1fr; }
 }
 </style>
 
-<!-- ══ هيدر الترحيب ══ -->
+<!-- ══ هيدر ══ -->
 <div class="par-hero">
     <div class="par-hero-body">
         <div>
@@ -164,7 +218,8 @@
         </a>
     </div>
     <div class="par-hero-wave">
-        <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="50">
+        <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg"
+             preserveAspectRatio="none" height="50">
             <path d="M0 50 L0 30 Q360 0 720 25 Q1080 50 1440 20 L1440 50 Z" fill="#f1f5f9"/>
         </svg>
     </div>
@@ -174,117 +229,228 @@
 {% if children_data %}
 <div class="row g-4">
     {% for item in children_data %}
+    {% with child=item.student eval=item.last_eval attend=item.today_attend %}
     <div class="col-12 col-lg-6">
         <div class="child-card">
 
             <!-- رأس البطاقة -->
             <div class="child-card-header">
-                <div class="child-avatar">{{ item.student.first_name|first }}</div>
+                <div class="child-avatar">{{ child.first_name|first }}</div>
                 <div class="flex-grow-1 min-w-0">
-                    <div class="child-name">{{ item.student.get_full_name }}</div>
+                    <div class="child-name">{{ child.get_full_name }}</div>
                     <div class="child-hall">
                         <i class="bi bi-building"></i>
-                        {% if item.student.hall %}{{ item.student.hall.name }}{% else %}لم يتم التسكين بعد{% endif %}
+                        {% if child.hall %}{{ child.hall.name }}{% else %}لم يتم التسكين بعد{% endif %}
                     </div>
                 </div>
+
+                {# ← شارة السور #}
                 <div class="child-surah-badge">
                     <i class="bi bi-book-fill"></i>{{ item.surahs_count }} سورة
                 </div>
+
+                {# ← زر التقرير — داخل الهيدر مباشرة #}
+                <a href="{% url 'dashboard:student_report' child.pk %}"
+                style="background:rgba(255,255,255,.18); color:#fff;
+                        border:1.5px solid rgba(255,255,255,.3); border-radius:10px;
+                        padding:.35rem .85rem; font-size:.78rem; font-weight:800;
+                        text-decoration:none; display:flex; align-items:center; gap:.35rem;
+                        white-space:nowrap; transition:background .15s; flex-shrink:0;"
+                onmouseover="this.style.background='rgba(255,255,255,.30)'"
+                onmouseout="this.style.background='rgba(255,255,255,.18)'"
+                title="عرض التقرير الكامل">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span class="d-none d-sm-inline">التقرير</span>
+                </a>
             </div>
 
-            <!-- جسم البطاقة -->
-            <div class="child-card-body">
+            <!-- تابز -->
+            <div class="child-tabs" id="tabs-{{ forloop.counter }}">
+                <button class="child-tab active"
+                        onclick="switchTab({{ forloop.counter }}, 'attend')">
+                    <i class="bi bi-calendar-check"></i>الحضور
+                </button>
+                <button class="child-tab"
+                        onclick="switchTab({{ forloop.counter }}, 'eval')">
+                    <i class="bi bi-star"></i>التقييم
+                    {% if eval.is_distinguished %}
+                    <span style="width:7px;height:7px;background:#d97706;border-radius:50%;display:inline-block;"></span>
+                    {% endif %}
+                </button>
+                <button class="child-tab"
+                        onclick="switchTab({{ forloop.counter }}, 'followup')">
+                    <i class="bi bi-journal-text"></i>المتابعة
+                    {% if item.followups %}<span style="width:7px;height:7px;background:#01696f;border-radius:50%;display:inline-block;"></span>{% endif %}
+                </button>
+            </div>
 
-                <!-- حضور اليوم -->
-                <div>
-                    <div class="child-section-lbl"><i class="bi bi-calendar-check"></i>حضور اليوم</div>
-                    {% if item.today_attend %}
-                        {% with s=item.today_attend.status %}
-                        <div class="info-chip attend-{{ s }}">
-                            <div class="info-chip-icon">
-                                {% if s == 'present' %}<i class="bi bi-check-circle-fill"></i>
-                                {% elif s == 'absent'  %}<i class="bi bi-x-circle-fill"></i>
-                                {% elif s == 'late'    %}<i class="bi bi-clock-fill"></i>
-                                {% else %}<i class="bi bi-shield-fill-check"></i>{% endif %}
-                            </div>
-                            <div>
-                                <div class="info-chip-label">الحالة</div>
-                                <div class="info-chip-value">{{ item.today_attend.get_status_display }}</div>
-                            </div>
-                            {% if item.today_attend.arrival_time %}
-                            <div class="me-auto ms-2" style="font-size:.8rem; color:#64748b;">
-                                <i class="bi bi-clock me-1"></i>{{ item.today_attend.arrival_time|time:"H:i" }}
-                            </div>
+            <!-- ══ تاب 1: الحضور ══ -->
+            <div class="child-tab-content active" id="tab-{{ forloop.counter }}-attend">
+                {% if attend %}
+                    {% with s=attend.status %}
+                    <div class="info-chip attend-{{ s }}">
+                        <div class="info-chip-icon">
+                            {% if s == 'present'  %}<i class="bi bi-check-circle-fill"></i>
+                            {% elif s == 'absent'  %}<i class="bi bi-x-circle-fill"></i>
+                            {% elif s == 'late'    %}<i class="bi bi-clock-fill"></i>
+                            {% else                %}<i class="bi bi-shield-fill-check"></i>{% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="info-chip-label">حضور اليوم — {{ today }}</div>
+                            <div class="info-chip-value">{{ attend.get_status_display }}</div>
+                        </div>
+                        {% if attend.check_in %}
+                        <div style="font-size:.8rem;color:#64748b;white-space:nowrap;">
+                            <i class="bi bi-clock me-1"></i>{{ attend.arrival_time|time:"H:i" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if attend.notes %}
+                    <div class="notes-card">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span>{{ attend.notes }}</span>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <div class="info-chip">
+                        <div class="info-chip-icon" style="background:#f1f5f9;color:#94a3b8;">
+                            <i class="bi bi-dash-circle"></i>
+                        </div>
+                        <div>
+                            <div class="info-chip-label">حضور اليوم — {{ today }}</div>
+                            <div class="info-chip-value muted">لم يُسجَّل بعد</div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ══ تاب 2: التقييم ══ -->
+            <div class="child-tab-content" id="tab-{{ forloop.counter }}-eval">
+                {% if eval %}
+
+                    <!-- شارات التميز -->
+                    {% if eval.is_distinguished or eval.needs_attention %}
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
+                        {% if eval.is_distinguished %}
+                        <span class="badge-distinguished"><i class="bi bi-star-fill"></i>طالب متميز</span>
+                        {% endif %}
+                        {% if eval.needs_attention %}
+                        <span class="badge-attention"><i class="bi bi-exclamation-triangle-fill"></i>يحتاج متابعة</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- تقييم الحفظ -->
+                    <div class="info-chip rating-{{ eval.memorization_rating }}">
+                        <div class="info-chip-icon">
+                            {% if eval.memorization_rating == 'excellent' %}<i class="bi bi-award-fill"></i>
+                            {% elif eval.memorization_rating == 'good'    %}<i class="bi bi-hand-thumbs-up-fill"></i>
+                            {% elif eval.memorization_rating == 'average' %}<i class="bi bi-dash-circle-fill"></i>
+                            {% else                                        %}<i class="bi bi-exclamation-triangle-fill"></i>
                             {% endif %}
                         </div>
-                        {% endwith %}
-                    {% else %}
-                        <div class="info-chip attend-none">
-                            <div class="info-chip-icon"><i class="bi bi-dash-circle"></i></div>
-                            <div>
-                                <div class="info-chip-label">الحالة</div>
-                                <div class="info-chip-value muted">لم يُسجَّل بعد</div>
-                            </div>
+                        <div class="flex-grow-1">
+                            <div class="info-chip-label">تقييم الحفظ — {{ eval.date }}</div>
+                            <div class="info-chip-value">{{ eval.get_memorization_rating_display }}</div>
                         </div>
-                    {% endif %}
-                </div>
+                    </div>
 
-                <!-- آخر تقييم -->
-                <div>
-                    <div class="child-section-lbl"><i class="bi bi-star"></i>آخر تقييم</div>
-                    {% if item.last_eval %}
-                        <div class="info-chip eval-chip">
-                            <div class="info-chip-icon"><i class="bi bi-award-fill"></i></div>
-                            <div>
-                                <div class="info-chip-label">{{ item.last_eval.date }}</div>
-                                <div class="info-chip-value">{{ item.last_eval.score|default:"تم التقييم" }}</div>
+                    <!-- تقييم السلوك والالتزام -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem;">
+                        <div class="info-chip rating-{{ eval.behavior_rating }}" style="margin-bottom:0;">
+                            <div class="info-chip-icon" style="width:28px;height:28px;font-size:.8rem;">
+                                <i class="bi bi-emoji-smile-fill"></i>
                             </div>
-                            {% if item.last_eval.surah %}
-                            <div class="me-auto ms-2" style="font-size:.8rem; color:#7c3aed; font-weight:700;">
-                                <i class="bi bi-book me-1"></i>{{ item.last_eval.surah }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="info-chip">
-                            <div class="info-chip-icon" style="background:#f1f5f9; color:#94a3b8;"><i class="bi bi-award"></i></div>
                             <div>
-                                <div class="info-chip-label">الحالة</div>
-                                <div class="info-chip-value muted">لا يوجد تقييم بعد</div>
+                                <div class="info-chip-label">السلوك</div>
+                                <div class="info-chip-value" style="font-size:.82rem;">{{ eval.get_behavior_rating_display }}</div>
                             </div>
                         </div>
-                    {% endif %}
-                </div>
+                        <div class="info-chip rating-{{ eval.commitment_rating }}" style="margin-bottom:0;">
+                            <div class="info-chip-icon" style="width:28px;height:28px;font-size:.8rem;">
+                                <i class="bi bi-check2-circle"></i>
+                            </div>
+                            <div>
+                                <div class="info-chip-label">الالتزام</div>
+                                <div class="info-chip-value" style="font-size:.82rem;">{{ eval.get_commitment_rating_display }}</div>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- المتابعات -->
-                <div class="flex-grow-1">
-                    <div class="child-section-lbl"><i class="bi bi-journal-text"></i>آخر المتابعات</div>
-                    {% if item.followups %}
-                        <div class="followup-list">
-                            {% for followup in item.followups %}
-                            <div class="followup-item">
-                                <div class="followup-dot"></div>
-                                <div>
-                                    <div class="followup-date">{{ followup.date }}</div>
-                                    <div class="followup-note">{{ followup.notes|default:"لا توجد ملاحظات" }}</div>
+                    <!-- ملاحظات الحفظ -->
+                    {% if eval.memorization_notes %}
+                    <div class="notes-card" style="margin-top:.6rem;">
+                        <i class="bi bi-journal-text"></i>
+                        <div>
+                            <div style="font-size:.72rem;font-weight:700;color:#166534;margin-bottom:.15rem;">ملاحظات الحفظ</div>
+                            {{ eval.memorization_notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- ملاحظات لولي الأمر -->
+                    {% if eval.general_notes %}
+                    <div style="background:#fffbeb;border:1px solid rgba(217,119,6,.15);border-radius:11px;
+                                padding:.65rem 1rem;margin-top:.55rem;display:flex;gap:.5rem;
+                                font-size:.84rem;color:#92400e;line-height:1.6;">
+                        <i class="bi bi-megaphone-fill" style="color:#d97706;flex-shrink:0;"></i>
+                        <div>
+                            <div style="font-size:.72rem;font-weight:700;margin-bottom:.15rem;">رسالة من المعلم</div>
+                            {{ eval.general_notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="mini-empty">
+                        <i class="bi bi-award"></i>
+                        لا يوجد تقييم مسجّل بعد
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ══ تاب 3: المتابعة اليومية ══ -->
+            <div class="child-tab-content" id="tab-{{ forloop.counter }}-followup">
+                {% if item.followups %}
+                    {% for fu in item.followups %}
+                    <div class="followup-item">
+                        <div class="followup-date">
+                            <i class="bi bi-calendar3-event"></i>{{ fu.date }}
+                        </div>
+                        <div class="followup-row">
+                            <div>
+                                <div class="followup-lbl"><i class="bi bi-journal-check me-1"></i>ما تم تناوله</div>
+                                <div class="followup-val {% if not fu.homework %}empty{% endif %}">
+                                    {{ fu.homework|default:"لم يُسجَّل" }}
                                 </div>
                             </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="info-chip">
-                            <div class="info-chip-icon" style="background:#f1f5f9; color:#94a3b8;"><i class="bi bi-journal"></i></div>
                             <div>
-                                <div class="info-chip-label">الحالة</div>
-                                <div class="info-chip-value muted">لا توجد متابعات حديثة</div>
+                                <div class="followup-lbl"><i class="bi bi-bookmark-star me-1"></i>المطلوب حفظه</div>
+                                <div class="followup-val {% if not fu.memorization_task %}empty{% endif %}">
+                                    {{ fu.memorization_task|default:"لا يوجد" }}
+                                </div>
                             </div>
                         </div>
-                    {% endif %}
-                </div>
-
+                        {% if fu.extra_notes %}
+                        <div class="followup-note">
+                            <i class="bi bi-chat-dots-fill"></i>
+                            <span>{{ fu.extra_notes }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="mini-empty">
+                        <i class="bi bi-journal"></i>
+                        لا توجد متابعات حديثة لهذه القاعة
+                    </div>
+                {% endif %}
             </div>
+
         </div>
     </div>
+    {% endwith %}
     {% endfor %}
 </div>
 
@@ -299,7 +465,29 @@
 </div>
 {% endif %}
 
+<script>
+function switchTab(cardId, tabName) {
+    // إخفاء كل التابز في هذه البطاقة
+    ['attend', 'eval', 'followup'].forEach(t => {
+        const content = document.getElementById(`tab-${cardId}-${t}`);
+        if (content) content.classList.remove('active');
+    });
+
+    // إزالة active من كل الأزرار
+    const tabs = document.querySelectorAll(`#tabs-${cardId} .child-tab`);
+    tabs.forEach(btn => btn.classList.remove('active'));
+
+    // تفعيل التاب المطلوب
+    const activeContent = document.getElementById(`tab-${cardId}-${tabName}`);
+    if (activeContent) activeContent.classList.add('active');
+
+    // تفعيل الزر المطلوب
+    const activeIndex = ['attend', 'eval', 'followup'].indexOf(tabName);
+    if (tabs[activeIndex]) tabs[activeIndex].classList.add('active');
+}
+</script>
 {% endblock %}
+
 
 
 {% comment %} {% extends "base.html" %}

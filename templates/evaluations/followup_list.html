@@ -1,191 +1,332 @@
 {% extends "base.html" %}
-
 {% block title %}متابعات القاعة | {{ SITE_NAME }}{% endblock %}
 {% block page_title %}متابعات القاعة{% endblock %}
 
 {% block content %}
-<div class="page-card p-4 mb-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+<style>
+/* ══ هيدر ══ */
+.fl-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.fl-hero-left { display: flex; align-items: center; gap: 1rem; }
+.fl-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.fl-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.fl-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-fl {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-fl:hover { background: rgba(255,255,255,.28); color: #fff; }
+.btn-fl-primary { background: rgba(1,105,111,.5); border-color: rgba(1,105,111,.6); }
+.btn-fl-primary:hover { background: rgba(1,105,111,.75); }
+
+/* ══ بطاقات المتابعة ══ */
+.fl-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04); margin-bottom: .85rem;
+    transition: box-shadow .15s;
+}
+.fl-card:hover { box-shadow: 0 4px 20px rgba(15,23,42,.08); }
+
+.fl-card-header {
+    padding: .75rem 1.1rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.07);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+}
+.fl-date-badge {
+    background: #1e293b; color: #fff; border-radius: 20px;
+    padding: .2rem .85rem; font-size: .8rem; font-weight: 700;
+    display: flex; align-items: center; gap: .35rem;
+}
+.fl-date-badge.today-badge { background: #01696f; }
+.fl-author {
+    font-size: .78rem; color: #64748b; font-weight: 600;
+    display: flex; align-items: center; gap: .35rem;
+}
+.fl-edit-btn {
+    background: #f1f5f9; color: #64748b; border-radius: 8px;
+    padding: .2rem .65rem; font-size: .78rem; font-weight: 700;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .3rem;
+    transition: background .15s; border: 1px solid #e2e8f0;
+}
+.fl-edit-btn:hover { background: #e2e8f0; color: #334155; }
+
+.fl-card-body { padding: .9rem 1.1rem; }
+.fl-sections { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.fl-section { }
+.fl-section-label {
+    font-size: .72rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .05em;
+    margin-bottom: .35rem; display: flex; align-items: center; gap: .3rem;
+}
+.fl-section-label i { font-size: .8rem; }
+.fl-section-text {
+    font-size: .88rem; color: #1e293b; line-height: 1.65;
+    background: #f8fafc; border-radius: 9px; padding: .55rem .75rem;
+    border: 1px solid rgba(15,23,42,.06); min-height: 44px;
+}
+.fl-section-text.empty { color: #94a3b8; font-style: italic; }
+.fl-notes-full {
+    margin-top: .65rem; font-size: .85rem; color: #475569;
+    background: #fef3c7; border-radius: 9px; padding: .55rem .85rem;
+    border: 1px solid rgba(217,119,6,.15); display: flex; gap: .5rem;
+    line-height: 1.6;
+}
+.fl-notes-full i { color: #d97706; flex-shrink: 0; margin-top: .1rem; }
+
+/* جدول ديسكتوب */
+.fl-table thead th {
+    background: #f8fafc; font-size: .75rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .04em;
+    padding: .65rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.fl-table tbody td {
+    padding: .6rem 1rem; vertical-align: top;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .88rem;
+}
+.fl-table tbody tr:last-child td { border-bottom: none; }
+.fl-table tbody tr:hover { background: #f8fafc; }
+
+/* wrapper */
+.fl-wrapper {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.fl-wrapper-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.fl-wrapper-title {
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+}
+.fl-wrapper-title i { color: #01696f; }
+.fl-count-badge {
+    background: #1e293b; color: #fff; border-radius: 30px;
+    padding: .15rem .75rem; font-size: .78rem; font-weight: 700;
+}
+
+/* عرض بديل كاردات -->
+.fl-cards-view { padding: 1rem; }
+
+/* empty */
+.fl-empty { text-align: center; padding: 4rem 1rem; }
+.fl-empty i { font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: .75rem; }
+.fl-empty h3 { font-size: 1rem; font-weight: 800; color: #475569; margin-bottom: .4rem; }
+.fl-empty p  { font-size: .85rem; color: #94a3b8; margin: 0; }
+
+/* toggle view */
+.view-toggle { display: flex; gap: .35rem; }
+.vt-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #e2e8f0;
+    background: #fff; color: #94a3b8; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; transition: all .15s; font-size: .85rem;
+}
+.vt-btn.active, .vt-btn:hover { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+@media (max-width: 767.98px) {
+    .fl-sections { grid-template-columns: 1fr; }
+    .fl-hero { flex-direction: column; align-items: flex-start; }
+    .d-md-none-custom { display: none !important; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="fl-hero">
+    <div class="fl-hero-left">
+        <div class="fl-hero-icon"><i class="bi bi-journal-text"></i></div>
         <div>
-            <h2 class="fw-bold mb-2">{{ hall.name }}</h2>
-            <p class="text-muted mb-0">آخر المتابعات اليومية المسجلة للقاعة.</p>
+            <h1>متابعات {{ hall.name }}</h1>
+            <p>آخر {{ followups|length }} متابعة يومية مسجّلة للقاعة</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.id }}" class="btn btn-primary">إضافة متابعة</a>
-            <a href="{% url 'halls:detail' hall.pk %}" class="btn btn-outline-secondary">تفاصيل القاعة</a>
-        </div>
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.id }}" class="btn-fl btn-fl-primary">
+            <i class="bi bi-plus-circle-fill"></i>إضافة متابعة
+        </a>
+        <a href="{% url 'halls:detail' hall.pk %}" class="btn-fl">
+            <i class="bi bi-building"></i>تفاصيل القاعة
+        </a>
     </div>
 </div>
 
-<div class="page-card p-0 overflow-hidden">
+<!-- ══ القائمة ══ -->
+<div class="fl-wrapper">
+    <div class="fl-wrapper-header">
+        <div class="fl-wrapper-title">
+            <i class="bi bi-clock-history"></i>
+            سجل المتابعات
+            <span class="fl-count-badge">{{ followups|length }}</span>
+        </div>
+        <div class="view-toggle">
+            <button class="vt-btn active" id="btnCards" onclick="setView('cards')" title="عرض بطاقات">
+                <i class="bi bi-grid-3x2-gap"></i>
+            </button>
+            <button class="vt-btn" id="btnTable" onclick="setView('table')" title="عرض جدول">
+                <i class="bi bi-table"></i>
+            </button>
+        </div>
+    </div>
+
     {% if followups %}
+
+    <!-- ══ عرض البطاقات ══ -->
+    <div id="viewCards" class="fl-cards-view">
+        {% for followup in followups %}
+        <div class="fl-card">
+            <div class="fl-card-header">
+                <span class="fl-date-badge {% if forloop.first %}today-badge{% endif %}">
+                    <i class="bi bi-calendar3-event"></i>
+                    {{ followup.date }}
+                    {% if forloop.first %}<span style="opacity:.8; font-weight:500;">— الأحدث</span>{% endif %}
+                </span>
+                <div style="display:flex; align-items:center; gap:.65rem;">
+                    <span class="fl-author">
+                        <i class="bi bi-person-circle"></i>
+                        {{ followup.created_by.get_full_name|default:followup.created_by.username }}
+                    </span>
+                    <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.id }}"
+                       class="fl-edit-btn">
+                        <i class="bi bi-pencil"></i>تعديل
+                    </a>
+                </div>
+            </div>
+            <div class="fl-card-body">
+                <div class="fl-sections">
+                    <div class="fl-section">
+                        <div class="fl-section-label">
+                            <i class="bi bi-journal-check"></i>ما تم تناوله
+                        </div>
+                        <div class="fl-section-text {% if not followup.homework %}empty{% endif %}">
+                            {{ followup.homework|default:"لم يُسجَّل" }}
+                        </div>
+                    </div>
+                    <div class="fl-section">
+                        <div class="fl-section-label">
+                            <i class="bi bi-bookmark-star"></i>المطلوب حفظه
+                        </div>
+                        <div class="fl-section-text {% if not followup.memorization_task %}empty{% endif %}">
+                            {{ followup.memorization_task|default:"لا يوجد" }}
+                        </div>
+                    </div>
+                </div>
+                {% if followup.extra_notes %}
+                <div class="fl-notes-full">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span>{{ followup.extra_notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ══ عرض الجدول ══ -->
+    <div id="viewTable" style="display:none;">
         <div class="table-responsive">
-            <table class="table table-modern align-middle mb-0">
+            <table class="table fl-table mb-0">
                 <thead>
                     <tr>
                         <th>التاريخ</th>
-                        <th>الواجب</th>
+                        <th>ما تم تناوله</th>
                         <th>المطلوب حفظه</th>
                         <th>ملاحظات</th>
                         <th>الكاتب</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for followup in followups %}
-                        <tr>
-                            <td>{{ followup.date }}</td>
-                            <td>{{ followup.homework }}</td>
-                            <td>{{ followup.memorization_task|default:"—" }}</td>
-                            <td>{{ followup.extra_notes|default:"—" }}</td>
-                            <td>{{ followup.created_by.get_full_name|default:followup.created_by.username }}</td>
-                        </tr>
+                    <tr>
+                        <td>
+                            <span style="{% if forloop.first %}color:#01696f; font-weight:700;{% else %}font-weight:600;{% endif %} font-size:.85rem; white-space:nowrap;">
+                                {% if forloop.first %}<i class="bi bi-circle-fill me-1" style="font-size:.5rem; vertical-align:middle;"></i>{% endif %}
+                                {{ followup.date }}
+                            </span>
+                        </td>
+                        <td style="max-width:200px;">
+                            <span style="font-size:.85rem; color:#1e293b;">
+                                {{ followup.homework|truncatechars:60|default:"—" }}
+                            </span>
+                        </td>
+                        <td style="max-width:180px;">
+                            <span style="font-size:.85rem; color:#475569;">
+                                {{ followup.memorization_task|truncatechars:50|default:"—" }}
+                            </span>
+                        </td>
+                        <td style="max-width:160px;">
+                            <span style="font-size:.82rem; color:#64748b;">
+                                {{ followup.extra_notes|truncatechars:45|default:"—" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size:.82rem; color:#64748b; white-space:nowrap;">
+                                {{ followup.created_by.get_full_name|default:followup.created_by.username }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.id }}"
+                               class="fl-edit-btn">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+
     {% else %}
-        <div class="empty-state p-5 text-center">لا توجد متابعات لهذه القاعة بعد.</div>
+    <div class="fl-empty">
+        <i class="bi bi-journal-x"></i>
+        <h3>لا توجد متابعات بعد</h3>
+        <p>ابدأ بتسجيل أول متابعة يومية لهذه القاعة</p>
+        <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.id }}"
+           style="display:inline-flex; align-items:center; gap:.4rem; margin-top:.85rem;
+                  background:#01696f; color:#fff; border-radius:10px; padding:.55rem 1.25rem;
+                  font-weight:700; font-size:.88rem; text-decoration:none;">
+            <i class="bi bi-plus-circle-fill"></i>إضافة أول متابعة
+        </a>
+    </div>
     {% endif %}
 </div>
+
+<script>
+function setView(mode) {
+    const cards = document.getElementById('viewCards');
+    const table = document.getElementById('viewTable');
+    const btnC  = document.getElementById('btnCards');
+    const btnT  = document.getElementById('btnTable');
+
+    if (mode === 'cards') {
+        cards.style.display = ''; table.style.display = 'none';
+        btnC.classList.add('active'); btnT.classList.remove('active');
+        localStorage.setItem('fl_view', 'cards');
+    } else {
+        cards.style.display = 'none'; table.style.display = '';
+        btnT.classList.add('active'); btnC.classList.remove('active');
+        localStorage.setItem('fl_view', 'table');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('fl_view') || 'cards';
+    setView(saved);
+});
+</script>
 {% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% block page_title %}متابعات {{ hall.name }}{% endblock %}
-
-{% block content %}
-
-<!-- هيدر الصفحة -->
-<div class="card stat-card mb-4">
-    <div class="card-body d-flex align-items-center justify-content-between
-                flex-wrap gap-2 py-3">
-        <div>
-            <div class="fw-bold">
-                <i class="fas fa-history text-primary me-2"></i>
-                متابعات {{ hall.name }}
-            </div>
-            <div class="d-flex flex-wrap gap-1 mt-1">
-                {% if hall.get_age_group_display %}
-                <span class="badge bg-info bg-opacity-75">
-                    {{ hall.get_age_group_display }}
-                </span>
-                {% endif %}
-                <span class="badge bg-secondary bg-opacity-75">
-                    آخر 30 متابعة
-                </span>
-            </div>
-        </div>
-        <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}"
-           class="btn btn-primary btn-sm px-3">
-            <i class="fas fa-plus me-1"></i> متابعة جديدة
-        </a>
-    </div>
-</div>
-
-{% if followups %}
-
-<!-- عداد -->
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <span class="text-muted small">
-        <i class="fas fa-list me-1"></i>
-        {{ followups|length }} متابعة مسجّلة
-    </span>
-</div>
-
-<!-- قائمة المتابعات -->
-<div class="d-flex flex-column gap-3">
-    {% for followup in followups %}
-    <div class="card stat-card">
-        <div class="card-body">
-
-            <!-- تاريخ + كاتب + أزرار -->
-            <div class="d-flex align-items-start justify-content-between
-                        flex-wrap gap-2 mb-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle d-flex align-items-center
-                                justify-content-center bg-primary bg-opacity-10
-                                flex-shrink-0"
-                         style="width:42px;height:42px;">
-                        <i class="fas fa-calendar-day text-primary"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-primary">
-                            {{ followup.date }}
-                        </div>
-                        <div class="text-muted small mt-1">
-                            <i class="fas fa-user-edit me-1"
-                               style="font-size:.7rem;"></i>
-                            {{ followup.created_by.get_full_name }}
-                        </div>
-                    </div>
-                </div>
-                <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}&edit={{ followup.pk }}"
-                   class="btn btn-sm btn-outline-secondary flex-shrink-0">
-                    <i class="fas fa-edit me-1"></i> تعديل
-                </a>
-            </div>
-
-            <!-- تفاصيل المتابعة -->
-            <div class="d-flex flex-column gap-2">
-
-                <!-- الواجب -->
-                <div class="rounded-3 bg-primary bg-opacity-10 px-3 py-2">
-                    <div class="small fw-bold text-primary mb-1">
-                        <i class="fas fa-book me-1"></i>
-                        الواجب
-                    </div>
-                    <div class="small">{{ followup.homework }}</div>
-                </div>
-
-                <!-- الحفظ -->
-                {% if followup.memorization_task %}
-                <div class="rounded-3 bg-success bg-opacity-10 px-3 py-2">
-                    <div class="small fw-bold text-success mb-1">
-                        <i class="fas fa-book-open me-1"></i>
-                        المطلوب حفظه
-                    </div>
-                    <div class="small text-success">
-                        {{ followup.memorization_task }}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- ملاحظات -->
-                {% if followup.extra_notes %}
-                <div class="rounded-3 bg-info bg-opacity-10 px-3 py-2">
-                    <div class="small fw-bold text-info mb-1">
-                        <i class="fas fa-sticky-note me-1"></i>
-                        ملاحظات إضافية
-                    </div>
-                    <div class="small text-muted">{{ followup.extra_notes }}</div>
-                </div>
-                {% endif %}
-
-            </div>
-
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
-{% else %}
-
-<!-- حالة فارغة -->
-<div class="card stat-card">
-    <div class="card-body text-center py-5 text-muted">
-        <div class="rounded-circle d-inline-flex align-items-center
-                    justify-content-center bg-primary bg-opacity-10 mb-3"
-             style="width:72px;height:72px;">
-            <i class="fas fa-tasks fa-2x text-primary"></i>
-        </div>
-        <div class="fw-bold mb-1">لا توجد متابعات بعد</div>
-        <div class="small mb-4">ابدأ بتسجيل أول متابعة لهذه القاعة</div>
-        <a href="{% url 'evaluations:add_followup' %}?hall={{ hall.pk }}"
-           class="btn btn-primary px-4">
-            <i class="fas fa-plus me-1"></i> إضافة متابعة
-        </a>
-    </div>
-</div>
-
-{% endif %}
-
-{% endblock %} {% endcomment %}

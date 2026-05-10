@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block title %}تقرير {{ child.get_full_name }} | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تقرير الطالب{% endblock %}
+
+{% block content %}
+<style>
+.rp-hero {
+    background: linear-gradient(135deg, #01696f 0%, #059669 100%);
+    border-radius: 18px; padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.rp-hero-left { display: flex; align-items: center; gap: 1rem; }
+.rp-avatar {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: rgba(255,255,255,.2); display: flex; align-items: center;
+    justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fff;
+    border: 2px solid rgba(255,255,255,.25); flex-shrink: 0;
+}
+.rp-hero h1 { font-size: 1.15rem; font-weight: 900; margin: 0 0 .25rem; }
+.rp-hero p  { font-size: .85rem; opacity: .8; margin: 0; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.btn-rp-back {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.3); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-rp-back:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+/* بطاقات الإحصاء */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1.1rem; }
+.stat-mini {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .9rem 1rem;
+    box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    text-align: center;
+}
+.stat-mini-val  { font-size: 1.6rem; font-weight: 900; line-height: 1.1; }
+.stat-mini-lbl  { font-size: .75rem; font-weight: 700; color: #64748b; margin-top: .2rem; }
+
+/* section card */
+.rp-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04); margin-bottom: 1.1rem;
+}
+.rp-card-header {
+    padding: .8rem 1.2rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+}
+.rp-card-header i { color: #01696f; }
+.rp-card-body { padding: 1.1rem 1.2rem; }
+
+/* progress bar */
+.rp-progress-row { display: flex; flex-direction: column; gap: .6rem; }
+.rp-prog-item { }
+.rp-prog-head {
+    display: flex; justify-content: space-between;
+    font-size: .82rem; font-weight: 700; margin-bottom: .3rem;
+}
+.rp-prog-bar-bg {
+    height: 10px; background: #f1f5f9; border-radius: 30px; overflow: hidden;
+}
+.rp-prog-bar-fill { height: 100%; border-radius: 30px; transition: width .4s; }
+
+/* جدول التقييمات */
+.rp-table thead th {
+    background: #f8fafc; font-size: .75rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; padding: .6rem .9rem;
+    border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.rp-table tbody td {
+    padding: .55rem .9rem; font-size: .85rem;
+    border-bottom: 1px solid rgba(15,23,42,.05); vertical-align: middle;
+}
+.rp-table tbody tr:last-child td { border-bottom: none; }
+.rp-table tbody tr:hover { background: #f8fafc; }
+
+/* rating badge */
+.rb { border-radius: 20px; padding: .2rem .7rem; font-size: .75rem; font-weight: 700; }
+.rb-excellent { background: #dcfce7; color: #16a34a; }
+.rb-good      { background: #e0f2fe; color: #0ea5e9; }
+.rb-average   { background: #fef3c7; color: #d97706; }
+.rb-weak      { background: #fee2e2; color: #dc2626; }
+
+/* متابعة */
+.fu-item {
+    border-right: 3px solid #01696f; padding: .65rem .9rem;
+    background: #f8fafc; border-radius: 0 10px 10px 0;
+    margin-bottom: .5rem;
+}
+.fu-date { font-size: .75rem; font-weight: 700; color: #01696f; margin-bottom: .35rem; }
+.fu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.fu-lbl  { font-size: .7rem; font-weight: 700; color: #94a3b8; margin-bottom: .15rem; }
+.fu-val  { font-size: .82rem; color: #1e293b; line-height: 1.45; }
+.fu-val.empty { color: #94a3b8; font-style: italic; }
+.fu-notes {
+    margin-top: .4rem; font-size: .8rem; color: #92400e;
+    background: #fef3c7; border-radius: 7px; padding: .35rem .65rem;
+    display: flex; gap: .35rem;
+}
+.fu-notes i { color: #d97706; flex-shrink: 0; }
+
+/* خلاصة إجمالية */
+.summary-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;
+}
+.summary-chip {
+    border-radius: 14px; padding: 1rem; text-align: center;
+    border: 1px solid transparent;
+}
+.summary-chip-val { font-size: 1.4rem; font-weight: 900; display: block; margin-bottom: .2rem; }
+.summary-chip-lbl { font-size: .78rem; font-weight: 700; }
+
+@media (max-width: 767.98px) {
+    .stat-grid    { grid-template-columns: repeat(2, 1fr); }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .fu-grid      { grid-template-columns: 1fr; }
+    .rp-hero      { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
+<!-- ══ هيدر ══ -->
+<div class="rp-hero">
+    <div class="rp-hero-left">
+        <div class="rp-avatar">{{ child.first_name|first }}</div>
+        <div>
+            <h1>{{ child.get_full_name }}</h1>
+            <p>
+                {% if child.hall %}<span><i class="bi bi-building"></i>{{ child.hall.name }}</span>{% endif %}
+                <span><i class="bi bi-book"></i>{{ surahs_count }} سورة محفوظة</span>
+            </p>
+        </div>
+    </div>
+    <a href="{% url 'dashboard:parent' %}" class="btn-rp-back">
+        <i class="bi bi-arrow-right"></i>رجوع للوحة
+    </a>
+</div>
+
+<!-- ══ خلاصة سريعة ══ -->
+<div class="rp-card" style="margin-bottom:1.1rem;">
+    <div class="rp-card-header"><i class="bi bi-lightning-charge-fill"></i>ملخص سريع</div>
+    <div class="rp-card-body">
+        <div class="summary-grid">
+            <div class="summary-chip" style="background:#f0fdf4;border-color:rgba(22,163,74,.15);">
+                <span class="summary-chip-val" style="color:#16a34a;">{{ attend_stats.present }}</span>
+                <span class="summary-chip-lbl" style="color:#166534;">أيام الحضور</span>
+            </div>
+            <div class="summary-chip" style="background:#fff1f2;border-color:rgba(220,38,38,.12);">
+                <span class="summary-chip-val" style="color:#dc2626;">{{ attend_stats.absent }}</span>
+                <span class="summary-chip-lbl" style="color:#991b1b;">أيام الغياب</span>
+            </div>
+            <div class="summary-chip" style="background:#f5f3ff;border-color:rgba(124,58,237,.12);">
+                <span class="summary-chip-val" style="color:#7c3aed;">{{ eval_stats.total }}</span>
+                <span class="summary-chip-lbl" style="color:#5b21b6;">عدد التقييمات</span>
+            </div>
+            <div class="summary-chip" style="background:#fef3c7;border-color:rgba(217,119,6,.15);">
+                <span class="summary-chip-val" style="color:#d97706;">{{ eval_stats.distinguished }}</span>
+                <span class="summary-chip-lbl" style="color:#92400e;">مرات التميز</span>
+            </div>
+            <div class="summary-chip" style="background:#fffbeb;border-color:rgba(217,119,6,.12);">
+                <span class="summary-chip-val" style="color:#d97706;">{{ attend_stats.late }}</span>
+                <span class="summary-chip-lbl" style="color:#92400e;">أيام التأخر</span>
+            </div>
+            <div class="summary-chip" style="background:#f0f9ff;border-color:rgba(14,165,233,.15);">
+                <span class="summary-chip-val" style="color:#0ea5e9;">{{ surahs_count }}</span>
+                <span class="summary-chip-lbl" style="color:#0c4a6e;">سور محفوظة</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <!-- ══ عمود يسار: الحضور + التقييم ══ -->
+    <div class="col-12 col-lg-7">
+
+        <!-- إحصائيات الحضور -->
+        <div class="rp-card">
+            <div class="rp-card-header">
+                <i class="bi bi-calendar-check-fill"></i>إحصائيات الحضور
+                <span style="margin-right:auto;background:#1e293b;color:#fff;border-radius:20px;
+                             padding:.1rem .65rem;font-size:.75rem;font-weight:700;">
+                    {{ attend_stats.total }} يوم
+                </span>
+            </div>
+            <div class="rp-card-body">
+                <div class="rp-progress-row">
+                    {% if attend_stats.total %}
+                    <!-- حاضر -->
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#16a34a;"><i class="bi bi-check-circle-fill me-1"></i>حاضر</span>
+                            <span>{{ attend_stats.present }} / {{ attend_stats.total }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio attend_stats.present attend_stats.total 100 %}%;background:#16a34a;"></div>
+                        </div>
+                    </div>
+                    <!-- غائب -->
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#dc2626;"><i class="bi bi-x-circle-fill me-1"></i>غائب</span>
+                            <span>{{ attend_stats.absent }} / {{ attend_stats.total }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio attend_stats.absent attend_stats.total 100 %}%;background:#dc2626;"></div>
+                        </div>
+                    </div>
+                    <!-- متأخر -->
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#d97706;"><i class="bi bi-clock-fill me-1"></i>متأخر</span>
+                            <span>{{ attend_stats.late }} / {{ attend_stats.total }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio attend_stats.late attend_stats.total 100 %}%;background:#d97706;"></div>
+                        </div>
+                    </div>
+                    <!-- بعذر -->
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#0891b2;"><i class="bi bi-shield-fill-check me-1"></i>بعذر</span>
+                            <span>{{ attend_stats.excused }} / {{ attend_stats.total }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio attend_stats.excused attend_stats.total 100 %}%;background:#0891b2;"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.88rem;">
+                        <i class="bi bi-calendar" style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+                        لا يوجد سجل حضور بعد
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- إحصائيات التقييم -->
+        <div class="rp-card">
+            <div class="rp-card-header">
+                <i class="bi bi-star-fill"></i>إحصائيات التقييم
+                <span style="margin-right:auto;background:#1e293b;color:#fff;border-radius:20px;
+                             padding:.1rem .65rem;font-size:.75rem;font-weight:700;">
+                    {{ eval_stats.total }} تقييم
+                </span>
+            </div>
+            <div class="rp-card-body">
+                {% if eval_stats.total %}
+                <div class="rp-progress-row">
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#16a34a;"><i class="bi bi-award-fill me-1"></i>ممتاز</span>
+                            <span>{{ eval_stats.excellent }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio eval_stats.excellent eval_stats.total 100 %}%;background:#16a34a;"></div>
+                        </div>
+                    </div>
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#0ea5e9;"><i class="bi bi-hand-thumbs-up-fill me-1"></i>جيد</span>
+                            <span>{{ eval_stats.good }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio eval_stats.good eval_stats.total 100 %}%;background:#0ea5e9;"></div>
+                        </div>
+                    </div>
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#d97706;"><i class="bi bi-dash-circle-fill me-1"></i>متوسط</span>
+                            <span>{{ eval_stats.average }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio eval_stats.average eval_stats.total 100 %}%;background:#d97706;"></div>
+                        </div>
+                    </div>
+                    <div class="rp-prog-item">
+                        <div class="rp-prog-head">
+                            <span style="color:#dc2626;"><i class="bi bi-exclamation-triangle-fill me-1"></i>يحتاج متابعة</span>
+                            <span>{{ eval_stats.weak }}</span>
+                        </div>
+                        <div class="rp-prog-bar-bg">
+                            <div class="rp-prog-bar-fill"
+                                 style="width:{% widthratio eval_stats.weak eval_stats.total 100 %}%;background:#dc2626;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- جدول آخر التقييمات -->
+                <div style="margin-top:1rem;">
+                    <div style="font-size:.78rem;font-weight:700;color:#64748b;margin-bottom:.6rem;">
+                        <i class="bi bi-clock-history me-1"></i>آخر التقييمات
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table rp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>الحفظ</th>
+                                    <th>السلوك</th>
+                                    <th>الالتزام</th>
+                                    <th>تميز</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ev in recent_evals %}
+                                <tr>
+                                    <td style="white-space:nowrap;font-weight:600;color:#475569;">{{ ev.date }}</td>
+                                    <td><span class="rb rb-{{ ev.memorization_rating }}">{{ ev.get_memorization_rating_display }}</span></td>
+                                    <td><span class="rb rb-{{ ev.behavior_rating }}">{{ ev.get_behavior_rating_display }}</span></td>
+                                    <td><span class="rb rb-{{ ev.commitment_rating }}">{{ ev.get_commitment_rating_display }}</span></td>
+                                    <td>
+                                        {% if ev.is_distinguished %}
+                                        <span style="color:#d97706;font-size:1rem;">⭐</span>
+                                        {% elif ev.needs_attention %}
+                                        <span style="color:#dc2626;font-size:.85rem;">⚠️</span>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.88rem;">
+                    <i class="bi bi-award" style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+                    لا يوجد تقييم بعد
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══ عمود يمين: المتابعات ══ -->
+    <div class="col-12 col-lg-5">
+        <div class="rp-card" style="height:100%;">
+            <div class="rp-card-header">
+                <i class="bi bi-journal-richtext"></i>المتابعات اليومية
+                <span style="margin-right:auto;background:#1e293b;color:#fff;border-radius:20px;
+                             padding:.1rem .65rem;font-size:.75rem;font-weight:700;">
+                    {{ followups|length }}
+                </span>
+            </div>
+            <div class="rp-card-body" style="max-height:520px;overflow-y:auto;">
+                {% if followups %}
+                    {% for fu in followups %}
+                    <div class="fu-item">
+                        <div class="fu-date"><i class="bi bi-calendar3-event me-1"></i>{{ fu.date }}</div>
+                        <div class="fu-grid">
+                            <div>
+                                <div class="fu-lbl">ما تم تناوله</div>
+                                <div class="fu-val {% if not fu.homework %}empty{% endif %}">
+                                    {{ fu.homework|default:"لم يُسجَّل" }}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="fu-lbl">المطلوب حفظه</div>
+                                <div class="fu-val {% if not fu.memorization_task %}empty{% endif %}">
+                                    {{ fu.memorization_task|default:"لا يوجد" }}
+                                </div>
+                            </div>
+                        </div>
+                        {% if fu.extra_notes %}
+                        <div class="fu-notes">
+                            <i class="bi bi-chat-dots-fill"></i>
+                            <span>{{ fu.extra_notes }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:.88rem;">
+                        <i class="bi bi-journal" style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+                        لا توجد متابعات بعد
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
