@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}الجداول النموذجية | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}الجداول النموذجية{% endblock %}
+
+{% block content %}
+<style>
+.tmpl-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.4rem 1.75rem;
+    margin-bottom: 1.4rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.tmpl-hero-left { display: flex; align-items: center; gap: 1rem; }
+.tmpl-hero-icon {
+    width: 50px; height: 50px; background: rgba(255,255,255,.12);
+    border-radius: 13px; display: flex; align-items: center;
+    justify-content: center;
+}
+.tmpl-hero-icon i { font-size: 1.4rem; color: #fff; }
+.tmpl-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.tmpl-hero p  { font-size: .87rem; opacity: .75; margin: 0; }
+
+.tmpl-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05);
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap;
+    gap: 1rem; margin-bottom: 1rem;
+    transition: box-shadow .15s;
+}
+.tmpl-card:hover { box-shadow: 0 4px 20px rgba(15,23,42,.09); }
+.tmpl-card-left { display: flex; align-items: center; gap: 1rem; }
+.tmpl-icon {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+}
+.tmpl-icon i { font-size: 1.2rem; color: #fff; }
+.tmpl-name { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: .2rem; }
+.tmpl-meta { font-size: .82rem; color: #64748b; display: flex; gap: .75rem; flex-wrap: wrap; }
+.badge-count {
+    background: #f1f5f9; border: 1px solid #e2e8f0;
+    border-radius: 20px; padding: .2rem .75rem;
+    font-size: .78rem; font-weight: 700; color: #475569;
+    display: inline-flex; align-items: center; gap: .3rem;
+}
+.badge-inactive {
+    background: #fef2f2; color: #dc2626;
+    border-radius: 20px; padding: .2rem .75rem;
+    font-size: .78rem; font-weight: 700;
+}
+.tmpl-actions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.btn-view {
+    background: #01696f; color: #fff; border: none;
+    border-radius: 9px; padding: .4rem 1rem;
+    font-size: .85rem; font-weight: 700;
+    text-decoration: none; display: flex; align-items: center; gap: .35rem;
+    transition: background .15s;
+}
+.btn-view:hover { background: #0c4e54; color: #fff; }
+.btn-edit {
+    background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
+    border-radius: 9px; padding: .4rem 1rem;
+    font-size: .85rem; font-weight: 700;
+    text-decoration: none; display: flex; align-items: center; gap: .35rem;
+    transition: background .15s;
+}
+.btn-edit:hover { background: #e2e8f0; color: #1e293b; }
+.btn-delete {
+    background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;
+    border-radius: 9px; padding: .4rem .75rem;
+    font-size: .85rem; font-weight: 700;
+    display: flex; align-items: center; gap: .3rem;
+    cursor: pointer; transition: background .15s;
+}
+.btn-delete:hover { background: #fee2e2; }
+
+.empty-box {
+    text-align: center; padding: 4rem 1.5rem;
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 20px;
+}
+.empty-box i { font-size: 2.5rem; color: #cbd5e1; margin-bottom: 1rem; display: block; }
+.empty-box h5 { font-weight: 800; color: #1e293b; }
+.empty-box p  { color: #64748b; font-size: .9rem; }
+</style>
+
+<!-- هيدر -->
+<div class="tmpl-hero">
+    <div class="tmpl-hero-left">
+        <div class="tmpl-hero-icon"><i class="bi bi-calendar3-week-fill"></i></div>
+        <div>
+            <h1>الجداول النموذجية</h1>
+            <p>أنشئ جداول دراسية وأسندها للقاعات</p>
+        </div>
+    </div>
+    <a href="{% url 'halls:template_create' %}"
+       style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:10px; padding:.5rem 1.25rem; color:#fff; text-decoration:none; font-weight:700; font-size:.9rem; display:flex; align-items:center; gap:.5rem;">
+        <i class="bi bi-plus-circle-fill"></i>جدول جديد
+    </a>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show rounded-3 mb-3" role="alert">
+        {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+
+{% if templates %}
+    {% for tmpl in templates %}
+    <div class="tmpl-card">
+        <div class="tmpl-card-left">
+            <div class="tmpl-icon"><i class="bi bi-layout-text-window-reverse"></i></div>
+            <div>
+                <div class="tmpl-name">{{ tmpl.name }}</div>
+                <div class="tmpl-meta">
+                    <span class="badge-count">
+                        <i class="bi bi-clock"></i>{{ tmpl.entries.count }} حصة
+                    </span>
+                    <span class="badge-count">
+                        <i class="bi bi-building"></i>{{ tmpl.halls.count }} قاعة
+                    </span>
+                    {% if not tmpl.is_active %}
+                        <span class="badge-inactive"><i class="bi bi-pause-circle"></i> غير نشط</span>
+                    {% endif %}
+                </div>
+                {% if tmpl.description %}
+                <div style="font-size:.82rem; color:#94a3b8; margin-top:.3rem;">{{ tmpl.description }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="tmpl-actions">
+            <a href="{% url 'halls:template_detail' tmpl.pk %}" class="btn-view">
+                <i class="bi bi-eye"></i>عرض
+            </a>
+            <a href="{% url 'halls:template_update' tmpl.pk %}" class="btn-edit">
+                <i class="bi bi-pencil"></i>تعديل
+            </a>
+            <form method="post" action="{% url 'halls:template_delete' tmpl.pk %}"
+                  onsubmit="return confirm('هل تريد حذف جدول {{ tmpl.name }}؟')">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+{% else %}
+<div class="empty-box">
+    <i class="bi bi-calendar3"></i>
+    <h5>لا توجد جداول نموذجية بعد</h5>
+    <p>أنشئ جدولاً نموذجياً وأسنده لقاعة أو أكثر</p>
+    <a href="{% url 'halls:template_create' %}" class="btn-view mt-3" style="display:inline-flex;">
+        <i class="bi bi-plus-circle-fill"></i>إنشاء أول جدول
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

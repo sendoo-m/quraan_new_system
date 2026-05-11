@@ -9,7 +9,7 @@ class HallForm(forms.ModelForm):
         fields = [
             'name', 'location', 'age_group', 'max_students',
             'general_supervisor', 'teacher', 'supervisor',
-            'current_juz', 'required_completed_juz_count', 'is_active',
+            'current_juz', 'required_completed_juz_count', 'schedule_template', 'is_active',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -21,6 +21,7 @@ class HallForm(forms.ModelForm):
             'supervisor': forms.Select(attrs={'class': 'form-select'}),
             'current_juz': forms.NumberInput(attrs={'class': 'form-control'}),
             'required_completed_juz_count': forms.NumberInput(attrs={'class': 'form-control'}),
+            'schedule_template': forms.Select(attrs={'class': 'form-select'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
@@ -147,4 +148,47 @@ class SubjectForm(forms.ModelForm):
             'is_active': 'نشطة',
         }
 
-        
+
+from .models import Hall, Subject, HallSchedule, ScheduleTemplate, ScheduleTemplateEntry, ALL_DAYS
+
+
+class ScheduleTemplateForm(forms.ModelForm):
+    class Meta:
+        model  = ScheduleTemplate
+        fields = ['name', 'description', 'is_active']
+        widgets = {
+            'name':        forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'is_active':   forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'name':        'اسم الجدول',
+            'description': 'وصف (اختياري)',
+            'is_active':   'نشط',
+        }
+
+
+class ScheduleTemplateEntryForm(forms.ModelForm):
+    class Meta:
+        model  = ScheduleTemplateEntry
+        fields = ['day', 'subject', 'start_time', 'end_time']
+        widgets = {
+            'day':        forms.Select(attrs={'class': 'form-select'}),
+            'subject':    forms.Select(attrs={'class': 'form-select'}),
+            'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'end_time':   forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        }
+        labels = {
+            'day':        'اليوم',
+            'subject':    'المادة',
+            'start_time': 'وقت البداية',
+            'end_time':   'وقت النهاية',
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        s = cleaned.get('start_time')
+        e = cleaned.get('end_time')
+        if s and e and s >= e:
+            raise forms.ValidationError('وقت البداية يجب أن يكون قبل وقت النهاية')
+        return cleaned        

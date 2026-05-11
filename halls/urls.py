@@ -17,4 +17,22 @@ urlpatterns = [
     path('subjects/<int:pk>/update/', views.SubjectUpdateView.as_view(), name='subject_update'),
     path('subjects/<int:pk>/delete/', views.SubjectDeleteView.as_view(), name='subject_delete'),
 
+
+    # ══ الجداول النموذجية ══
+    path('schedule-templates/',
+         views.ScheduleTemplateListView.as_view(),       name='templates'),
+    path('schedule-templates/create/',
+         views.ScheduleTemplateCreateView.as_view(),     name='template_create'),
+    path('schedule-templates/<int:pk>/',
+         views.ScheduleTemplateDetailView.as_view(),     name='template_detail'),
+    path('schedule-templates/<int:pk>/update/',
+         views.ScheduleTemplateUpdateView.as_view(),     name='template_update'),
+    path('schedule-templates/<int:pk>/delete/',
+         views.ScheduleTemplateDeleteView.as_view(),     name='template_delete'),
+    path('schedule-templates/<int:pk>/entry/add/',
+         views.TemplateEntryAddView.as_view(),           name='template_entry_add'),
+    path('schedule-templates/entry/<int:entry_pk>/delete/',
+         views.TemplateEntryDeleteView.as_view(),        name='template_entry_delete'),
+    path('schedule-templates/<int:pk>/assign-halls/',
+         views.TemplateAssignHallsView.as_view(), name='template_assign_halls'),
 ]

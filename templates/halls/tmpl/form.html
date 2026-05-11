@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} جدول نموذجي | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ action }} جدول نموذجي{% endblock %}
+
+{% block content %}
+<div style="max-width:600px; margin:0 auto;">
+    <div style="background:#fff; border:1px solid rgba(15,23,42,.08); border-radius:18px; padding:2rem; box-shadow:0 4px 20px rgba(15,23,42,.05);">
+
+        <div style="display:flex; align-items:center; gap:.85rem; margin-bottom:1.75rem;">
+            <div style="width:46px; height:46px; background:linear-gradient(135deg,#01696f,#0a8a91); border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-calendar3-week-fill" style="color:#fff; font-size:1.2rem;"></i>
+            </div>
+            <div>
+                <div style="font-size:1.05rem; font-weight:800; color:#1e293b;">{{ action }} جدول نموذجي</div>
+                <div style="font-size:.83rem; color:#64748b;">
+                    {% if tmpl %}تعديل بيانات جدول "{{ tmpl.name }}"{% else %}إنشاء جدول جديد{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger rounded-3 mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            يرجى تصحيح الأخطاء التالية:
+            {{ form.errors }}
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary small">اسم الجدول</label>
+                {{ form.name }}
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold text-secondary small">وصف (اختياري)</label>
+                {{ form.description }}
+            </div>
+            <div class="mb-4">
+                <div class="form-check">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-bold">نشط</label>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:.75rem;">
+                <button type="submit"
+                        style="flex:1; background:linear-gradient(135deg,#01696f,#0a8a91); color:#fff; border:none; border-radius:10px; padding:.65rem 1.5rem; font-weight:800; font-size:.95rem; cursor:pointer;">
+                    <i class="bi bi-check-circle-fill me-2"></i>{{ action }}
+                </button>
+                <a href="{% url 'halls:templates' %}"
+                   style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; padding:.65rem 1.25rem; font-weight:700; font-size:.95rem; text-decoration:none; display:flex; align-items:center; gap:.4rem;">
+                    <i class="bi bi-x-circle"></i>إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

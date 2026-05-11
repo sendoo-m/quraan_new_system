@@ -52,6 +52,15 @@ class Hall(models.Model):
         verbose_name='عدد الأجزاء المطلوبة قبل دخول القاعة'
     )
 
+    schedule_template = models.ForeignKey(
+        'halls.ScheduleTemplate',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='halls',
+        verbose_name='الجدول النموذجي'
+    )
+
     is_active = models.BooleanField(default=True, verbose_name='نشطة')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -152,3 +161,63 @@ class HallSchedule(models.Model):
         verbose_name_plural = 'جداول القاعات'
         ordering            = ['day', 'start_time']
         unique_together     = ['hall', 'day', 'start_time']
+
+# أيام الأسبوع الكاملة
+ALL_DAYS = [
+    # ('saturday',  'السبت'),
+    ('sunday',    'الأحد'),
+    # ('monday',    'الاثنين'),
+    ('tuesday',   'الثلاثاء'),
+    # ('wednesday', 'الأربعاء'),
+    ('thursday',  'الخميس'),
+    # ('friday',    'الجمعة'),
+]
+
+
+class ScheduleTemplate(models.Model):
+    """جدول نموذجي قابل للإسناد لأكثر من قاعة"""
+    name        = models.CharField(max_length=100, verbose_name='اسم الجدول')
+    description = models.TextField(blank=True, verbose_name='وصف')
+    is_active   = models.BooleanField(default=True, verbose_name='نشط')
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    def get_halls_count(self):
+        return self.halls.count()
+
+    def get_entries_count(self):
+        return self.entries.count()
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name        = 'جدول نموذجي'
+        verbose_name_plural = 'الجداول النموذجية'
+        ordering            = ['name']
+
+
+class ScheduleTemplateEntry(models.Model):
+    """حصة واحدة داخل الجدول النموذجي"""
+    template   = models.ForeignKey(
+        ScheduleTemplate,
+        on_delete=models.CASCADE,
+        related_name='entries',
+        verbose_name='الجدول'
+    )
+    subject    = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        verbose_name='المادة'
+    )
+    day        = models.CharField(max_length=15, choices=ALL_DAYS, verbose_name='اليوم')
+    start_time = models.TimeField(verbose_name='وقت البداية')
+    end_time   = models.TimeField(verbose_name='وقت النهاية')
+
+    def __str__(self):
+        return f"{self.template.name} | {self.get_day_display()} | {self.subject.name}"
+
+    class Meta:
+        verbose_name        = 'حصة في الجدول'
+        verbose_name_plural = 'حصص الجداول'
+        ordering            = ['day', 'start_time']
+        unique_together     = ['template', 'day', 'start_time']
