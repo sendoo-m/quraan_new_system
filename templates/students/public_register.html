@@ -5,9 +5,6 @@
 
 {% block content %}
 <style>
-/* ══════════════════════════════════════════
-   متغيرات ألوان المشروع
-══════════════════════════════════════════ */
 :root {
     --reg-primary:       #01696f;
     --reg-primary-light: rgba(1, 105, 111, 0.08);
@@ -23,9 +20,6 @@
     --reg-shadow:        0 2px 12px rgba(15,23,42,0.06);
 }
 
-/* ══════════════════════════════════════════
-   هيدر الصفحة
-══════════════════════════════════════════ */
 .reg-page-header {
     background: linear-gradient(135deg, var(--reg-primary) 0%, #0a8a91 100%);
     border-radius: var(--reg-radius);
@@ -53,9 +47,6 @@
     opacity: .85; line-height: 1.6;
 }
 
-/* ══════════════════════════════════════════
-   بطاقة القسم
-══════════════════════════════════════════ */
 .reg-card {
     background: var(--reg-surface);
     border: 1px solid var(--reg-border);
@@ -80,7 +71,6 @@
 .reg-card-hint { font-size: .78rem; color: var(--reg-muted); font-weight: 500; }
 .reg-card-body { padding: 1.25rem; }
 
-/* حقول الفورم */
 .field-block { margin-bottom: .95rem; }
 .field-block:last-child { margin-bottom: 0; }
 .field-label {
@@ -123,7 +113,6 @@
 }
 .reg-card textarea { min-height: 100px; resize: vertical; }
 
-/* السور المحفوظة */
 .memorized-scroll {
     max-height: 320px; overflow-y: auto;
     border: 1.5px solid #e2e8f0;
@@ -134,7 +123,6 @@
 .memorized-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
 .memorized-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-/* شريط الإرسال */
 .reg-submit-card {
     background: var(--reg-surface);
     border: 1px solid var(--reg-border);
@@ -166,7 +154,6 @@
 }
 .reg-submit-btn svg { width: 18px; height: 18px; stroke: #fff; }
 
-/* فوتر الصفحة */
 .reg-page-footer {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border-radius: var(--reg-radius);
@@ -203,7 +190,6 @@
     text-align: center; margin: 0; grid-column: 1/-1;
 }
 
-/* موبايل */
 @media (max-width: 991.98px) {
     .reg-page-footer { grid-template-columns: 1fr; }
     .footer-contact { flex-direction: row; flex-wrap: wrap; }
@@ -238,7 +224,7 @@
 </div>
 
 <!-- نموذج التسجيل -->
-<form method="post" enctype="multipart/form-data">
+<form method="post">
     {% csrf_token %}
     <div class="row g-4">
 
@@ -277,7 +263,11 @@
                         <label class="field-label">{{ parent_form.username.label }} <span class="required">*</span></label>
                         {{ parent_form.username }}
                         <div class="field-help">
-                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
                             يُستخدم لتسجيل الدخول لاحقًا
                         </div>
                         <div class="field-error">{{ parent_form.username.errors }}</div>
@@ -347,24 +337,20 @@
                                 <label class="field-label">رقم موبايل الطوارئ</label>
                                 {{ student_form.emergency_phone }}
                                 <div class="field-help">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6.34 6.34l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.03z"/></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.17h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.76a16 16 0 0 0 6.34 6.34l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.03z"/>
+                                    </svg>
                                     للتواصل السريع في الحالات الطارئة
                                 </div>
                                 <div class="field-error">{{ student_form.emergency_phone.errors }}</div>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <div class="field-block">
-                                <label class="field-label">{{ student_form.profile_picture.label }}</label>
-                                {{ student_form.profile_picture }}
-                                <div class="field-error">{{ student_form.profile_picture.errors }}</div>
-                            </div>
-                        </div>
+                        {# ✅ حُذف: حقل profile_picture — لا توجد صور بعد الآن #}
                     </div>
                 </div>
             </div>
 
-            <!-- السور المحفوظة — في عمود الطالب مباشرة -->
+            <!-- السور المحفوظة -->
             <div class="reg-card">
                 <div class="reg-card-header">
                     <h2 class="reg-card-title">
@@ -488,324 +474,3 @@
 </footer>
 
 {% endblock %}
-{% comment %} {% extends "base.html" %}
-
-{% block title %}تسجيل طالب جديد | {{ SITE_NAME }}{% endblock %}
-{% block page_title %}تسجيل طالب جديد{% endblock %}
-
-{% block content %}
-<style>
-    .registration-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .registration-hero {
-        background: linear-gradient(180deg, rgba(1, 105, 111, 0.08) 0%, rgba(1, 105, 111, 0.03) 100%);
-        border: 1px solid rgba(1, 105, 111, 0.12);
-        border-radius: 18px;
-        padding: 1.25rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .registration-hero h2 {
-        font-size: 1.4rem;
-        font-weight: 800;
-        margin-bottom: .4rem;
-    }
-
-    .registration-hero p {
-        margin-bottom: 0;
-        color: #6b7280;
-        line-height: 1.8;
-    }
-
-    .form-section-card {
-        background: #fff;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 18px;
-        padding: 1.1rem;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-        height: 100%;
-    }
-
-    .section-title {
-        font-size: 1rem;
-        font-weight: 800;
-        margin-bottom: 1rem;
-        color: #0f172a;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        padding-bottom: .75rem;
-        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-    }
-
-    .section-hint {
-        font-size: .82rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    .field-block {
-        margin-bottom: 1rem;
-    }
-
-    .field-block:last-child {
-        margin-bottom: 0;
-    }
-
-    .field-label {
-        display: block;
-        font-weight: 700;
-        margin-bottom: .45rem;
-        color: #111827;
-    }
-
-    .field-help {
-        font-size: .8rem;
-        color: #6b7280;
-        margin-top: .35rem;
-    }
-
-    .field-error {
-        color: #dc2626;
-        font-size: .82rem;
-        margin-top: .35rem;
-    }
-
-    .form-section-card input,
-    .form-section-card select,
-    .form-section-card textarea {
-        width: 100%;
-        border-radius: 12px;
-        min-height: 46px;
-    }
-
-    .form-section-card textarea {
-        min-height: 110px;
-    }
-
-    .memorized-box {
-        max-height: 280px;
-        overflow-y: auto;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 14px;
-        padding: .9rem;
-        background: #fcfcfd;
-    }
-
-    .extra-box {
-        background: #fafafa;
-        border: 1px dashed rgba(15, 23, 42, 0.12);
-        border-radius: 14px;
-        padding: 1rem;
-    }
-
-    .submit-card {
-        background: #fff;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 18px;
-        padding: 1rem;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-    }
-
-    .submit-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .75rem;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .submit-note {
-        color: #6b7280;
-        font-size: .9rem;
-        margin: 0;
-    }
-
-    .submit-btn {
-        min-width: 180px;
-        min-height: 46px;
-        border-radius: 12px;
-        font-weight: 700;
-        padding: .8rem 1.25rem;
-    }
-
-    @media (max-width: 991.98px) {
-        .registration-hero,
-        .form-section-card,
-        .submit-card {
-            border-radius: 16px;
-        }
-    }
-
-    @media (max-width: 767.98px) {
-        .registration-hero {
-            padding: 1rem;
-        }
-
-        .registration-hero h2 {
-            font-size: 1.15rem;
-        }
-
-        .form-section-card {
-            padding: 1rem;
-        }
-
-        .section-title {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .submit-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .submit-btn {
-            width: 100%;
-        }
-
-        .memorized-box {
-            max-height: 220px;
-        }
-    }
-</style>
-
-
-<div class="page-card p-4 mb-4">
-    <h2 class="fw-bold mb-2">التسجيل العام</h2>
-    <p class="text-muted mb-0">
-        سجل ولي الأمر والطالب في خطوة واحدة.
-    </p>
-</div>
-
-<form method="post" enctype="multipart/form-data" class="row g-4">
-    {% csrf_token %}
-
-    <div class="col-lg-5">
-        <div class="page-card p-4 h-100">
-            <div class="section-title">بيانات ولي الأمر</div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold">{{ parent_form.first_name.label }}</label>
-                {{ parent_form.first_name }}
-                <div class="text-danger small mt-1">{{ parent_form.first_name.errors }}</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold">{{ parent_form.last_name.label }}</label>
-                {{ parent_form.last_name }}
-                <div class="text-danger small mt-1">{{ parent_form.last_name.errors }}</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold">{{ parent_form.username.label }}</label>
-                {{ parent_form.username }}
-                <div class="text-danger small mt-1">{{ parent_form.username.errors }}</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold">{{ parent_form.phone.label }}</label>
-                {{ parent_form.phone }}
-                <div class="text-danger small mt-1">{{ parent_form.phone.errors }}</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-semibold">{{ parent_form.password.label }}</label>
-                {{ parent_form.password }}
-                <div class="text-danger small mt-1">{{ parent_form.password.errors }}</div>
-            </div>
-            <div class="mb-0">
-                <label class="form-label fw-semibold">{{ parent_form.password_confirm.label }}</label>
-                {{ parent_form.password_confirm }}
-                <div class="text-danger small mt-1">{{ parent_form.password_confirm.errors }}</div>
-            </div>
-        </div>
-    </div>
-
-            <div class="col-12 col-lg-7">
-            <section class="form-section-card mb-4">
-                <div class="section-title">
-                    <span>بيانات الطالب</span>
-                    <span class="section-hint">أدخل البيانات الأساسية بدقة</span>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <div class="field-block">
-                            <label class="field-label">{{ student_form.first_name.label }}</label>
-                            {{ student_form.first_name }}
-                            <div class="field-error">{{ student_form.first_name.errors }}</div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="field-block">
-                            <label class="field-label">الاسم رباعي</label>
-                            {{ student_form.last_name }}
-                            <div class="field-error">{{ student_form.last_name.errors }}</div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="field-block">
-                            <label class="field-label">{{ student_form.date_of_birth.label }}</label>
-                            {{ student_form.date_of_birth }}
-                            <div class="field-error">{{ student_form.date_of_birth.errors }}</div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <div class="field-block">
-                            <label class="field-label">رقم موبايل الطوارئ</label>
-                            {{ student_form.emergency_phone }}
-                            <div class="field-help">يستخدم للتواصل السريع عند الحالات الطارئة.</div>
-                            <div class="field-error">{{ student_form.emergency_phone.errors }}</div>
-                        </div>
-                    </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ student_form.profile_picture.label }}</label>
-                    {{ student_form.profile_picture }}
-                    <div class="text-danger small mt-1">{{ student_form.profile_picture.errors }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-5">
-        <div class="page-card p-4 h-100">
-
-        <div class="page-card p-4 mb-4">
-            <div class="section-title">السور المحفوظة</div>
-            <div class="text-danger small mb-2">{{ student_form.memorized_surahs.errors }}</div>
-            <div>{{ student_form.memorized_surahs }}</div>
-        </div>
-        </div>
-
-        <div class="page-card p-4 mb-4">
-            <div class="section-title">تفاصيل إضافية</div>
-            <div class="row g-3">
-                <div class="col-md-6 d-flex align-items-center">
-                    <div class="form-check mt-4">
-                        {{ student_form.uses_bus }}
-                        <label class="form-check-label fw-semibold" for="{{ student_form.uses_bus.id_for_label }}">
-                            {{ student_form.uses_bus.label }}
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">{{ student_form.bus_notes.label }}</label>
-                    {{ student_form.bus_notes }}
-                    <div class="text-danger small mt-1">{{ student_form.bus_notes.errors }}</div>
-                </div>
-                <div class="col-12">
-                    <label class="form-label fw-semibold">{{ student_form.notes.label }}</label>
-                    {{ student_form.notes }}
-                    <div class="text-danger small mt-1">{{ student_form.notes.errors }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="page-card p-4">
-            <button type="submit" class="btn btn-primary">إتمام التسجيل</button>
-        </div>
-    </div>
-</form>
-{% endblock %}  {% endcomment %}

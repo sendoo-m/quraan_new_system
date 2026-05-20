@@ -5,10 +5,10 @@ from quran.models import Surah
 
 
 class AgeGroup(models.Model):
-    name = models.CharField(max_length=100, verbose_name='اسم الفئة')
+    name    = models.CharField(max_length=100, verbose_name='اسم الفئة')
     min_age = models.PositiveIntegerField(verbose_name='الحد الأدنى للسن')
     max_age = models.PositiveIntegerField(verbose_name='الحد الأقصى للسن')
-    order = models.PositiveIntegerField(default=0, verbose_name='الترتيب')
+    order   = models.PositiveIntegerField(default=0, verbose_name='الترتيب')
     is_active = models.BooleanField(default=True, verbose_name='نشطة')
 
     def clean(self):
@@ -19,42 +19,39 @@ class AgeGroup(models.Model):
         return f"{self.name} ({self.min_age} - {self.max_age} سنة)"
 
     class Meta:
-        verbose_name = 'فئة عمرية'
+        verbose_name        = 'فئة عمرية'
         verbose_name_plural = 'الفئات العمرية'
-        ordering = ['order', 'min_age']
+        ordering            = ['order', 'min_age']
 
 
 class Student(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_ACTIVE = 'active'
+    STATUS_PENDING  = 'pending'
+    STATUS_ACTIVE   = 'active'
     STATUS_INACTIVE = 'inactive'
     STATUS_REJECTED = 'rejected'
 
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'في انتظار التسكين'),
-        (STATUS_ACTIVE, 'نشط'),
+        (STATUS_PENDING,  'في انتظار التسكين'),
+        (STATUS_ACTIVE,   'نشط'),
         (STATUS_INACTIVE, 'غير نشط'),
         (STATUS_REJECTED, 'مرفوض لعدم وجود قاعة مناسبة'),
     ]
 
-    first_name = models.CharField(max_length=50, verbose_name='الاسم الأول')
-    last_name = models.CharField(max_length=50, verbose_name='اسم الرباعي')
-    date_of_birth = models.DateField(verbose_name='تاريخ الميلاد')
+    first_name      = models.CharField(max_length=50, verbose_name='الاسم الأول')
+    last_name       = models.CharField(max_length=50, verbose_name='اسم الرباعي')
+    date_of_birth   = models.DateField(verbose_name='تاريخ الميلاد')
     emergency_phone = models.CharField(max_length=20, blank=True, verbose_name='رقم موبايل الطوارئ')
+
     age_group = models.ForeignKey(
         'students.AgeGroup',
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True, blank=True,
         related_name='students',
         verbose_name='الفئة العمرية'
     )
-    profile_picture = models.ImageField(
-        upload_to='students/',
-        blank=True,
-        null=True,
-        verbose_name='صورة الطالب'
-    )
+
+    # ✅ تمت إزالة profile_picture لتوفير المساحة
+
     memorized_surahs = models.ManyToManyField(
         Surah,
         blank=True,
@@ -72,13 +69,12 @@ class Student(models.Model):
     hall = models.ForeignKey(
         'halls.Hall',
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True, blank=True,
         related_name='students',
         verbose_name='القاعة'
     )
 
-    uses_bus = models.BooleanField(default=False, verbose_name='يشترك في الباص')
+    uses_bus  = models.BooleanField(default=False, verbose_name='يشترك في الباص')
     bus_notes = models.CharField(max_length=200, blank=True, verbose_name='ملاحظات الباص')
 
     status = models.CharField(
@@ -90,13 +86,15 @@ class Student(models.Model):
     registration_date = models.DateField(auto_now_add=True, verbose_name='تاريخ التسجيل')
     notes = models.TextField(blank=True, verbose_name='ملاحظات عامة')
 
+    # ══════════════════════════════════════════
+
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
     def calculate_age(self):
         from datetime import date
         today = date.today()
-        born = self.date_of_birth
+        born  = self.date_of_birth
         return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
     def get_matching_age_group(self):
@@ -111,8 +109,42 @@ class Student(models.Model):
         return self.memorized_surahs.count()
 
     def get_completed_juz_count(self):
-        juzs = set(self.memorized_surahs.values_list('juz', flat=True))
-        return len(juzs)
+        """
+        يحسب عدد الأجزاء المكتملة فعلاً.
+        الجزء مكتمل = حُفظت كل سوره.
+        الحفظ تسلسلي من الجزء 30 نزولاً — يتوقف عند أول جزء ناقص.
+
+        أمثلة:
+          - يحفظ الإخلاص فقط      → 0 (الجزء 30 غير مكتمل)
+          - يحفظ كل سور الجزء 30   → 1
+          - يحفظ كاملاً 30 و29 و28  → 3
+        """
+        memorized_juzs = set(self.memorized_surahs.values_list('juz', flat=True))
+        completed = 0
+
+        for juz_number in sorted(memorized_juzs, reverse=True):  # من 30 نزولاً
+            total_in_juz     = Surah.objects.filter(juz=juz_number).count()
+            memorized_in_juz = self.memorized_surahs.filter(juz=juz_number).count()
+
+            if memorized_in_juz >= total_in_juz:
+                completed += 1
+            else:
+                break  # جزء غير مكتمل — نتوقف
+
+        return completed
+
+    def get_target_juz(self):
+        """
+        يحدد الجزء الذي يجب تسكين الطالب فيه.
+        target_juz = 30 - عدد_الأجزاء_المكتملة
+
+        أمثلة:
+          - أكمل 0 جزء  → الجزء 30
+          - أكمل 1 جزء  → الجزء 29
+          - أكمل 3 أجزاء → الجزء 27
+        """
+        target = 30 - self.get_completed_juz_count()
+        return max(target, 1)  # الحد الأدنى 1 للحافظ الكامل
 
     def save(self, *args, **kwargs):
         matched = self.get_matching_age_group()
@@ -124,6 +156,6 @@ class Student(models.Model):
         return f"{self.get_full_name()} ({self.calculate_age()} سنة)"
 
     class Meta:
-        verbose_name = 'طالب'
+        verbose_name        = 'طالب'
         verbose_name_plural = 'الطلاب'
-        ordering = ['first_name', 'last_name']
+        ordering            = ['first_name', 'last_name']

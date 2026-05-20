@@ -9,9 +9,7 @@ urlpatterns = [
     path('hall-supervisor/', views_dashboard.HallSupervisorDashboard.as_view(),    name='hall_supervisor'),
     path('teacher/',         views_dashboard.TeacherDashboard.as_view(),           name='teacher'),
     path('parent/',          views_dashboard.ParentDashboard.as_view(),            name='parent'),
-    path('parent/report/<int:student_id>/', views_dashboard.ParentStudentReportView.as_view(), name='student_report'),
-    path('parent/profile/',   views_dashboard.ParentProfileView.as_view(),             name='parent_profile'),
-    path('parent/student/<int:student_id>/photo/',
-                              views_dashboard.StudentPhotoUpdateView.as_view(),        name='student_photo'),
+    path('parent/report/<int:student_id>/',
+                             views_dashboard.ParentStudentReportView.as_view(),    name='student_report'),
+    path('parent/profile/',  views_dashboard.ParentProfileView.as_view(),          name='parent_profile'),
 ]
-

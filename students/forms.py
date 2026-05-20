@@ -13,7 +13,7 @@ class StudentRegistrationForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Student
+        model  = Student
         fields = [
             'first_name',
             'last_name',
@@ -22,8 +22,7 @@ class StudentRegistrationForm(forms.ModelForm):
             'memorized_surahs',
             'uses_bus',
             'bus_notes',
-            'profile_picture',
-            'notes'
+            'notes',
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={
@@ -51,41 +50,38 @@ class StudentRegistrationForm(forms.ModelForm):
                 'rows': 3,
                 'placeholder': 'ملاحظات إضافية'
             }),
-            'profile_picture': forms.FileInput(attrs={
-                'class': 'form-control'
-            }),
             'uses_bus': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
         }
         labels = {
-            'first_name': 'الاسم الأول',
-            'last_name': 'اسم الرباعي',
-            'date_of_birth': 'تاريخ الميلاد',
+            'first_name':      'الاسم الأول',
+            'last_name':       'اسم الرباعي',
+            'date_of_birth':   'تاريخ الميلاد',
             'emergency_phone': 'رقم موبايل الطوارئ',
-            'uses_bus': 'الاشتراك في خدمة الباص',
-            'bus_notes': 'ملاحظات الباص',
-            'profile_picture': 'صورة الطالب',
-            'notes': 'ملاحظات',
+            'uses_bus':        'الاشتراك في خدمة الباص',
+            'bus_notes':       'ملاحظات الباص',
+            'notes':           'ملاحظات',
         }
 
     def clean_date_of_birth(self):
         from datetime import date
 
-        dob = self.cleaned_data.get('date_of_birth')
+        dob   = self.cleaned_data.get('date_of_birth')
         today = date.today()
-        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        age   = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
         settings = SiteSettings.get_settings()
         if age < settings.min_age_limit or age > settings.max_age_limit:
             raise forms.ValidationError(
-                f'عمر الطالب يجب أن يكون بين {settings.min_age_limit} و {settings.max_age_limit} سنة'
+                f'عمر الطالب يجب أن يكون بين {settings.min_age_limit} '
+                f'و {settings.max_age_limit} سنة'
             )
         return dob
 
     def clean(self):
-        cleaned = super().clean()
-        uses_bus = cleaned.get('uses_bus')
+        cleaned   = super().clean()
+        uses_bus  = cleaned.get('uses_bus')
         bus_notes = cleaned.get('bus_notes')
 
         if not uses_bus:
@@ -131,53 +127,52 @@ class TransferStudentForm(forms.Form):
 
 class StudentUpdateForm(forms.ModelForm):
     class Meta:
-        model = Student
+        model  = Student
         fields = [
             'first_name',
             'last_name',
             'date_of_birth',
-            'profile_picture',
+            'emergency_phone',
             'memorized_surahs',
             'uses_bus',
             'bus_notes',
             'status',
-            'notes'
+            'notes',
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name':  forms.TextInput(attrs={'class': 'form-control'}),
             'date_of_birth': forms.DateInput(
                 attrs={'class': 'form-control', 'type': 'date'},
                 format='%Y-%m-%d'
             ),
-            'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'emergency_phone': forms.TextInput(attrs={'class': 'form-control'}),
             'memorized_surahs': forms.CheckboxSelectMultiple(),
-            'uses_bus': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'bus_notes': forms.TextInput(attrs={'class': 'form-control'}),
-            'status': forms.Select(attrs={'class': 'form-select'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'uses_bus':   forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'bus_notes':  forms.TextInput(attrs={'class': 'form-control'}),
+            'status':     forms.Select(attrs={'class': 'form-select'}),
+            'notes':      forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
         labels = {
-            'first_name': 'الاسم الأول',
-            'last_name': 'اسم الرباعي',
-            'date_of_birth': 'تاريخ الميلاد',
-            'profile_picture': 'صورة الطالب',
+            'first_name':      'الاسم الأول',
+            'last_name':       'اسم الرباعي',
+            'date_of_birth':   'تاريخ الميلاد',
+            'emergency_phone': 'رقم موبايل الطوارئ',
             'memorized_surahs': 'السور المحفوظة',
-            'uses_bus': 'يشترك في الباص',
-            'bus_notes': 'ملاحظات الباص',
-            'status': 'الحالة',
-            'notes': 'ملاحظات عامة',
-            'emergency_phone': 'رقم موبايل الطوارئ'
+            'uses_bus':        'يشترك في الباص',
+            'bus_notes':       'ملاحظات الباص',
+            'status':          'الحالة',
+            'notes':           'ملاحظات عامة',
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date_of_birth'].input_formats = ['%Y-%m-%d']
-        self.fields['memorized_surahs'].queryset = Surah.objects.all().order_by('number')
+        self.fields['memorized_surahs'].queryset   = Surah.objects.all().order_by('number')
 
     def clean(self):
-        cleaned = super().clean()
-        uses_bus = cleaned.get('uses_bus')
+        cleaned   = super().clean()
+        uses_bus  = cleaned.get('uses_bus')
         bus_notes = cleaned.get('bus_notes')
 
         if not uses_bus:
@@ -206,21 +201,31 @@ class ParentRegisterForm(forms.ModelForm):
     )
 
     class Meta:
-        model = User
+        model  = User
         fields = ['first_name', 'last_name', 'username', 'phone']
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'الاسم الأول'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم الرباعي'}),
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المستخدم'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم الهاتف'}),
-            'emergency_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'رقم موبايل الطوارئ'})
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'الاسم الأول'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'اسم الرباعي'
+            }),
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'اسم المستخدم'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'رقم الهاتف'
+            }),
         }
         labels = {
             'first_name': 'اسم ولي الأمر',
-            'last_name': 'اسم الرباعي',
-            'username': 'اسم المستخدم',
-            'phone': 'رقم الهاتف',
-            'emergency_phone': 'رقم موبايل الطوارئ'
+            'last_name':  'اسم الرباعي',
+            'username':   'اسم المستخدم',
+            'phone':      'رقم الهاتف',
         }
 
     def clean_username(self):
@@ -236,16 +241,3 @@ class ParentRegisterForm(forms.ModelForm):
         if p1 and p2 and p1 != p2:
             raise forms.ValidationError('كلمتا المرور غير متطابقتين')
         return cleaned
-   
-class StudentPhotoForm(forms.ModelForm):
-    """تغيير صورة الطالب — لولي الأمر فقط"""
-    class Meta:
-        model  = Student
-        fields = ['profile_picture']
-        widgets = {
-            'profile_picture': forms.ClearableFileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/*'
-            }),
-        }
-        labels = {'profile_picture': 'صورة الطالب'}
