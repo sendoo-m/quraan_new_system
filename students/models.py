@@ -159,3 +159,4 @@ class Student(models.Model):
         verbose_name        = 'طالب'
         verbose_name_plural = 'الطلاب'
         ordering            = ['first_name', 'last_name']
+        unique_together     = [['parent', 'first_name', 'last_name']]  # ← جديد

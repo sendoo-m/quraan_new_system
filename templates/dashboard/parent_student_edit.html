@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% block title %}تعديل بيانات {{ child.get_full_name }} | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تعديل بيانات الطالب{% endblock %}
+
+{% block content %}
+<style>
+:root {
+    --pe-primary: #01696f;
+    --pe-surface: #ffffff;
+    --pe-border:  rgba(15,23,42,0.08);
+    --pe-error:   #dc2626;
+    --pe-radius:  16px;
+    --pe-radius-sm: 10px;
+    --pe-shadow:  0 2px 12px rgba(15,23,42,0.06);
+}
+
+.pe-header {
+    background: linear-gradient(135deg, var(--pe-primary) 0%, #0a8a91 100%);
+    border-radius: var(--pe-radius);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    display: flex; align-items: center; gap: 1rem;
+}
+.pe-header-icon {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.pe-header-icon svg { width: 24px; height: 24px; stroke: #fff; }
+.pe-header h1 { font-size: 1.25rem; font-weight: 800; margin: 0 0 .2rem; }
+.pe-header p  { margin: 0; font-size: .88rem; opacity: .85; }
+
+.pe-card {
+    background: var(--pe-surface);
+    border: 1px solid var(--pe-border);
+    border-radius: var(--pe-radius);
+    box-shadow: var(--pe-shadow);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+.pe-card-header {
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid var(--pe-border);
+    background: #fafbfc;
+    display: flex; align-items: center; gap: .5rem;
+}
+.pe-card-title {
+    font-size: .93rem; font-weight: 800;
+    color: #0f172a; margin: 0;
+    display: flex; align-items: center; gap: .5rem;
+}
+.pe-card-title svg { width: 16px; height: 16px; stroke: var(--pe-primary); }
+.pe-card-body { padding: 1.25rem; }
+
+.field-block { margin-bottom: .9rem; }
+.field-block:last-child { margin-bottom: 0; }
+.field-label {
+    display: block; font-size: .85rem;
+    font-weight: 700; color: #374151; margin-bottom: .4rem;
+}
+.field-error { color: var(--pe-error); font-size: .8rem; margin-top: .3rem; }
+.field-error:empty { display: none; }
+
+.pe-card .form-control,
+.pe-card input[type="text"],
+.pe-card input[type="tel"],
+.pe-card input[type="date"],
+.pe-card select,
+.pe-card textarea {
+    border-radius: var(--pe-radius-sm) !important;
+    border: 1.5px solid #e2e8f0;
+    padding: .6rem .85rem;
+    font-size: .9rem;
+    transition: border-color .18s, box-shadow .18s;
+    min-height: 44px; width: 100%;
+    background: #fff; color: #0f172a;
+}
+.pe-card .form-control:focus,
+.pe-card input:focus,
+.pe-card select:focus,
+.pe-card textarea:focus {
+    border-color: var(--pe-primary) !important;
+    box-shadow: 0 0 0 3px rgba(1,105,111,.12) !important;
+    outline: none;
+}
+
+.memorized-scroll {
+    max-height: 300px; overflow-y: auto;
+    border: 1.5px solid #e2e8f0;
+    border-radius: var(--pe-radius-sm);
+    padding: .75rem .9rem; background: #fafbfc;
+}
+.memorized-scroll::-webkit-scrollbar { width: 5px; }
+.memorized-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+/* بطاقات القاعات */
+.hall-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .75rem;
+}
+.hall-card {
+    border: 2px solid #e2e8f0;
+    border-radius: var(--pe-radius-sm);
+    padding: .85rem 1rem;
+    cursor: pointer;
+    transition: border-color .18s, background .18s, box-shadow .18s;
+    position: relative;
+}
+.hall-card:hover {
+    border-color: var(--pe-primary);
+    background: rgba(1,105,111,.04);
+    box-shadow: 0 2px 8px rgba(1,105,111,.12);
+}
+.hall-card input[type="radio"] { display: none; }
+.hall-card.selected {
+    border-color: var(--pe-primary);
+    background: rgba(1,105,111,.07);
+}
+.hall-card.selected::after {
+    content: '✓';
+    position: absolute; top: .5rem; left: .5rem;
+    width: 20px; height: 20px;
+    background: var(--pe-primary); color: #fff;
+    border-radius: 50%; font-size: .75rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.hall-name { font-weight: 700; font-size: .9rem; color: #0f172a; margin-bottom: .3rem; }
+.hall-meta { font-size: .78rem; color: #6b7280; display: flex; flex-direction: column; gap: .15rem; }
+.hall-badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .72rem; font-weight: 600;
+    padding: .15rem .5rem; border-radius: 20px;
+    background: rgba(1,105,111,.1); color: var(--pe-primary);
+    margin-top: .35rem;
+}
+
+/* الشريط السفلي */
+.pe-actions {
+    background: var(--pe-surface);
+    border: 1px solid var(--pe-border);
+    border-radius: var(--pe-radius);
+    box-shadow: var(--pe-shadow);
+    padding: 1rem 1.25rem;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.btn-save {
+    min-width: 160px; min-height: 44px;
+    border-radius: 12px; font-weight: 700; font-size: .93rem;
+    padding: .65rem 1.5rem;
+    background: var(--pe-primary); color: #fff;
+    border: none; cursor: pointer;
+    transition: background .18s, box-shadow .18s, transform .12s;
+    display: flex; align-items: center; gap: .5rem;
+}
+.btn-save:hover {
+    background: #0a8a91;
+    box-shadow: 0 4px 14px rgba(1,105,111,.25);
+    transform: translateY(-1px);
+}
+.btn-save svg { width: 17px; height: 17px; stroke: #fff; }
+
+@media (max-width: 767.98px) {
+    .pe-header { flex-direction: column; align-items: flex-start; }
+    .pe-actions { flex-direction: column; align-items: stretch; }
+    .btn-save  { width: 100%; justify-content: center; }
+    .hall-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<!-- هيدر -->
+<div class="pe-header">
+    <div class="pe-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+    </div>
+    <div>
+        <h1>تعديل بيانات {{ child.get_full_name }}</h1>
+        <p>يمكنك تعديل بيانات ابنك واختيار قاعة مناسبة إن أردت</p>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row g-4">
+
+        <!-- بيانات الطالب -->
+        <div class="col-12 col-lg-7">
+            <div class="pe-card">
+                <div class="pe-card-header">
+                    <h2 class="pe-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        البيانات الأساسية
+                    </h2>
+                </div>
+                <div class="pe-card-body">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger rounded-3 mb-3">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ form.first_name.label }}</label>
+                                {{ form.first_name }}
+                                <div class="field-error">{{ form.first_name.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ form.last_name.label }}</label>
+                                {{ form.last_name }}
+                                <div class="field-error">{{ form.last_name.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ form.date_of_birth.label }}</label>
+                                {{ form.date_of_birth }}
+                                <div class="field-error">{{ form.date_of_birth.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block">
+                                <label class="field-label">{{ form.emergency_phone.label }}</label>
+                                {{ form.emergency_phone }}
+                                <div class="field-error">{{ form.emergency_phone.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الباص والملاحظات -->
+            <div class="pe-card">
+                <div class="pe-card-header">
+                    <h2 class="pe-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                        المواصلات والملاحظات
+                    </h2>
+                </div>
+                <div class="pe-card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 d-flex align-items-center">
+                            <div class="form-check mt-3">
+                                {{ form.uses_bus }}
+                                <label class="form-check-label fw-semibold" for="{{ form.uses_bus.id_for_label }}">
+                                    {{ form.uses_bus.label }}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="field-block mb-0">
+                                <label class="field-label">{{ form.bus_notes.label }}</label>
+                                {{ form.bus_notes }}
+                                <div class="field-error">{{ form.bus_notes.errors }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-block mb-0">
+                                <label class="field-label">{{ form.notes.label }}</label>
+                                {{ form.notes }}
+                                <div class="field-error">{{ form.notes.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- السور + القاعات -->
+        <div class="col-12 col-lg-5">
+
+            <!-- السور المحفوظة -->
+            <div class="pe-card">
+                <div class="pe-card-header">
+                    <h2 class="pe-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        السور المحفوظة
+                    </h2>
+                </div>
+                <div class="pe-card-body">
+                    <div class="field-error mb-2">{{ form.memorized_surahs.errors }}</div>
+                    <div class="memorized-scroll">{{ form.memorized_surahs }}</div>
+                </div>
+            </div>
+
+            <!-- اختيار القاعة -->
+            {% if available_halls %}
+            <div class="pe-card">
+                <div class="pe-card-header">
+                    <h2 class="pe-card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        اختيار القاعة
+                        <span style="font-size:.75rem;font-weight:500;color:#6b7280;margin-right:.25rem">(اختياري)</span>
+                    </h2>
+                </div>
+                <div class="pe-card-body">
+                    {% if child.hall %}
+                        <div class="alert alert-info rounded-3 py-2 px-3 mb-3" style="font-size:.85rem;">
+                            القاعة الحالية: <strong>{{ child.hall.name }}</strong>
+                            — اختر قاعة أخرى للتغيير أو اتركه فارغاً للإبقاء على الحالية
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-3" style="font-size:.85rem;">
+                            الطالب غير مُسكَّن بعد — يمكنك اختيار قاعة مناسبة
+                        </p>
+                    {% endif %}
+
+                    <div class="hall-grid" id="hallGrid">
+                        {% for hall in available_halls %}
+                        <label class="hall-card {% if child.hall_id == hall.id %}selected{% endif %}"
+                               for="hall_{{ hall.id }}">
+                            <input type="radio" name="selected_hall"
+                                   id="hall_{{ hall.id }}" value="{{ hall.id }}"
+                                   {% if child.hall_id == hall.id %}checked{% endif %}>
+                            <div class="hall-name">{{ hall.name }}</div>
+                            <div class="hall-meta">
+                                {% if hall.location %}
+                                    <span>📍 {{ hall.location }}</span>
+                                {% endif %}
+                                <span>👥 {{ hall.get_current_students_count }}/{{ hall.max_students }}</span>
+                            </div>
+                            <span class="hall-badge">
+                                {{ hall.age_group.name }}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- أزرار الحفظ -->
+    <div class="pe-actions">
+        <a href="{% url 'dashboard:parent' %}" class="btn btn-outline-secondary px-4">
+            رجوع للوحة التحكم
+        </a>
+        <button type="submit" class="btn-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            حفظ التعديلات
+        </button>
+    </div>
+</form>
+
+<script>
+// تفعيل اختيار القاعة بالضغط على البطاقة
+document.querySelectorAll('.hall-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.hall-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        card.querySelector('input[type="radio"]').checked = true;
+    });
+});
+</script>
+{% endblock %}

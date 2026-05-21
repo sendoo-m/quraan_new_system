@@ -12,4 +12,7 @@ urlpatterns = [
     path('parent/report/<int:student_id>/',
                              views_dashboard.ParentStudentReportView.as_view(),    name='student_report'),
     path('parent/profile/',  views_dashboard.ParentProfileView.as_view(),          name='parent_profile'),
+    # ← جديد
+    path('parent/child/<int:student_id>/edit/',
+                             views_dashboard.ParentStudentUpdateView.as_view(),    name='parent_student_edit'),
 ]

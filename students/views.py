@@ -122,23 +122,23 @@ class StudentRegisterView(LoginRequiredMixin, View):
                 messages.error(request, '❌ التسجيل مغلق حالياً، لا يمكن إضافة طلاب جدد')
                 return redirect('dashboard:parent')
 
-        form    = StudentRegistrationForm(request.POST)
+        # ← تحديد ولي الأمر مبكراً لتمريره للفورم
+        if request.user.is_parent:
+            parent = request.user
+        else:
+            parent_id = request.POST.get('parent_id')
+            parent = get_object_or_404(User, id=parent_id, role=User.ROLE_PARENT) if parent_id else None
+
+        form    = StudentRegistrationForm(request.POST, parent=parent)  # ← تمرير parent
         parents = User.objects.filter(role=User.ROLE_PARENT, is_active=True)
 
+        if not request.user.is_parent and not parent:
+            messages.error(request, 'يجب اختيار ولي أمر')
+            return render(request, self.template_name, {'form': form, 'parents': parents})
+
         if form.is_valid():
-            student = form.save(commit=False)
-
-            if request.user.is_parent:
-                student.parent = request.user
-            else:
-                parent_id = request.POST.get('parent_id')
-                if not parent_id:
-                    messages.error(request, 'يجب اختيار ولي أمر')
-                    return render(request, self.template_name, {
-                        'form': form, 'parents': parents
-                    })
-                student.parent = get_object_or_404(User, id=parent_id, role=User.ROLE_PARENT)
-
+            student        = form.save(commit=False)
+            student.parent = parent
             student.status = Student.STATUS_PENDING
             student.save()
             form.save_m2m()
@@ -156,7 +156,6 @@ class StudentRegisterView(LoginRequiredMixin, View):
             return redirect('dashboard:parent' if request.user.is_parent else 'students:list')
 
         return render(request, self.template_name, {'form': form, 'parents': parents})
-
 
 class StudentDetailView(LoginRequiredMixin, View):
 

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views import View
-from django.db.models import Count, Q
+from django.db.models import Count, Q, F
 from datetime import date
 
 from accounts.permissions import (
@@ -13,6 +13,7 @@ from accounts.permissions import (
 )
 from accounts.forms_settings import ParentProfileForm
 from students.models import Student
+from students.forms import StudentUpdateForm
 from halls.models import Hall
 from accounts.models import User
 from attendance.models import StudentAttendance, StaffAttendance
@@ -188,3 +189,71 @@ class ParentProfileView(ParentRequiredMixin, View):
             messages.success(request, '✅ تم تحديث بياناتك بنجاح')
             return redirect('dashboard:parent_profile')
         return render(request, self.template_name, {'form': form})
+    
+from students.forms import ParentStudentUpdateForm
+
+
+# ============================================================
+# ✏️ تعديل بيانات الطالب من ولي الأمر
+# ============================================================
+
+class ParentStudentUpdateView(View):
+    template_name = 'dashboard/parent_student_edit.html'
+
+    def get_available_halls(self, child):
+        student_age = child.calculate_age()
+        return Hall.objects.filter(
+            is_active=True,
+            age_group__is_active=True,
+            age_group__min_age__lte=student_age,
+            age_group__max_age__gte=student_age,
+        ).annotate(
+            current_students_count=Count('students')
+        ).filter(
+            current_students_count__lt=F('max_students')
+        ).select_related('age_group')
+
+    def get(self, request, student_id):
+        child = get_object_or_404(Student, pk=student_id, parent=request.user)
+        form = StudentUpdateForm(instance=child)
+        available_halls = self.get_available_halls(child)
+
+        return render(request, self.template_name, {
+            'child': child,
+            'form': form,
+            'available_halls': available_halls,
+        })
+
+    def post(self, request, student_id):
+        child = get_object_or_404(Student, pk=student_id, parent=request.user)
+        form = StudentUpdateForm(request.POST, instance=child)
+        available_halls = self.get_available_halls(child)
+
+        if form.is_valid():
+            student = form.save(commit=False)
+            selected_hall_id = request.POST.get('selected_hall')
+
+            if selected_hall_id:
+                hall = available_halls.filter(id=selected_hall_id).first()
+
+                if not hall:
+                    messages.error(request, '❌ القاعة المختارة غير متاحة أو غير مناسبة لسن الطالب أو ممتلئة')
+                    return render(request, self.template_name, {
+                        'child': child,
+                        'form': form,
+                        'available_halls': available_halls,
+                    })
+
+                student.hall = hall
+
+            student.save()
+            form.save_m2m()
+
+            messages.success(request, '✅ تم حفظ التعديلات بنجاح')
+            return redirect('dashboard:parent')
+
+        return render(request, self.template_name, {
+            'child': child,
+            'form': form,
+            'available_halls': available_halls,
+        })

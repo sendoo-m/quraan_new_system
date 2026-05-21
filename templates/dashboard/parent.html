@@ -249,21 +249,34 @@
                     <i class="bi bi-book-fill"></i>{{ item.surahs_count }} سورة
                 </div>
 
-                {# ← زر التقرير — داخل الهيدر مباشرة #}
+                {# ← زر تعديل البيانات ← جديد هنا بجانب زر التقرير #}
+                <a href="{% url 'dashboard:parent_student_edit' child.pk %}"
+                   style="background:rgba(255,255,255,.18); color:#fff;
+                          border:1.5px solid rgba(255,255,255,.3); border-radius:10px;
+                          padding:.35rem .85rem; font-size:.78rem; font-weight:800;
+                          text-decoration:none; display:flex; align-items:center; gap:.35rem;
+                          white-space:nowrap; transition:background .15s; flex-shrink:0;"
+                   onmouseover="this.style.background='rgba(255,255,255,.30)'"
+                   onmouseout="this.style.background='rgba(255,255,255,.18)'"
+                   title="تعديل بيانات الطالب">
+                    <i class="bi bi-pencil-square"></i>
+                    <span class="d-none d-sm-inline">تعديل</span>
+                </a>
+
+                {# ← زر التقرير #}
                 <a href="{% url 'dashboard:student_report' child.pk %}"
-                style="background:rgba(255,255,255,.18); color:#fff;
-                        border:1.5px solid rgba(255,255,255,.3); border-radius:10px;
-                        padding:.35rem .85rem; font-size:.78rem; font-weight:800;
-                        text-decoration:none; display:flex; align-items:center; gap:.35rem;
-                        white-space:nowrap; transition:background .15s; flex-shrink:0;"
-                onmouseover="this.style.background='rgba(255,255,255,.30)'"
-                onmouseout="this.style.background='rgba(255,255,255,.18)'"
-                title="عرض التقرير الكامل">
+                   style="background:rgba(255,255,255,.18); color:#fff;
+                          border:1.5px solid rgba(255,255,255,.3); border-radius:10px;
+                          padding:.35rem .85rem; font-size:.78rem; font-weight:800;
+                          text-decoration:none; display:flex; align-items:center; gap:.35rem;
+                          white-space:nowrap; transition:background .15s; flex-shrink:0;"
+                   onmouseover="this.style.background='rgba(255,255,255,.30)'"
+                   onmouseout="this.style.background='rgba(255,255,255,.18)'"
+                   title="عرض التقرير الكامل">
                     <i class="bi bi-bar-chart-fill"></i>
                     <span class="d-none d-sm-inline">التقرير</span>
                 </a>
             </div>
-
             <!-- تابز -->
             <div class="child-tabs" id="tabs-{{ forloop.counter }}">
                 <button class="child-tab active"
