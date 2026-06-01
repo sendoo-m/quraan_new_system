@@ -51,20 +51,25 @@
 
         <div class="page-card p-4 mb-4">
             <div class="section-title">الطاقم المسؤول</div>
+
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">{{ form.general_supervisor.label }}</label>
-                    {{ form.general_supervisor }}
-                    <div class="text-danger small mt-1">{{ form.general_supervisor.errors }}</div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">{{ form.general_supervisors.label }}</label>
+                    {{ form.general_supervisors }}
+                    <div class="form-text">
+                        يمكنك اختيار أكثر من مشرف عام لنفس القاعة.
+                        على الكمبيوتر اضغط Ctrl أثناء الاختيار، أو Shift لاختيار مجموعة متتالية.
+                    </div>
+                    <div class="text-danger small mt-1">{{ form.general_supervisors.errors }}</div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ form.teacher.label }}</label>
                     {{ form.teacher }}
                     <div class="text-danger small mt-1">{{ form.teacher.errors }}</div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ form.supervisor.label }}</label>
                     {{ form.supervisor }}
                     <div class="text-danger small mt-1">{{ form.supervisor.errors }}</div>
@@ -74,6 +79,7 @@
 
         <div class="page-card p-4">
             <div class="section-title">شروط القبول والحالة</div>
+
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">{{ form.current_juz.label }}</label>
@@ -87,12 +93,22 @@
                     <div class="text-danger small mt-1">{{ form.required_completed_juz_count.errors }}</div>
                 </div>
 
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">{{ form.schedule_template.label }}</label>
+                    {{ form.schedule_template }}
+                    <div class="form-text">
+                        يمكنك اختيار جدول نموذجي للقاعة، أو تركه بدون اختيار.
+                    </div>
+                    <div class="text-danger small mt-1">{{ form.schedule_template.errors }}</div>
+                </div>
+
                 <div class="col-12 d-flex align-items-center">
                     <div class="form-check mt-3">
                         {{ form.is_active }}
                         <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
                             {{ form.is_active.label }}
                         </label>
+                        <div class="text-danger small mt-1">{{ form.is_active.errors }}</div>
                     </div>
                 </div>
             </div>
@@ -102,11 +118,15 @@
     <div class="col-lg-4">
         <div class="page-card p-4 position-sticky" style="top: 92px;">
             <div class="section-title">الإجراءات</div>
+
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-check-circle ms-2"></i>حفظ القاعة
                 </button>
-                <a href="{% url 'halls:list' %}" class="btn btn-outline-secondary">رجوع</a>
+
+                <a href="{% url 'halls:list' %}" class="btn btn-outline-secondary">
+                    رجوع
+                </a>
             </div>
         </div>
     </div>

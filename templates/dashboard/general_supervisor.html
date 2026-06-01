@@ -60,7 +60,69 @@
             {% endif %}
         </div>
     </div>
+<div class="page-card p-4 mb-4">
+    <div class="section-title">القاعات التابعة للإشراف</div>
 
+    {% if halls %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>اسم القاعة</th>
+                        <th>المرحلة / الفئة العمرية</th>
+                        <th>المعلم</th>
+                        <th>مشرف القاعة</th>
+                        <th>السعة</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall in halls %}
+                        <tr>
+                            <td class="fw-bold">{{ hall.name }}</td>
+
+                            <td>
+                                {% if hall.age_group %}
+                                    {{ hall.age_group.name }}
+                                {% else %}
+                                    <span class="text-muted">غير محدد</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if hall.teacher %}
+                                    {{ hall.teacher.get_full_name|default:hall.teacher.username }}
+                                {% else %}
+                                    <span class="text-muted">لا يوجد</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if hall.supervisor %}
+                                    {{ hall.supervisor.get_full_name|default:hall.supervisor.username }}
+                                {% else %}
+                                    <span class="text-muted">لا يوجد</span>
+                                {% endif %}
+                            </td>
+
+                            <td>{{ hall.max_students }}</td>
+
+                            <td>
+                                {% if hall.is_active %}
+                                    <span class="badge text-bg-success">نشطة</span>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">غير نشطة</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">لا توجد قاعات متاحة حاليًا.</div>
+    {% endif %}
+</div>
     <div class="col-lg-6">
         <div class="page-card p-4 h-100">
             <div class="section-title">غياب الموظفين اليوم</div>

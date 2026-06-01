@@ -35,4 +35,5 @@ urlpatterns = [
          views.TemplateEntryDeleteView.as_view(),        name='template_entry_delete'),
     path('schedule-templates/<int:pk>/assign-halls/',
          views.TemplateAssignHallsView.as_view(), name='template_assign_halls'),
+    path('<int:pk>/export-excel/', views.HallExportExcelView.as_view(), name='export_excel'),
 ]

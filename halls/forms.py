@@ -1,22 +1,106 @@
 from django import forms
 from .models import Hall, Subject, HallSchedule
-from accounts.models import User
+from accounts.models import User, GeneralSupervisorHallAssignment
 from students.models import AgeGroup
 
+# class HallForm(forms.ModelForm):
+#     class Meta:
+#         model = Hall
+#         fields = [
+#             'name', 'location', 'age_group', 'max_students',
+#             'general_supervisor', 'teacher', 'supervisor',
+#             'current_juz', 'required_completed_juz_count', 'schedule_template', 'is_active',
+#         ]
+#         widgets = {
+#             'name': forms.TextInput(attrs={'class': 'form-control'}),
+#             'location': forms.TextInput(attrs={'class': 'form-control'}),
+#             'age_group': forms.Select(attrs={'class': 'form-select'}),
+#             'max_students': forms.NumberInput(attrs={'class': 'form-control'}),
+#             'general_supervisor': forms.Select(attrs={'class': 'form-select'}),
+#             'teacher': forms.Select(attrs={'class': 'form-select'}),
+#             'supervisor': forms.Select(attrs={'class': 'form-select'}),
+#             'current_juz': forms.NumberInput(attrs={'class': 'form-control'}),
+#             'required_completed_juz_count': forms.NumberInput(attrs={'class': 'form-control'}),
+#             'schedule_template': forms.Select(attrs={'class': 'form-select'}),
+#             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         self.user = kwargs.pop('user', None)
+#         super().__init__(*args, **kwargs)
+
+#         self.fields['age_group'].queryset = AgeGroup.objects.filter(is_active=True)
+#         self.fields['age_group'].empty_label = '— اختر الفئة العمرية —'
+
+#         self.fields['general_supervisor'].queryset = User.objects.filter(
+#             role=User.ROLE_GENERAL_SUPERVISOR,
+#             is_active=True
+#         )
+#         self.fields['teacher'].queryset = User.objects.filter(
+#             role=User.ROLE_TEACHER,
+#             is_active=True
+#         )
+#         self.fields['supervisor'].queryset = User.objects.filter(
+#             role=User.ROLE_HALL_SUPERVISOR,
+#             is_active=True
+#         )
+
+#         if self.user and self.user.is_general_supervisor and not self.user.is_general_manager:
+#             self.fields['general_supervisor'].queryset = User.objects.filter(pk=self.user.pk)
+#             self.fields['general_supervisor'].initial = self.user
+
+#         self.fields['general_supervisor'].empty_label = '— اختر المشرف العام —'
+#         self.fields['teacher'].empty_label = '— اختر المعلم —'
+#         self.fields['supervisor'].empty_label = '— اختر المشرف —'
+
+#     def clean_current_juz(self):
+#         value = self.cleaned_data.get('current_juz')
+#         if value < 1 or value > 30:
+#             raise forms.ValidationError('رقم الجزء يجب أن يكون بين 1 و 30')
+#         return value
+
+#     def clean_required_completed_juz_count(self):
+#         value = self.cleaned_data.get('required_completed_juz_count')
+#         if value < 0 or value > 30:
+#             raise forms.ValidationError('عدد الأجزاء المطلوبة يجب أن يكون بين 0 و 30')
+#         return value
+
+#     def clean_max_students(self):
+#         value = self.cleaned_data.get('max_students')
+#         if value < 1:
+#             raise forms.ValidationError('أقصى عدد للطلاب يجب أن يكون أكبر من صفر')
+#         if self.instance and self.instance.pk:
+#             current_active = self.instance.students.filter(status='active').count()
+#             if value < current_active:
+#                 raise forms.ValidationError(
+#                     f'لا يمكن جعل السعة أقل من عدد الطلاب النشطين الحالي ({current_active})'
+#                 )
+#         return value
+
 class HallForm(forms.ModelForm):
+    general_supervisors = forms.ModelMultipleChoiceField(
+        queryset=User.objects.none(),
+        required=False,
+        label='المشرفون العامون',
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select',
+            'size': '6',
+        })
+    )
+
     class Meta:
         model = Hall
         fields = [
             'name', 'location', 'age_group', 'max_students',
-            'general_supervisor', 'teacher', 'supervisor',
-            'current_juz', 'required_completed_juz_count', 'schedule_template', 'is_active',
+            'teacher', 'supervisor',
+            'current_juz', 'required_completed_juz_count',
+            'schedule_template', 'is_active',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'age_group': forms.Select(attrs={'class': 'form-select'}),
             'max_students': forms.NumberInput(attrs={'class': 'form-control'}),
-            'general_supervisor': forms.Select(attrs={'class': 'form-select'}),
             'teacher': forms.Select(attrs={'class': 'form-select'}),
             'supervisor': forms.Select(attrs={'class': 'form-select'}),
             'current_juz': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -32,26 +116,70 @@ class HallForm(forms.ModelForm):
         self.fields['age_group'].queryset = AgeGroup.objects.filter(is_active=True)
         self.fields['age_group'].empty_label = '— اختر الفئة العمرية —'
 
-        self.fields['general_supervisor'].queryset = User.objects.filter(
+        self.fields['general_supervisors'].queryset = User.objects.filter(
             role=User.ROLE_GENERAL_SUPERVISOR,
             is_active=True
         )
+
         self.fields['teacher'].queryset = User.objects.filter(
             role=User.ROLE_TEACHER,
             is_active=True
         )
+
         self.fields['supervisor'].queryset = User.objects.filter(
             role=User.ROLE_HALL_SUPERVISOR,
             is_active=True
         )
 
-        if self.user and self.user.is_general_supervisor and not self.user.is_general_manager:
-            self.fields['general_supervisor'].queryset = User.objects.filter(pk=self.user.pk)
-            self.fields['general_supervisor'].initial = self.user
-
-        self.fields['general_supervisor'].empty_label = '— اختر المشرف العام —'
         self.fields['teacher'].empty_label = '— اختر المعلم —'
         self.fields['supervisor'].empty_label = '— اختر المشرف —'
+
+        # عند تعديل قاعة موجودة: تحميل المشرفين العامين المسندين لها
+        if self.instance and self.instance.pk:
+            assigned_supervisors = User.objects.filter(
+                hall_assignments__hall=self.instance
+            )
+
+            # توافق مع النظام القديم لو القاعة كان بها مشرف عام واحد في Hall.general_supervisor
+            if not assigned_supervisors.exists() and getattr(self.instance, 'general_supervisor_id', None):
+                assigned_supervisors = User.objects.filter(pk=self.instance.general_supervisor_id)
+
+            self.fields['general_supervisors'].initial = assigned_supervisors
+
+        # لو المستخدم الحالي مشرف عام وليس مدير عام، خليه يشوف نفسه فقط
+        if self.user and self.user.is_general_supervisor and not self.user.is_general_manager:
+            self.fields['general_supervisors'].queryset = User.objects.filter(pk=self.user.pk)
+            self.fields['general_supervisors'].initial = User.objects.filter(pk=self.user.pk)
+
+    def save(self, commit=True):
+        hall = super().save(commit=False)
+
+        selected_supervisors = self.cleaned_data.get('general_supervisors')
+
+        # توافق مع الحقل القديم الموجود في موديل Hall لو كان موجودًا
+        # نخزن أول مشرف عام مختار في Hall.general_supervisor
+        if hasattr(hall, 'general_supervisor'):
+            first_supervisor = selected_supervisors.first() if selected_supervisors else None
+            hall.general_supervisor = first_supervisor
+
+        if commit:
+            hall.save()
+            self.save_m2m()
+            self.save_general_supervisors(hall)
+
+        return hall
+
+    def save_general_supervisors(self, hall):
+        selected_supervisors = self.cleaned_data.get('general_supervisors')
+
+        GeneralSupervisorHallAssignment.objects.filter(hall=hall).delete()
+
+        if selected_supervisors:
+            for supervisor in selected_supervisors:
+                GeneralSupervisorHallAssignment.objects.create(
+                    hall=hall,
+                    supervisor=supervisor
+                )
 
     def clean_current_juz(self):
         value = self.cleaned_data.get('current_juz')

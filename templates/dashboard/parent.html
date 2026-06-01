@@ -303,21 +303,53 @@
                     {% with s=attend.status %}
                     <div class="info-chip attend-{{ s }}">
                         <div class="info-chip-icon">
-                            {% if s == 'present'  %}<i class="bi bi-check-circle-fill"></i>
-                            {% elif s == 'absent'  %}<i class="bi bi-x-circle-fill"></i>
-                            {% elif s == 'late'    %}<i class="bi bi-clock-fill"></i>
-                            {% else                %}<i class="bi bi-shield-fill-check"></i>{% endif %}
+                            {% if s == 'present' %}
+                                <i class="bi bi-check-circle-fill"></i>
+                            {% elif s == 'absent' %}
+                                <i class="bi bi-x-circle-fill"></i>
+                            {% elif s == 'late' %}
+                                <i class="bi bi-clock-fill"></i>
+                            {% else %}
+                                <i class="bi bi-shield-fill-check"></i>
+                            {% endif %}
                         </div>
+
                         <div class="flex-grow-1">
                             <div class="info-chip-label">حضور اليوم — {{ today }}</div>
                             <div class="info-chip-value">{{ attend.get_status_display }}</div>
                         </div>
-                        {% if attend.check_in %}
-                        <div style="font-size:.8rem;color:#64748b;white-space:nowrap;">
-                            <i class="bi bi-clock me-1"></i>{{ attend.arrival_time|time:"H:i" }}
-                        </div>
-                        {% endif %}
                     </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.6rem;">
+                        <div class="info-chip" style="margin-bottom:0;">
+                            <div class="info-chip-icon" style="background:#e0f2fe;color:#0284c7;">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                            </div>
+                            <div>
+                                <div class="info-chip-label">وقت الحضور</div>
+                                {% if attend.arrival_time %}
+                                    <div class="info-chip-value">{{ attend.arrival_time|time:"H:i" }}</div>
+                                {% else %}
+                                    <div class="info-chip-value muted">لم يُسجَّل</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="info-chip" style="margin-bottom:0;">
+                            <div class="info-chip-icon" style="background:#fef3c7;color:#d97706;">
+                                <i class="bi bi-box-arrow-left"></i>
+                            </div>
+                            <div>
+                                <div class="info-chip-label">وقت الانصراف</div>
+                                {% if attend.departure_time %}
+                                    <div class="info-chip-value">{{ attend.departure_time|time:"H:i" }}</div>
+                                {% else %}
+                                    <div class="info-chip-value muted">لم يُسجَّل</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
                     {% if attend.notes %}
                     <div class="notes-card">
                         <i class="bi bi-chat-dots-fill"></i>

@@ -93,38 +93,54 @@ class TeacherDashboard(TeacherRequiredMixin, View):
         }
         return render(request, 'dashboard/teacher.html', context)
 
-
 # ============================================================
 # 🔵 ولي الأمر
 # ============================================================
 class ParentDashboard(ParentRequiredMixin, View):
     def get(self, request):
-        today    = date.today()
+        today = date.today()
+
         children = Student.objects.filter(
             parent=request.user
-        ).prefetch_related('memorized_surahs', 'evaluations')
+        ).select_related(
+            'hall',
+            'age_group'
+        ).prefetch_related(
+            'memorized_surahs',
+            'evaluations',
+            'attendances'
+        )
 
         children_data = []
+
         for child in children:
-            last_eval    = child.evaluations.order_by('-date').first()
-            today_attend = child.attendances.filter(date=today).first()
-            followups    = DailyFollowUp.objects.filter(
-                               hall=child.hall
-                           ).order_by('-date')[:5] if child.hall else []
+            last_eval = child.evaluations.order_by('-date').first()
+
+            today_attend = child.attendances.filter(
+                date=today
+            ).select_related(
+                'hall',
+                'recorded_by'
+            ).first()
+
+            followups = DailyFollowUp.objects.filter(
+                hall=child.hall
+            ).order_by('-date')[:5] if child.hall else []
 
             children_data.append({
-                'student':      child,
-                'last_eval':    last_eval,
+                'student': child,
+                'last_eval': last_eval,
                 'today_attend': today_attend,
-                'followups':    followups,
+                'followups': followups,
                 'surahs_count': child.memorized_surahs.count(),
             })
 
         context = {
             'children_data': children_data,
-            'children':      children,
-            'today':         today,
+            'children': children,
+            'today': today,
         }
+
         return render(request, 'dashboard/parent.html', context)
 
 
@@ -133,42 +149,91 @@ class ParentDashboard(ParentRequiredMixin, View):
 # ============================================================
 class ParentStudentReportView(ParentRequiredMixin, View):
     def get(self, request, student_id):
-        child = get_object_or_404(Student, pk=student_id, parent=request.user)
+        child = get_object_or_404(
+            Student.objects.select_related(
+                'hall',
+                'age_group',
+                'parent'
+            ),
+            pk=student_id,
+            parent=request.user
+        )
 
-        all_attendance = child.attendances.all()
-        attend_stats   = {
-            'present': all_attendance.filter(status='present').count(),
-            'absent':  all_attendance.filter(status='absent').count(),
-            'late':    all_attendance.filter(status='late').count(),
-            'excused': all_attendance.filter(status='excused').count(),
-            'total':   all_attendance.count(),
+        all_attendance = child.attendances.select_related(
+            'hall',
+            'recorded_by'
+        ).all()
+
+        recent_attendances = all_attendance.order_by('-date')[:30]
+
+        attend_stats = {
+            'present': all_attendance.filter(
+                status='present'
+            ).count(),
+
+            'absent': all_attendance.filter(
+                status='absent'
+            ).count(),
+
+            'late': all_attendance.filter(
+                status='late'
+            ).count(),
+
+            'excused': all_attendance.filter(
+                status='excused'
+            ).count(),
+
+            'total': all_attendance.count(),
         }
 
-        all_evals  = child.evaluations.all()
+        all_evals = child.evaluations.all()
+
         eval_stats = {
-            'total':             all_evals.count(),
-            'excellent':         all_evals.filter(memorization_rating='excellent').count(),
-            'good':              all_evals.filter(memorization_rating='good').count(),
-            'average':           all_evals.filter(memorization_rating='average').count(),
-            'weak':              all_evals.filter(memorization_rating='weak').count(),
-            'distinguished':     all_evals.filter(is_distinguished=True).count(),
-            'needs_attention':   all_evals.filter(needs_attention=True).count(),
+            'total': all_evals.count(),
+
+            'excellent': all_evals.filter(
+                memorization_rating='excellent'
+            ).count(),
+
+            'good': all_evals.filter(
+                memorization_rating='good'
+            ).count(),
+
+            'average': all_evals.filter(
+                memorization_rating='average'
+            ).count(),
+
+            'weak': all_evals.filter(
+                memorization_rating='weak'
+            ).count(),
+
+            'distinguished': all_evals.filter(
+                is_distinguished=True
+            ).count(),
+
+            'needs_attention': all_evals.filter(
+                needs_attention=True
+            ).count(),
         }
 
-        recent_evals = all_evals.select_related('teacher').order_by('-date')[:20]
+        recent_evals = all_evals.select_related(
+            'teacher'
+        ).order_by('-date')[:20]
 
         followups = DailyFollowUp.objects.filter(
             hall=child.hall
         ).order_by('-date') if child.hall else []
 
         context = {
-            'child':        child,
+            'child': child,
             'attend_stats': attend_stats,
-            'eval_stats':   eval_stats,
+            'recent_attendances': recent_attendances,
+            'eval_stats': eval_stats,
             'recent_evals': recent_evals,
-            'followups':    followups[:10],
+            'followups': followups[:10],
             'surahs_count': child.memorized_surahs.count(),
         }
+
         return render(request, 'dashboard/student_report.html', context)
 
 
@@ -180,24 +245,49 @@ class ParentProfileView(ParentRequiredMixin, View):
 
     def get(self, request):
         form = ParentProfileForm(instance=request.user)
-        return render(request, self.template_name, {'form': form})
+
+        return render(
+            request,
+            self.template_name,
+            {
+                'form': form,
+            }
+        )
 
     def post(self, request):
-        form = ParentProfileForm(request.POST, instance=request.user)
+        form = ParentProfileForm(
+            request.POST,
+            instance=request.user
+        )
+
         if form.is_valid():
             form.save()
-            messages.success(request, '✅ تم تحديث بياناتك بنجاح')
-            return redirect('dashboard:parent_profile')
-        return render(request, self.template_name, {'form': form})
-    
-from students.forms import ParentStudentUpdateForm
 
+            messages.success(
+                request,
+                '✅ تم تحديث بياناتك بنجاح'
+            )
+
+            return redirect('dashboard:parent_profile')
+
+        return render(
+            request,
+            self.template_name,
+            {
+                'form': form,
+            }
+        )
+    
 
 # ============================================================
 # ✏️ تعديل بيانات الطالب من ولي الأمر
 # ============================================================
 
-class ParentStudentUpdateView(View):
+from students.forms import ParentStudentUpdateForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
+class ParentStudentUpdateView(LoginRequiredMixin, View):
     template_name = 'dashboard/parent_student_edit.html'
 
     def get_available_halls(self, child):
@@ -215,7 +305,7 @@ class ParentStudentUpdateView(View):
 
     def get(self, request, student_id):
         child = get_object_or_404(Student, pk=student_id, parent=request.user)
-        form = StudentUpdateForm(instance=child)
+        form = ParentStudentUpdateForm(instance=child)
         available_halls = self.get_available_halls(child)
 
         return render(request, self.template_name, {
@@ -226,7 +316,7 @@ class ParentStudentUpdateView(View):
 
     def post(self, request, student_id):
         child = get_object_or_404(Student, pk=student_id, parent=request.user)
-        form = StudentUpdateForm(request.POST, instance=child)
+        form = ParentStudentUpdateForm(request.POST, instance=child)
         available_halls = self.get_available_halls(child)
 
         if form.is_valid():
@@ -235,7 +325,6 @@ class ParentStudentUpdateView(View):
 
             if selected_hall_id:
                 hall = available_halls.filter(id=selected_hall_id).first()
-
                 if not hall:
                     messages.error(request, '❌ القاعة المختارة غير متاحة أو غير مناسبة لسن الطالب أو ممتلئة')
                     return render(request, self.template_name, {
@@ -243,7 +332,6 @@ class ParentStudentUpdateView(View):
                         'form': form,
                         'available_halls': available_halls,
                     })
-
                 student.hall = hall
 
             student.save()
@@ -252,6 +340,7 @@ class ParentStudentUpdateView(View):
             messages.success(request, '✅ تم حفظ التعديلات بنجاح')
             return redirect('dashboard:parent')
 
+        # إذا فشل الـ form — أعِد العرض مع الأخطاء
         return render(request, self.template_name, {
             'child': child,
             'form': form,

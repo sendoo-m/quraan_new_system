@@ -29,18 +29,6 @@
 }
 .btn-rp-back:hover { background: rgba(255,255,255,.28); color: #fff; }
 
-/* بطاقات الإحصاء */
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1.1rem; }
-.stat-mini {
-    background: #fff; border: 1px solid rgba(15,23,42,.08);
-    border-radius: 14px; padding: .9rem 1rem;
-    box-shadow: 0 2px 10px rgba(15,23,42,.04);
-    text-align: center;
-}
-.stat-mini-val  { font-size: 1.6rem; font-weight: 900; line-height: 1.1; }
-.stat-mini-lbl  { font-size: .75rem; font-weight: 700; color: #64748b; margin-top: .2rem; }
-
-/* section card */
 .rp-card {
     background: #fff; border: 1px solid rgba(15,23,42,.08);
     border-radius: 16px; overflow: hidden;
@@ -55,9 +43,7 @@
 .rp-card-header i { color: #01696f; }
 .rp-card-body { padding: 1.1rem 1.2rem; }
 
-/* progress bar */
 .rp-progress-row { display: flex; flex-direction: column; gap: .6rem; }
-.rp-prog-item { }
 .rp-prog-head {
     display: flex; justify-content: space-between;
     font-size: .82rem; font-weight: 700; margin-bottom: .3rem;
@@ -67,7 +53,6 @@
 }
 .rp-prog-bar-fill { height: 100%; border-radius: 30px; transition: width .4s; }
 
-/* جدول التقييمات */
 .rp-table thead th {
     background: #f8fafc; font-size: .75rem; font-weight: 700; color: #6b7280;
     text-transform: uppercase; padding: .6rem .9rem;
@@ -80,14 +65,70 @@
 .rp-table tbody tr:last-child td { border-bottom: none; }
 .rp-table tbody tr:hover { background: #f8fafc; }
 
-/* rating badge */
 .rb { border-radius: 20px; padding: .2rem .7rem; font-size: .75rem; font-weight: 700; }
 .rb-excellent { background: #dcfce7; color: #16a34a; }
 .rb-good      { background: #e0f2fe; color: #0ea5e9; }
 .rb-average   { background: #fef3c7; color: #d97706; }
 .rb-weak      { background: #fee2e2; color: #dc2626; }
 
-/* متابعة */
+.status-pill {
+    padding: .22rem .65rem;
+    border-radius: 30px;
+    font-size: .74rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    white-space: nowrap;
+}
+.status-present { background:#dcfce7; color:#16a34a; }
+.status-absent  { background:#fee2e2; color:#dc2626; }
+.status-late    { background:#fef3c7; color:#d97706; }
+.status-excused { background:#cffafe; color:#0891b2; }
+
+.time-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+}
+.time-chip.arrival i { color:#0284c7; }
+.time-chip.departure i { color:#d97706; }
+
+.att-mobile-item {
+    background:#f8fafc;
+    border:1px solid rgba(15,23,42,.07);
+    border-radius:12px;
+    padding:.75rem .85rem;
+    margin-bottom:.55rem;
+}
+.att-mobile-item.present { border-right:4px solid #16a34a; }
+.att-mobile-item.absent  { border-right:4px solid #dc2626; }
+.att-mobile-item.late    { border-right:4px solid #d97706; }
+.att-mobile-item.excused { border-right:4px solid #0891b2; }
+.att-mobile-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:.5rem;
+    margin-bottom:.45rem;
+}
+.att-mobile-date {
+    font-size:.8rem;
+    font-weight:800;
+    color:#334155;
+}
+.att-mobile-meta {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.35rem .75rem;
+    color:#64748b;
+    font-size:.8rem;
+}
+
 .fu-item {
     border-right: 3px solid #01696f; padding: .65rem .9rem;
     background: #f8fafc; border-radius: 0 10px 10px 0;
@@ -105,7 +146,6 @@
 }
 .fu-notes i { color: #d97706; flex-shrink: 0; }
 
-/* خلاصة إجمالية */
 .summary-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;
 }
@@ -116,8 +156,19 @@
 .summary-chip-val { font-size: 1.4rem; font-weight: 900; display: block; margin-bottom: .2rem; }
 .summary-chip-lbl { font-size: .78rem; font-weight: 700; }
 
+.empty-box {
+    text-align:center;
+    padding:1.5rem;
+    color:#94a3b8;
+    font-size:.88rem;
+}
+.empty-box i {
+    font-size:1.4rem;
+    display:block;
+    margin-bottom:.4rem;
+}
+
 @media (max-width: 767.98px) {
-    .stat-grid    { grid-template-columns: repeat(2, 1fr); }
     .summary-grid { grid-template-columns: repeat(2, 1fr); }
     .fu-grid      { grid-template-columns: 1fr; }
     .rp-hero      { flex-direction: column; align-items: flex-start; }
@@ -131,17 +182,20 @@
         <div>
             <h1>{{ child.get_full_name }}</h1>
             <p>
-                {% if child.hall %}<span><i class="bi bi-building"></i>{{ child.hall.name }}</span>{% endif %}
+                {% if child.hall %}
+                    <span><i class="bi bi-building"></i>{{ child.hall.name }}</span>
+                {% endif %}
                 <span><i class="bi bi-book"></i>{{ surahs_count }} سورة محفوظة</span>
             </p>
         </div>
     </div>
+
     <a href="{% url 'dashboard:parent' %}" class="btn-rp-back">
         <i class="bi bi-arrow-right"></i>رجوع للوحة
     </a>
 </div>
 
-<!-- ══ خلاصة سريعة ══ -->
+<!-- ══ ملخص سريع ══ -->
 <div class="rp-card" style="margin-bottom:1.1rem;">
     <div class="rp-card-header"><i class="bi bi-lightning-charge-fill"></i>ملخص سريع</div>
     <div class="rp-card-body">
@@ -150,22 +204,27 @@
                 <span class="summary-chip-val" style="color:#16a34a;">{{ attend_stats.present }}</span>
                 <span class="summary-chip-lbl" style="color:#166534;">أيام الحضور</span>
             </div>
+
             <div class="summary-chip" style="background:#fff1f2;border-color:rgba(220,38,38,.12);">
                 <span class="summary-chip-val" style="color:#dc2626;">{{ attend_stats.absent }}</span>
                 <span class="summary-chip-lbl" style="color:#991b1b;">أيام الغياب</span>
             </div>
-            <div class="summary-chip" style="background:#f5f3ff;border-color:rgba(124,58,237,.12);">
-                <span class="summary-chip-val" style="color:#7c3aed;">{{ eval_stats.total }}</span>
-                <span class="summary-chip-lbl" style="color:#5b21b6;">عدد التقييمات</span>
-            </div>
-            <div class="summary-chip" style="background:#fef3c7;border-color:rgba(217,119,6,.15);">
-                <span class="summary-chip-val" style="color:#d97706;">{{ eval_stats.distinguished }}</span>
-                <span class="summary-chip-lbl" style="color:#92400e;">مرات التميز</span>
-            </div>
+
             <div class="summary-chip" style="background:#fffbeb;border-color:rgba(217,119,6,.12);">
                 <span class="summary-chip-val" style="color:#d97706;">{{ attend_stats.late }}</span>
                 <span class="summary-chip-lbl" style="color:#92400e;">أيام التأخر</span>
             </div>
+
+            <div class="summary-chip" style="background:#ecfeff;border-color:rgba(8,145,178,.12);">
+                <span class="summary-chip-val" style="color:#0891b2;">{{ attend_stats.excused }}</span>
+                <span class="summary-chip-lbl" style="color:#155e75;">غياب بعذر</span>
+            </div>
+
+            <div class="summary-chip" style="background:#f5f3ff;border-color:rgba(124,58,237,.12);">
+                <span class="summary-chip-val" style="color:#7c3aed;">{{ eval_stats.total }}</span>
+                <span class="summary-chip-lbl" style="color:#5b21b6;">عدد التقييمات</span>
+            </div>
+
             <div class="summary-chip" style="background:#f0f9ff;border-color:rgba(14,165,233,.15);">
                 <span class="summary-chip-val" style="color:#0ea5e9;">{{ surahs_count }}</span>
                 <span class="summary-chip-lbl" style="color:#0c4a6e;">سور محفوظة</span>
@@ -182,17 +241,18 @@
         <!-- إحصائيات الحضور -->
         <div class="rp-card">
             <div class="rp-card-header">
-                <i class="bi bi-calendar-check-fill"></i>إحصائيات الحضور
+                <i class="bi bi-calendar-check-fill"></i>إحصائيات الحضور والانصراف
                 <span style="margin-right:auto;background:#1e293b;color:#fff;border-radius:20px;
                              padding:.1rem .65rem;font-size:.75rem;font-weight:700;">
                     {{ attend_stats.total }} يوم
                 </span>
             </div>
+
             <div class="rp-card-body">
                 <div class="rp-progress-row">
                     {% if attend_stats.total %}
-                    <!-- حاضر -->
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#16a34a;"><i class="bi bi-check-circle-fill me-1"></i>حاضر</span>
                             <span>{{ attend_stats.present }} / {{ attend_stats.total }}</span>
@@ -202,8 +262,8 @@
                                  style="width:{% widthratio attend_stats.present attend_stats.total 100 %}%;background:#16a34a;"></div>
                         </div>
                     </div>
-                    <!-- غائب -->
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#dc2626;"><i class="bi bi-x-circle-fill me-1"></i>غائب</span>
                             <span>{{ attend_stats.absent }} / {{ attend_stats.total }}</span>
@@ -213,8 +273,8 @@
                                  style="width:{% widthratio attend_stats.absent attend_stats.total 100 %}%;background:#dc2626;"></div>
                         </div>
                     </div>
-                    <!-- متأخر -->
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#d97706;"><i class="bi bi-clock-fill me-1"></i>متأخر</span>
                             <span>{{ attend_stats.late }} / {{ attend_stats.total }}</span>
@@ -224,8 +284,8 @@
                                  style="width:{% widthratio attend_stats.late attend_stats.total 100 %}%;background:#d97706;"></div>
                         </div>
                     </div>
-                    <!-- بعذر -->
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#0891b2;"><i class="bi bi-shield-fill-check me-1"></i>بعذر</span>
                             <span>{{ attend_stats.excused }} / {{ attend_stats.total }}</span>
@@ -235,13 +295,128 @@
                                  style="width:{% widthratio attend_stats.excused attend_stats.total 100 %}%;background:#0891b2;"></div>
                         </div>
                     </div>
+
                     {% else %}
-                    <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.88rem;">
-                        <i class="bi bi-calendar" style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+                    <div class="empty-box">
+                        <i class="bi bi-calendar"></i>
                         لا يوجد سجل حضور بعد
                     </div>
                     {% endif %}
                 </div>
+            </div>
+        </div>
+
+        <!-- سجلات الحضور والانصراف -->
+        <div class="rp-card">
+            <div class="rp-card-header">
+                <i class="bi bi-clock-history"></i>آخر سجلات الحضور والانصراف
+                <span style="margin-right:auto;background:#01696f;color:#fff;border-radius:20px;
+                             padding:.1rem .65rem;font-size:.75rem;font-weight:700;">
+                    آخر 30 سجل
+                </span>
+            </div>
+
+            <div class="rp-card-body">
+                {% if recent_attendances %}
+
+                <!-- ديسكتوب -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table rp-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                                <th>الحضور</th>
+                                <th>الانصراف</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for att in recent_attendances %}
+                            <tr>
+                                <td style="white-space:nowrap;font-weight:600;color:#475569;">{{ att.date }}</td>
+                                <td>
+                                    <span class="status-pill status-{{ att.status }}">
+                                        {% if att.status == 'present' %}
+                                            <i class="bi bi-check-circle"></i>
+                                        {% elif att.status == 'absent' %}
+                                            <i class="bi bi-x-circle"></i>
+                                        {% elif att.status == 'late' %}
+                                            <i class="bi bi-clock"></i>
+                                        {% else %}
+                                            <i class="bi bi-shield-check"></i>
+                                        {% endif %}
+                                        {{ att.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if att.arrival_time %}
+                                        <span class="time-chip arrival">
+                                            <i class="bi bi-box-arrow-in-right"></i>{{ att.arrival_time|time:"H:i" }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if att.departure_time %}
+                                        <span class="time-chip departure">
+                                            <i class="bi bi-box-arrow-left"></i>{{ att.departure_time|time:"H:i" }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted small">
+                                    {{ att.notes|truncatechars:35|default:"—" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- موبايل -->
+                <div class="d-md-none">
+                    {% for att in recent_attendances %}
+                    <div class="att-mobile-item {{ att.status }}">
+                        <div class="att-mobile-top">
+                            <div class="att-mobile-date">
+                                <i class="bi bi-calendar3 me-1"></i>{{ att.date }}
+                            </div>
+
+                            <span class="status-pill status-{{ att.status }}">
+                                {{ att.get_status_display }}
+                            </span>
+                        </div>
+
+                        <div class="att-mobile-meta">
+                            {% if att.arrival_time %}
+                                <span><i class="bi bi-box-arrow-in-right"></i> حضور: {{ att.arrival_time|time:"H:i" }}</span>
+                            {% else %}
+                                <span><i class="bi bi-box-arrow-in-right"></i> حضور: —</span>
+                            {% endif %}
+
+                            {% if att.departure_time %}
+                                <span><i class="bi bi-box-arrow-left"></i> انصراف: {{ att.departure_time|time:"H:i" }}</span>
+                            {% else %}
+                                <span><i class="bi bi-box-arrow-left"></i> انصراف: —</span>
+                            {% endif %}
+
+                            {% if att.notes %}
+                                <span><i class="bi bi-chat-text"></i>{{ att.notes|truncatechars:35 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                <div class="empty-box">
+                    <i class="bi bi-inbox"></i>
+                    لا توجد سجلات حضور وانصراف بعد
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -254,10 +429,11 @@
                     {{ eval_stats.total }} تقييم
                 </span>
             </div>
+
             <div class="rp-card-body">
                 {% if eval_stats.total %}
                 <div class="rp-progress-row">
-                    <div class="rp-prog-item">
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#16a34a;"><i class="bi bi-award-fill me-1"></i>ممتاز</span>
                             <span>{{ eval_stats.excellent }}</span>
@@ -267,7 +443,8 @@
                                  style="width:{% widthratio eval_stats.excellent eval_stats.total 100 %}%;background:#16a34a;"></div>
                         </div>
                     </div>
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#0ea5e9;"><i class="bi bi-hand-thumbs-up-fill me-1"></i>جيد</span>
                             <span>{{ eval_stats.good }}</span>
@@ -277,7 +454,8 @@
                                  style="width:{% widthratio eval_stats.good eval_stats.total 100 %}%;background:#0ea5e9;"></div>
                         </div>
                     </div>
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#d97706;"><i class="bi bi-dash-circle-fill me-1"></i>متوسط</span>
                             <span>{{ eval_stats.average }}</span>
@@ -287,7 +465,8 @@
                                  style="width:{% widthratio eval_stats.average eval_stats.total 100 %}%;background:#d97706;"></div>
                         </div>
                     </div>
-                    <div class="rp-prog-item">
+
+                    <div>
                         <div class="rp-prog-head">
                             <span style="color:#dc2626;"><i class="bi bi-exclamation-triangle-fill me-1"></i>يحتاج متابعة</span>
                             <span>{{ eval_stats.weak }}</span>
@@ -299,11 +478,11 @@
                     </div>
                 </div>
 
-                <!-- جدول آخر التقييمات -->
                 <div style="margin-top:1rem;">
                     <div style="font-size:.78rem;font-weight:700;color:#64748b;margin-bottom:.6rem;">
                         <i class="bi bi-clock-history me-1"></i>آخر التقييمات
                     </div>
+
                     <div class="table-responsive">
                         <table class="table rp-table mb-0">
                             <thead>
@@ -315,6 +494,7 @@
                                     <th>تميز</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 {% for ev in recent_evals %}
                                 <tr>
@@ -324,10 +504,12 @@
                                     <td><span class="rb rb-{{ ev.commitment_rating }}">{{ ev.get_commitment_rating_display }}</span></td>
                                     <td>
                                         {% if ev.is_distinguished %}
-                                        <span style="color:#d97706;font-size:1rem;">⭐</span>
+                                            <span style="color:#d97706;font-size:1rem;">⭐</span>
                                         {% elif ev.needs_attention %}
-                                        <span style="color:#dc2626;font-size:.85rem;">⚠️</span>
-                                        {% else %}—{% endif %}
+                                            <span style="color:#dc2626;font-size:.85rem;">⚠️</span>
+                                        {% else %}
+                                            —
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -335,9 +517,10 @@
                         </table>
                     </div>
                 </div>
+
                 {% else %}
-                <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.88rem;">
-                    <i class="bi bi-award" style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+                <div class="empty-box">
+                    <i class="bi bi-award"></i>
                     لا يوجد تقييم بعد
                 </div>
                 {% endif %}
@@ -356,11 +539,15 @@
                     {{ followups|length }}
                 </span>
             </div>
+
             <div class="rp-card-body" style="max-height:520px;overflow-y:auto;">
                 {% if followups %}
                     {% for fu in followups %}
                     <div class="fu-item">
-                        <div class="fu-date"><i class="bi bi-calendar3-event me-1"></i>{{ fu.date }}</div>
+                        <div class="fu-date">
+                            <i class="bi bi-calendar3-event me-1"></i>{{ fu.date }}
+                        </div>
+
                         <div class="fu-grid">
                             <div>
                                 <div class="fu-lbl">ما تم تناوله</div>
@@ -368,6 +555,7 @@
                                     {{ fu.homework|default:"لم يُسجَّل" }}
                                 </div>
                             </div>
+
                             <div>
                                 <div class="fu-lbl">المطلوب حفظه</div>
                                 <div class="fu-val {% if not fu.memorization_task %}empty{% endif %}">
@@ -375,6 +563,7 @@
                                 </div>
                             </div>
                         </div>
+
                         {% if fu.extra_notes %}
                         <div class="fu-notes">
                             <i class="bi bi-chat-dots-fill"></i>
@@ -384,8 +573,8 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:.88rem;">
-                        <i class="bi bi-journal" style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+                    <div class="empty-box">
+                        <i class="bi bi-journal"></i>
                         لا توجد متابعات بعد
                     </div>
                 {% endif %}
