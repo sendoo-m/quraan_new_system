@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-4">
+    <h2 class="mb-4">قائمة حضور وانصراف الطلاب والمعلمين</h2>
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label class="form-label">التاريخ</label>
+            <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">القاعة</label>
+            <select name="hall" class="form-select">
+                <option value="">كل القاعات</option>
+                {% for hall in halls %}
+                    <option value="{{ hall.id }}" {% if selected_hall == hall.id|stringformat:"s" %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">الحالة</label>
+            <select name="status" class="form-select">
+                <option value="">الكل</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">بحث</label>
+            <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="اسم الطالب أو المعلم">
+        </div>
+
+        <div class="col-12">
+            <button class="btn btn-primary">فلترة</button>
+        </div>
+    </form>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>إحصائيات الطلاب</h5>
+                <p class="mb-1">حاضر: {{ student_stats.present }}</p>
+                <p class="mb-1">غائب: {{ student_stats.absent }}</p>
+                <p class="mb-1">متأخر: {{ student_stats.late }}</p>
+                <p class="mb-0">بعذر: {{ student_stats.excused }}</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>إحصائيات المعلمين</h5>
+                <p class="mb-1">حاضر: {{ staff_stats.present }}</p>
+                <p class="mb-1">غائب: {{ staff_stats.absent }}</p>
+                <p class="mb-1">متأخر: {{ staff_stats.late }}</p>
+                <p class="mb-0">بعذر: {{ staff_stats.excused }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">حضور الطلاب</h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>الطالب</th>
+                        <th>القاعة</th>
+                        <th>الحالة</th>
+                        <th>وقت الحضور</th>
+                        <th>وقت الانصراف</th>
+                        <th>ملاحظات</th>
+                        <th>سجله</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in student_records %}
+                    <tr>
+                        <td>{{ record.student.get_full_name }}</td>
+                        <td>{{ record.hall.name }}</td>
+                        <td>{{ record.get_status_display }}</td>
+                        <td>{{ record.arrival_time|default:"-" }}</td>
+                        <td>{{ record.departure_time|default:"-" }}</td>
+                        <td>{{ record.notes|default:"-" }}</td>
+                        <td>{{ record.recorded_by.get_full_name|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">لا توجد سجلات طلاب</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">حضور المعلمين والمشرفين</h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>الوظيفة</th>
+                        <th>الحالة</th>
+                        <th>وقت الحضور</th>
+                        <th>وقت الانصراف</th>
+                        <th>ملاحظات</th>
+                        <th>سجله</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in staff_records %}
+                    <tr>
+                        <td>{{ record.staff.get_full_name }}</td>
+                        <td>{{ record.staff.get_role_display }}</td>
+                        <td>{{ record.get_status_display }}</td>
+                        <td>{{ record.check_in|default:"-" }}</td>
+                        <td>{{ record.check_out|default:"-" }}</td>
+                        <td>{{ record.notes|default:"-" }}</td>
+                        <td>{{ record.recorded_by.get_full_name|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">لا توجد سجلات موظفين</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

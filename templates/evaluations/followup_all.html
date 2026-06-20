@@ -30,6 +30,377 @@
 .btn-fa-primary { background: rgba(1,105,111,.5); border-color: rgba(1,105,111,.6); }
 .btn-fa-primary:hover { background: rgba(1,105,111,.75); }
 
+.fa-filter-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.1rem;
+    box-shadow: 0 2px 10px rgba(15,23,42,.04);
+    display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap;
+}
+.fa-filter-item { display: flex; flex-direction: column; gap: .3rem; min-width: 180px; }
+.fa-filter-item label { font-size: .75rem; font-weight: 700; color: #6b7280; }
+.fa-filter-item select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .45rem .75rem; font-size: .88rem; color: #0f172a;
+    transition: border-color .15s;
+}
+.fa-filter-item select:focus { border-color: #01696f; outline: none; }
+.btn-filter {
+    background: #01696f; color: #fff; border: none; border-radius: 9px;
+    padding: .48rem 1.25rem; font-weight: 700; font-size: .88rem;
+    display: flex; align-items: center; gap: .4rem; cursor: pointer;
+    transition: background .15s; white-space: nowrap;
+}
+.btn-filter:hover { background: #0a8a91; }
+.btn-filter-reset {
+    background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0;
+    border-radius: 9px; padding: .45rem 1rem; font-weight: 700; font-size: .88rem;
+    text-decoration: none; display: flex; align-items: center; gap: .4rem;
+    transition: background .15s; white-space: nowrap;
+}
+.btn-filter-reset:hover { background: #e2e8f0; color: #334155; }
+
+.fa-wrapper {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.fa-wrapper-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.fa-wrapper-title {
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+}
+.fa-wrapper-title i { color: #01696f; }
+.fa-count {
+    background: #1e293b; color: #fff; border-radius: 30px;
+    padding: .15rem .75rem; font-size: .78rem; font-weight: 700;
+}
+
+.fa-cards { padding: 1rem; }
+.fa-card {
+    background: #fff; border: 1.5px solid rgba(15,23,42,.08);
+    border-radius: 14px; margin-bottom: .75rem; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04); transition: box-shadow .15s;
+}
+.fa-card:hover { box-shadow: 0 4px 18px rgba(15,23,42,.08); }
+.fa-card-header {
+    padding: .65rem 1rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.07);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+}
+.fa-hall-badge {
+    background: #1e293b; color: #fff; border-radius: 20px;
+    padding: .2rem .85rem; font-size: .78rem; font-weight: 700;
+    display: flex; align-items: center; gap: .35rem;
+}
+.fa-date-info {
+    font-size: .78rem; color: #64748b; font-weight: 600;
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+}
+.fa-card-body { padding: .8rem 1rem; }
+.fa-sections { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.fa-section-label {
+    font-size: .7rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .04em;
+    margin-bottom: .3rem; display: flex; align-items: center; gap: .3rem;
+}
+.fa-section-text {
+    font-size: .86rem; color: #1e293b; line-height: 1.6;
+    background: #f8fafc; border-radius: 8px; padding: .45rem .7rem;
+    border: 1px solid rgba(15,23,42,.06); min-height: 40px;
+}
+.fa-section-text.empty { color: #94a3b8; font-style: italic; }
+.fa-notes {
+    margin-top: .6rem; font-size: .83rem; color: #475569;
+    background: #fef3c7; border-radius: 8px; padding: .45rem .75rem;
+    border: 1px solid rgba(217,119,6,.15); display: flex; gap: .45rem; line-height: 1.6;
+}
+.fa-notes i { color: #d97706; flex-shrink: 0; margin-top: .1rem; }
+
+.fa-table thead th {
+    background: #f8fafc; font-size: .75rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; padding: .65rem 1rem;
+    border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.fa-table tbody td {
+    padding: .6rem 1rem; vertical-align: top;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .87rem;
+}
+.fa-table tbody tr:last-child td { border-bottom: none; }
+.fa-table tbody tr:hover { background: #f8fafc; }
+
+.view-toggle { display: flex; gap: .35rem; }
+.vt-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #e2e8f0;
+    background: #fff; color: #94a3b8; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; transition: all .15s; font-size: .85rem;
+}
+.vt-btn.active, .vt-btn:hover { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+.fa-link-btn {
+    background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;
+    border-radius:8px; padding:.2rem .6rem; font-size:.78rem;
+    font-weight:700; text-decoration:none; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:.3rem;
+}
+.fa-link-btn:hover { background:#e2e8f0; color:#334155; }
+
+.fa-edit-btn {
+    background:#01696f; color:#fff; border:1px solid #01696f;
+    border-radius:8px; padding:.2rem .65rem; font-size:.78rem;
+    font-weight:700; text-decoration:none; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:.3rem;
+}
+.fa-edit-btn:hover { background:#0a8a91; color:#fff; border-color:#0a8a91; }
+
+.fa-empty { text-align: center; padding: 4rem 1rem; }
+.fa-empty i { font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: .75rem; }
+.fa-empty h3 { font-size: 1rem; font-weight: 800; color: #475569; margin-bottom: .4rem; }
+.fa-empty p  { font-size: .85rem; color: #94a3b8; margin: 0; }
+
+@media (max-width: 767.98px) {
+    .fa-sections { grid-template-columns: 1fr; }
+    .fa-hero { flex-direction: column; align-items: flex-start; }
+    .fa-filter-card { flex-direction: column; align-items: stretch; }
+    .fa-filter-item { min-width: unset; }
+}
+</style>
+
+<div class="fa-hero">
+    <div class="fa-hero-left">
+        <div class="fa-hero-icon"><i class="bi bi-journal-richtext"></i></div>
+        <div>
+            <h1>سجل المتابعات اليومية</h1>
+            <p>عرض متابعات جميع القاعات مع إمكانية الفلترة</p>
+        </div>
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <a href="{% url 'evaluations:add_followup' %}" class="btn-fa btn-fa-primary">
+            <i class="bi bi-journal-plus"></i>إضافة متابعة
+        </a>
+        <a href="{% url 'dashboard:hall_supervisor' %}" class="btn-fa">
+            <i class="bi bi-arrow-right"></i>رجوع
+        </a>
+    </div>
+</div>
+
+<form method="get">
+    <div class="fa-filter-card">
+        <div class="fa-filter-item">
+            <label><i class="bi bi-building me-1"></i>فلترة بالقاعة</label>
+            <select name="hall">
+                <option value="">كل القاعات</option>
+                {% for h in halls %}
+                <option value="{{ h.id }}" {% if hall_id == h.id|stringformat:"s" %}selected{% endif %}>
+                    {{ h.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">
+            <i class="bi bi-funnel-fill"></i>فلترة
+        </button>
+        {% if hall_id %}
+        <a href="{% url 'evaluations:all_followups' %}" class="btn-filter-reset">
+            <i class="bi bi-x-circle"></i>إلغاء الفلتر
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="fa-wrapper">
+    <div class="fa-wrapper-header">
+        <div class="fa-wrapper-title">
+            <i class="bi bi-clock-history"></i>
+            المتابعات
+            <span class="fa-count">{{ followups|length }}</span>
+        </div>
+        <div class="view-toggle">
+            <button type="button" class="vt-btn active" id="btnCards" onclick="setView('cards')" title="بطاقات">
+                <i class="bi bi-grid-3x2-gap"></i>
+            </button>
+            <button type="button" class="vt-btn" id="btnTable" onclick="setView('table')" title="جدول">
+                <i class="bi bi-table"></i>
+            </button>
+        </div>
+    </div>
+
+    {% if followups %}
+
+    <div id="viewCards" class="fa-cards">
+        {% for fu in followups %}
+        <div class="fa-card">
+            <div class="fa-card-header">
+                <span class="fa-hall-badge">
+                    <i class="bi bi-building"></i>{{ fu.hall.name }}
+                </span>
+                <div class="fa-date-info">
+                    <span><i class="bi bi-calendar3-event me-1"></i>{{ fu.date }}</span>
+                    <span><i class="bi bi-person-circle me-1"></i>{{ fu.created_by.get_full_name|default:fu.created_by.username }}</span>
+                    <a href="{% url 'evaluations:hall_followups' fu.hall.pk %}" class="fa-link-btn">
+                        <i class="bi bi-list-ul"></i>القاعة
+                    </a>
+                    <a href="{% url 'evaluations:edit_followup' fu.pk %}" class="fa-edit-btn">
+                        <i class="bi bi-pencil-square"></i>تعديل
+                    </a>
+                </div>
+            </div>
+            <div class="fa-card-body">
+                <div class="fa-sections">
+                    <div>
+                        <div class="fa-section-label"><i class="bi bi-journal-check"></i>ما تم تناوله</div>
+                        <div class="fa-section-text {% if not fu.homework %}empty{% endif %}">
+                            {{ fu.homework|default:"لم يُسجَّل" }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="fa-section-label"><i class="bi bi-bookmark-star"></i>المطلوب حفظه</div>
+                        <div class="fa-section-text {% if not fu.memorization_task %}empty{% endif %}">
+                            {{ fu.memorization_task|default:"لا يوجد" }}
+                        </div>
+                    </div>
+                </div>
+                {% if fu.extra_notes %}
+                <div class="fa-notes">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span>{{ fu.extra_notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="viewTable" style="display:none;">
+        <div class="table-responsive">
+            <table class="table fa-table mb-0">
+                <thead>
+                    <tr>
+                        <th>القاعة</th>
+                        <th>التاريخ</th>
+                        <th>ما تم تناوله</th>
+                        <th>المطلوب حفظه</th>
+                        <th>ملاحظات</th>
+                        <th>الكاتب</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fu in followups %}
+                    <tr>
+                        <td>
+                            <span style="font-weight:700; color:#0f172a; font-size:.85rem;">
+                                {{ fu.hall.name }}
+                            </span>
+                        </td>
+                        <td style="white-space:nowrap; font-size:.83rem; color:#475569;">
+                            {{ fu.date }}
+                        </td>
+                        <td style="max-width:200px; font-size:.85rem;">
+                            {{ fu.homework|truncatechars:55|default:"—" }}
+                        </td>
+                        <td style="max-width:180px; font-size:.85rem; color:#475569;">
+                            {{ fu.memorization_task|truncatechars:50|default:"—" }}
+                        </td>
+                        <td style="max-width:150px; font-size:.82rem; color:#64748b;">
+                            {{ fu.extra_notes|truncatechars:40|default:"—" }}
+                        </td>
+                        <td style="font-size:.82rem; color:#64748b; white-space:nowrap;">
+                            {{ fu.created_by.get_full_name|default:fu.created_by.username }}
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <a href="{% url 'evaluations:hall_followups' fu.hall.pk %}" class="fa-link-btn">
+                                <i class="bi bi-list-ul"></i>
+                            </a>
+                            <a href="{% url 'evaluations:edit_followup' fu.pk %}" class="fa-edit-btn">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="fa-empty">
+        <i class="bi bi-journal-x"></i>
+        <h3>لا توجد متابعات{% if hall_id %} لهذه القاعة{% endif %}</h3>
+        <p>{% if hall_id %}جرّب إلغاء الفلتر لعرض كل المتابعات{% else %}ابدأ بتسجيل أول متابعة يومية{% endif %}</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function setView(mode) {
+    const cards = document.getElementById('viewCards');
+    const table = document.getElementById('viewTable');
+    const btnC = document.getElementById('btnCards');
+    const btnT = document.getElementById('btnTable');
+
+    if (mode === 'cards') {
+        cards.style.display = '';
+        table.style.display = 'none';
+        btnC.classList.add('active');
+        btnT.classList.remove('active');
+    } else {
+        cards.style.display = 'none';
+        table.style.display = '';
+        btnT.classList.add('active');
+        btnC.classList.remove('active');
+    }
+
+    try {
+        localStorage.setItem('fa_view', mode);
+    } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    let saved = 'cards';
+    try {
+        saved = localStorage.getItem('fa_view') || 'cards';
+    } catch (e) {}
+    setView(saved);
+});
+</script>
+{% endblock %}
+
+{% comment %} {% extends "base.html" %}
+{% block title %}سجل المتابعات | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}سجل المتابعات{% endblock %}
+
+{% block content %}
+<style>
+.fa-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.fa-hero-left { display: flex; align-items: center; gap: 1rem; }
+.fa-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.fa-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.fa-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-fa {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-fa:hover { background: rgba(255,255,255,.28); color: #fff; }
+.btn-fa-primary { background: rgba(1,105,111,.5); border-color: rgba(1,105,111,.6); }
+.btn-fa-primary:hover { background: rgba(1,105,111,.75); }
+
 /* فلتر */
 .fa-filter-card {
     background: #fff; border: 1px solid rgba(15,23,42,.08);
@@ -346,4 +717,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setView(localStorage.getItem('fa_view') || 'cards');
 });
 </script>
-{% endblock %}
+{% endblock %} {% endcomment %}

@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+{% block page_title %}إجمالي حضور الطلاب{% endblock %}
+
+{% block content %}
+<style>
+.sum-hero {
+    background: linear-gradient(135deg, #01696f 0%, #0a8a91 100%);
+    border-radius: 16px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.sum-hero-left { display: flex; align-items: center; gap: 1rem; }
+.sum-hero-icon {
+    width: 50px; height: 50px; background: rgba(255,255,255,.15);
+    border-radius: 13px; display: flex; align-items: center; justify-content: center;
+}
+.sum-hero-icon i { font-size: 1.35rem; color: #fff; }
+.sum-hero h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 .2rem; }
+.sum-hero p { font-size: .87rem; opacity: .9; margin: 0; }
+
+.btn-sum-hero {
+    background: rgba(255,255,255,.2); color: #fff; border: none;
+    border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
+    font-size: .85rem; text-decoration: none;
+    display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-sum-hero:hover { background: rgba(255,255,255,.32); color: #fff; }
+
+.sum-filter {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; padding: .85rem 1.1rem; margin-bottom: 1.1rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sum-filter-lbl { font-size: .78rem; font-weight: 700; color: #6b7280; margin-bottom: .3rem; }
+.sum-filter input[type=date],
+.sum-filter input[type=text],
+.sum-filter select {
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .4rem .75rem; font-size: .88rem; color: #0f172a;
+    background: #fff; height: 40px; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+}
+.sum-filter input:focus, .sum-filter select:focus {
+    border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none;
+}
+.btn-sum-filter {
+    height: 40px; padding: 0 1.1rem; border-radius: 9px; width: 100%;
+    font-weight: 700; font-size: .88rem;
+    background: #01696f; color: #fff; border: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.btn-sum-reset {
+    height: 40px; padding: 0 1rem; border-radius: 9px; width: 100%;
+    font-weight: 600; font-size: .88rem; background: #f1f5f9; color: #64748b;
+    border: none; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.btn-sum-reset:hover { background: #e2e8f0; color: #334155; }
+
+.sum-stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+.sum-stat {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 12px; padding: .8rem 1rem; text-align: center;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04);
+}
+.sum-stat-num { font-size: 1.45rem; font-weight: 800; line-height: 1; margin-bottom: .2rem; }
+.sum-stat-lbl { font-size: .78rem; color: #6b7280; font-weight: 600; }
+.sum-stat.students .sum-stat-num { color: #334155; }
+.sum-stat.records .sum-stat-num { color: #0f766e; }
+.sum-stat.present .sum-stat-num { color: #16a34a; }
+.sum-stat.absent .sum-stat-num { color: #dc2626; }
+.sum-stat.late .sum-stat-num { color: #d97706; }
+.sum-stat.excused .sum-stat-num { color: #0891b2; }
+
+.sum-table-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+}
+.sum-table-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.sum-table-title { font-weight: 800; font-size: .95rem; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+.sum-count-badge { background: #01696f; color: #fff; border-radius: 30px; padding: .15rem .75rem; font-size: .78rem; font-weight: 700; }
+.sum-period-badge { background: #f0fdf4; color: #16a34a; border-radius: 30px; padding: .2rem .85rem; font-size: .8rem; font-weight: 700; display: flex; align-items: center; gap: .4rem; }
+
+.sum-table thead th {
+    background: #f8fafc; font-size: .8rem; font-weight: 700;
+    color: #6b7280; text-transform: uppercase; letter-spacing: .04em;
+    padding: .75rem 1rem; border-bottom: 1px solid rgba(15,23,42,.08); white-space: nowrap;
+}
+.sum-table tbody td {
+    padding: .7rem 1rem; vertical-align: middle;
+    border-bottom: 1px solid rgba(15,23,42,.05); font-size: .9rem;
+}
+.sum-table tbody tr:last-child td { border-bottom: none; }
+.sum-table tbody tr:hover { background: #fafdfd; }
+
+.student-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #01696f, #0a8a91);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.hall-badge {
+    padding: .2rem .65rem; border-radius: 30px; font-size: .75rem; font-weight: 700;
+    background: #f0fdf4; color: #16a34a; display: inline-flex; align-items: center; gap: .25rem;
+}
+.count-badge {
+    min-width: 42px; padding: .28rem .55rem; border-radius: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 800;
+}
+.badge-present { background: #dcfce7; color: #16a34a; }
+.badge-absent  { background: #fee2e2; color: #dc2626; }
+.badge-late    { background: #fef3c7; color: #d97706; }
+.badge-excused { background: #cffafe; color: #0891b2; }
+.badge-total   { background: #e2e8f0; color: #334155; }
+
+.rate-wrap {
+    min-width: 120px;
+}
+.rate-bar {
+    height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: .35rem;
+}
+.rate-fill {
+    height: 100%; background: linear-gradient(90deg, #01696f, #0a8a91);
+    border-radius: 999px;
+}
+
+.sum-mobile-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 14px; margin-bottom: .75rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04); overflow: hidden;
+}
+.sum-mobile-body { padding: .9rem 1rem; }
+.sum-mobile-top { display: flex; align-items: center; gap: .75rem; margin-bottom: .7rem; }
+.sum-mobile-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: .45rem;
+}
+.sum-mini {
+    background: #f8fafc; border-radius: 10px; padding: .55rem .7rem;
+}
+.sum-mini .lbl { font-size: .73rem; color: #64748b; margin-bottom: .1rem; }
+.sum-mini .val { font-size: .92rem; font-weight: 800; color: #0f172a; }
+
+.sum-pagination {
+    display: flex; justify-content: center; align-items: center;
+    gap: .4rem; margin-top: 1.1rem; flex-wrap: wrap;
+}
+.sum-page-btn {
+    min-width: 36px; height: 36px; border-radius: 9px; font-size: .85rem;
+    font-weight: 600; border: 1.5px solid #e2e8f0; background: #fff;
+    color: #475569; text-decoration: none;
+    display: flex; align-items: center; justify-content: center; padding: 0 .6rem;
+}
+.sum-page-btn:hover, .sum-page-btn.active { background: #01696f; color: #fff; border-color: #01696f; }
+.sum-page-btn.disabled { opacity: .4; pointer-events: none; }
+
+.sum-empty { text-align: center; padding: 3rem 1rem; color: #94a3b8; }
+.sum-empty i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+@media (max-width: 991.98px) {
+    .sum-stats { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 767.98px) {
+    .sum-stats { grid-template-columns: repeat(2, 1fr); }
+    .sum-hero { flex-direction: column; align-items: flex-start; padding: 1rem 1.1rem; }
+    .sum-hero h1 { font-size: 1rem; }
+}
+</style>
+
+<div class="sum-hero">
+    <div class="sum-hero-left">
+        <div class="sum-hero-icon"><i class="bi bi-people-fill"></i></div>
+        <div>
+            <h1>إجمالي حضور الطلاب</h1>
+            <p>
+                <i class="bi bi-calendar-range me-1"></i>{{ from_date|date:'Y-m-d' }} — {{ to_date|date:'Y-m-d' }}
+                <span class="mx-2 opacity-50">|</span>{{ total_students }} طالب
+            </p>
+        </div>
+    </div>
+
+    <a href="{% url 'attendance:report' %}" class="btn-sum-hero">
+        <i class="bi bi-table"></i>تقرير السجلات اليومية
+    </a>
+</div>
+
+<div class="sum-filter">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-6 col-md-2">
+            <div class="sum-filter-lbl"><i class="bi bi-calendar3 me-1"></i>من تاريخ</div>
+            <input type="date" name="from" value="{{ from_date|date:'Y-m-d' }}">
+        </div>
+
+        <div class="col-6 col-md-2">
+            <div class="sum-filter-lbl"><i class="bi bi-calendar3 me-1"></i>إلى تاريخ</div>
+            <input type="date" name="to" value="{{ to_date|date:'Y-m-d' }}">
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="sum-filter-lbl"><i class="bi bi-building me-1"></i>القاعة</div>
+            <select name="hall">
+                <option value="">كل القاعات</option>
+                {% for hall in halls %}
+                    <option value="{{ hall.id }}" {% if selected_hall == hall.id|stringformat:"s" %}selected{% endif %}>
+                        {{ hall.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="sum-filter-lbl"><i class="bi bi-search me-1"></i>بحث بالاسم</div>
+            <input type="text" name="q" value="{{ search }}" placeholder="اسم الطالب">
+        </div>
+
+        <div class="col-6 col-md-1">
+            <button type="submit" class="btn-sum-filter">
+                <i class="bi bi-funnel-fill"></i>
+            </button>
+        </div>
+
+        <div class="col-6 col-md-1">
+            <a href="{% url 'attendance:students_summary' %}" class="btn-sum-reset">
+                <i class="bi bi-x-circle"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="sum-stats">
+    <div class="sum-stat students">
+        <div class="sum-stat-num">{{ total_students }}</div>
+        <div class="sum-stat-lbl"><i class="bi bi-people me-1"></i>الطلاب</div>
+    </div>
+
+    <div class="sum-stat records">
+        <div class="sum-stat-num">{{ total_records }}</div>
+        <div class="sum-stat-lbl"><i class="bi bi-list-ol me-1"></i>السجلات</div>
+    </div>
+
+    <div class="sum-stat present">
+        <div class="sum-stat-num">{{ total_present }}</div>
+        <div class="sum-stat-lbl"><i class="bi bi-check-circle me-1"></i>حضور</div>
+    </div>
+
+    <div class="sum-stat absent">
+        <div class="sum-stat-num">{{ total_absent }}</div>
+        <div class="sum-stat-lbl"><i class="bi bi-x-circle me-1"></i>غياب</div>
+    </div>
+
+    <div class="sum-stat late">
+        <div class="sum-stat-num">{{ total_late }}</div>
+        <div class="sum-stat-lbl"><i class="bi bi-clock me-1"></i>تأخير</div>
+    </div>
+
+    <div class="sum-stat excused">
+        <div class="sum-stat-num">{{ total_excused }}</div>
+        <div class="sum-stat-lbl"><i class="bi bi-shield-check me-1"></i>بعذر</div>
+    </div>
+</div>
+
+<div class="sum-table-card d-none d-md-block">
+    <div class="sum-table-header">
+        <div class="sum-table-title">
+            <i class="bi bi-bar-chart" style="color:#01696f;"></i>
+            ملخص الطلاب
+            {% if total_students %}
+                <span class="sum-count-badge">{{ total_students }}</span>
+            {% endif %}
+        </div>
+
+        <div class="sum-period-badge">
+            <i class="bi bi-calendar-range"></i>{{ from_date|date:'Y-m-d' }} ← {{ to_date|date:'Y-m-d' }}
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table sum-table mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الطالب</th>
+                    <th>القاعة</th>
+                    <th>حضور</th>
+                    <th>غياب</th>
+                    <th>تأخير</th>
+                    <th>بعذر</th>
+                    <th>الإجمالي</th>
+                    <th>نسبة الحضور</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in summary %}
+                <tr>
+                    <td class="text-muted small fw-bold">
+                        {{ summary.start_index|add:forloop.counter0 }}
+                    </td>
+
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="student-avatar">
+                                {{ row.student__first_name|first }}{{ row.student__last_name|first }}
+                            </div>
+
+                            <div>
+                                <div class="fw-bold" style="font-size:.9rem;">
+                                    {{ row.student__first_name }} {{ row.student__last_name }}
+                                </div>
+
+                                {% if row.student__parent__username %}
+                                    <div class="text-muted" style="font-size:.77rem;">
+                                        {{ row.student__parent__first_name }} {{ row.student__parent__last_name|default:row.student__parent__username }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="hall-badge">
+                            <i class="bi bi-building"></i>{{ row.hall__name }}
+                        </span>
+                    </td>
+
+                    <td><span class="count-badge badge-present">{{ row.present_count }}</span></td>
+                    <td><span class="count-badge badge-absent">{{ row.absent_count }}</span></td>
+                    <td><span class="count-badge badge-late">{{ row.late_count }}</span></td>
+                    <td><span class="count-badge badge-excused">{{ row.excused_count }}</span></td>
+                    <td><span class="count-badge badge-total">{{ row.total_days }}</span></td>
+
+                    <td>
+                        <div class="rate-wrap">
+                            <div class="fw-bold" style="font-size:.82rem; color:#0f172a;">{{ row.attendance_rate }}%</div>
+                            <div class="rate-bar">
+                                <div class="rate-fill" style="width: {{ row.attendance_rate }}%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9">
+                        <div class="sum-empty">
+                            <i class="bi bi-inbox"></i>
+                            <p>لا توجد بيانات في هذه الفترة</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-md-none">
+    {% for row in summary %}
+    <div class="sum-mobile-card">
+        <div class="sum-mobile-body">
+            <div class="sum-mobile-top">
+                <div class="student-avatar">
+                    {{ row.student__first_name|first }}{{ row.student__last_name|first }}
+                </div>
+
+                <div class="flex-grow-1 min-w-0">
+                    <div class="fw-bold text-truncate" style="font-size:.9rem;">
+                        {{ row.student__first_name }} {{ row.student__last_name }}
+                    </div>
+
+                    <span class="hall-badge" style="font-size:.7rem; margin-top:.2rem; display:inline-flex;">
+                        <i class="bi bi-building"></i>{{ row.hall__name }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="sum-mobile-grid">
+                <div class="sum-mini">
+                    <div class="lbl">حضور</div>
+                    <div class="val text-success">{{ row.present_count }}</div>
+                </div>
+                <div class="sum-mini">
+                    <div class="lbl">غياب</div>
+                    <div class="val text-danger">{{ row.absent_count }}</div>
+                </div>
+                <div class="sum-mini">
+                    <div class="lbl">تأخير</div>
+                    <div class="val" style="color:#d97706;">{{ row.late_count }}</div>
+                </div>
+                <div class="sum-mini">
+                    <div class="lbl">بعذر</div>
+                    <div class="val" style="color:#0891b2;">{{ row.excused_count }}</div>
+                </div>
+                <div class="sum-mini">
+                    <div class="lbl">الإجمالي</div>
+                    <div class="val">{{ row.total_days }}</div>
+                </div>
+                <div class="sum-mini">
+                    <div class="lbl">نسبة الحضور</div>
+                    <div class="val">{{ row.attendance_rate }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="sum-mobile-card">
+        <div class="sum-empty">
+            <i class="bi bi-inbox"></i>
+            <p>لا توجد بيانات في هذه الفترة</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if summary.has_other_pages %}
+<div class="sum-pagination">
+    {% if summary.has_previous %}
+        <a href="?page={{ summary.previous_page_number }}&from={{ from_date|date:'Y-m-d' }}&to={{ to_date|date:'Y-m-d' }}&hall={{ selected_hall }}&q={{ search }}" class="sum-page-btn">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    {% else %}
+        <span class="sum-page-btn disabled"><i class="bi bi-chevron-right"></i></span>
+    {% endif %}
+
+    {% for num in summary.paginator.page_range %}
+        {% if summary.number == num %}
+            <span class="sum-page-btn active">{{ num }}</span>
+        {% elif num > summary.number|add:"-3" and num < summary.number|add:"3" %}
+            <a href="?page={{ num }}&from={{ from_date|date:'Y-m-d' }}&to={{ to_date|date:'Y-m-d' }}&hall={{ selected_hall }}&q={{ search }}" class="sum-page-btn">
+                {{ num }}
+            </a>
+        {% endif %}
+    {% endfor %}
+
+    {% if summary.has_next %}
+        <a href="?page={{ summary.next_page_number }}&from={{ from_date|date:'Y-m-d' }}&to={{ to_date|date:'Y-m-d' }}&hall={{ selected_hall }}&q={{ search }}" class="sum-page-btn">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+    {% else %}
+        <span class="sum-page-btn disabled"><i class="bi bi-chevron-left"></i></span>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

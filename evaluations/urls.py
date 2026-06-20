@@ -10,4 +10,5 @@ urlpatterns = [
     path('evaluate/hall/<int:hall_id>/',      views.EvaluateHallView.as_view(),             name='evaluate_hall'),
     path('evaluate/hall/',                    views.SelectHallForEvaluationView.as_view(),  name='evaluate_hall_select'),
     path('followup/all/',                     views.AllFollowUpsView.as_view(),             name='all_followups'),
+    path('followups/<int:pk>/edit/',          views.EditFollowUpView.as_view(),             name='edit_followup'),
 ]

@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}تعديل المتابعة | {{ SITE_NAME }}{% endblock %}
+{% block page_title %}تعديل المتابعة اليومية{% endblock %}
+
+{% block content %}
+<style>
+.fu-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 18px; padding: 1.35rem 1.75rem;
+    margin-bottom: 1.25rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.fu-hero-left { display: flex; align-items: center; gap: 1rem; }
+.fu-hero-icon {
+    width: 48px; height: 48px; background: rgba(255,255,255,.12);
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.fu-hero h1 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .2rem; }
+.fu-hero p  { font-size: .85rem; opacity: .75; margin: 0; }
+.btn-fu {
+    background: rgba(255,255,255,.15); color: #fff;
+    border: 1.5px solid rgba(255,255,255,.25); border-radius: 10px;
+    padding: .45rem 1rem; font-weight: 700; font-size: .85rem;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .15s;
+}
+.btn-fu:hover { background: rgba(255,255,255,.28); color: #fff; }
+
+/* sidebar */
+.fu-sidebar {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 16px; padding: 1.1rem;
+    box-shadow: 0 2px 12px rgba(15,23,42,.04);
+    position: sticky; top: 88px;
+}
+.fu-sidebar-title {
+    font-size: .78rem; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: .04em;
+    margin-bottom: .6rem; display: flex; align-items: center; gap: .35rem;
+}
+.fu-static-box {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: .65rem .85rem; font-size: .9rem; color: #0f172a;
+    background: #f8fafc;
+}
+.fu-date-badge {
+    margin-top: .75rem; background: #eff6ff;
+    border: 1px solid rgba(37,99,235,.18); border-radius: 10px;
+    padding: .55rem .85rem; font-size: .83rem; font-weight: 700; color: #2563eb;
+    display: flex; align-items: center; gap: .4rem;
+}
+.fu-history-btn {
+    margin-top: .65rem; width: 100%; background: #f8fafc;
+    border: 1.5px solid #e2e8f0; border-radius: 9px;
+    padding: .5rem; font-size: .85rem; font-weight: 700; color: #475569;
+    text-decoration: none; display: flex; align-items: center;
+    justify-content: center; gap: .4rem; transition: background .15s;
+}
+.fu-history-btn:hover { background: #f1f5f9; color: #334155; }
+
+/* نموذج */
+.fu-card {
+    background: #fff; border: 1px solid rgba(15,23,42,.08);
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(15,23,42,.05);
+}
+.fu-card-header {
+    padding: .85rem 1.25rem; background: #fafbfc;
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+}
+.fu-card-title {
+    font-weight: 800; font-size: .95rem; color: #0f172a;
+    display: flex; align-items: center; gap: .5rem;
+}
+.fu-card-title i { color: #01696f; }
+.fu-update-badge {
+    background: #fef3c7; color: #d97706; border-radius: 20px;
+    padding: .2rem .75rem; font-size: .75rem; font-weight: 700;
+    display: flex; align-items: center; gap: .3rem;
+}
+.fu-card-body { padding: 1.25rem; }
+
+/* حقول النموذج */
+.fu-field { margin-bottom: 1.1rem; }
+.fu-field:last-of-type { margin-bottom: 0; }
+.fu-label {
+    font-size: .82rem; font-weight: 700; color: #374151;
+    margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem;
+}
+.fu-label i { color: #01696f; font-size: .9rem; }
+.fu-label .fu-badge {
+    background: #dbeafe; color: #2563eb; border-radius: 20px;
+    padding: .1rem .55rem; font-size: .72rem; font-weight: 700; margin-right: auto;
+}
+.fu-label .fu-badge.green { background: #dcfce7; color: #16a34a; }
+.fu-label .fu-badge.orange { background: #fef3c7; color: #d97706; }
+
+.fu-textarea,
+.fu-card textarea,
+.fu-card input[type="text"] {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: .65rem .9rem; font-size: .9rem; color: #0f172a;
+    resize: vertical; min-height: 90px; line-height: 1.6;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit; background: #fff;
+}
+.fu-card textarea:focus,
+.fu-card input[type="text"]:focus {
+    border-color: #01696f; box-shadow: 0 0 0 3px rgba(1,105,111,.1); outline: none;
+}
+.fu-hint { font-size: .75rem; color: #94a3b8; margin-top: .3rem; }
+
+.fu-errors {
+    margin-top: .45rem;
+    background: #fef2f2;
+    border: 1px solid rgba(220,38,38,.15);
+    color: #b91c1c;
+    border-radius: 9px;
+    padding: .55rem .75rem;
+    font-size: .8rem;
+    line-height: 1.6;
+}
+.fu-errors ul { margin: 0; padding-right: 1rem; }
+
+.fu-divider {
+    height: 1px; background: rgba(15,23,42,.07);
+    margin: 1.1rem 0;
+}
+
+.fu-form-errors {
+    background: #fff7ed;
+    border: 1px solid rgba(234,88,12,.15);
+    color: #c2410c;
+    border-radius: 12px;
+    padding: .8rem 1rem;
+    margin-bottom: 1rem;
+    font-size: .85rem;
+    display: flex; gap: .55rem; align-items: flex-start;
+}
+.fu-form-errors i { margin-top: .1rem; flex-shrink: 0; }
+
+/* footer */
+.fu-footer {
+    padding: 1rem 1.25rem; border-top: 1px solid rgba(15,23,42,.08);
+    display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+    background: #fafbfc;
+}
+.btn-fu-save {
+    background: #01696f; color: #fff; border: none; border-radius: 11px;
+    padding: .6rem 1.75rem; font-weight: 800; font-size: .92rem;
+    display: flex; align-items: center; gap: .5rem; cursor: pointer; transition: background .15s;
+}
+.btn-fu-save:hover { background: #0a8a91; }
+.btn-fu-back {
+    background: #f1f5f9; color: #64748b; border: none; border-radius: 11px;
+    padding: .6rem 1.1rem; font-weight: 700; font-size: .88rem;
+    text-decoration: none; display: flex; align-items: center; gap: .4rem; transition: background .15s;
+}
+.btn-fu-back:hover { background: #e2e8f0; color: #334155; }
+
+@media (max-width: 767.98px) {
+    .fu-hero { flex-direction: column; align-items: flex-start; }
+    .btn-fu-save, .btn-fu-back { flex: 1; justify-content: center; }
+}
+</style>
+
+<div class="fu-hero">
+    <div class="fu-hero-left">
+        <div class="fu-hero-icon"><i class="bi bi-pencil-square"></i></div>
+        <div>
+            <h1>تعديل المتابعة اليومية</h1>
+            <p>حدّث ما تم تسجيله للقاعة مع الحفاظ على نفس التاريخ والقاعة</p>
+        </div>
+    </div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <a href="{% url 'evaluations:hall_followups' followup.hall.pk %}" class="btn-fu">
+            <i class="bi bi-clock-history"></i>سجل القاعة
+        </a>
+        <a href="{% url 'evaluations:all_followups' %}" class="btn-fu">
+            <i class="bi bi-arrow-right"></i>رجوع
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="fu-sidebar">
+            <div class="fu-sidebar-title"><i class="bi bi-building"></i>القاعة</div>
+            <div class="fu-static-box">{{ followup.hall.name }}</div>
+
+            <div class="fu-date-badge">
+                <i class="bi bi-calendar3-event"></i>
+                تاريخ المتابعة: {{ followup.date }}
+            </div>
+
+            <a href="{% url 'evaluations:hall_followups' followup.hall.pk %}" class="fu-history-btn">
+                <i class="bi bi-clock-history"></i>عرض متابعات القاعة
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="fu-card">
+            <div class="fu-card-header">
+                <div class="fu-card-title">
+                    <i class="bi bi-pencil-square"></i>
+                    تعديل بيانات المتابعة
+                </div>
+                <div class="fu-update-badge">
+                    <i class="bi bi-arrow-repeat"></i>تعديل سجل موجود
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="fu-card-body">
+
+                    {% if form.non_field_errors %}
+                    <div class="fu-form-errors">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>{{ form.non_field_errors }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="fu-field">
+                        <div class="fu-label">
+                            <i class="bi bi-journal-check"></i>
+                            ما تم تناوله اليوم
+                            <span class="fu-badge green">إلزامي</span>
+                        </div>
+                        {{ form.homework }}
+                        {% if form.homework.errors %}
+                        <div class="fu-errors">{{ form.homework.errors }}</div>
+                        {% endif %}
+                        <div class="fu-hint"><i class="bi bi-info-circle me-1"></i>سجّل الدروس والسور التي تمت مراجعتها أو تدريسها اليوم</div>
+                    </div>
+
+                    <div class="fu-divider"></div>
+
+                    <div class="fu-field">
+                        <div class="fu-label">
+                            <i class="bi bi-bookmark-star"></i>
+                            المطلوب حفظه للجلسة القادمة
+                            <span class="fu-badge orange">اختياري</span>
+                        </div>
+                        {{ form.memorization_task }}
+                        {% if form.memorization_task.errors %}
+                        <div class="fu-errors">{{ form.memorization_task.errors }}</div>
+                        {% endif %}
+                        <div class="fu-hint"><i class="bi bi-info-circle me-1"></i>ما يجب على الطالب حفظه قبل الجلسة القادمة</div>
+                    </div>
+
+                    <div class="fu-divider"></div>
+
+                    <div class="fu-field">
+                        <div class="fu-label">
+                            <i class="bi bi-chat-dots"></i>
+                            ملاحظات لأولياء الأمور
+                            <span class="fu-badge">اختياري</span>
+                        </div>
+                        {{ form.extra_notes }}
+                        {% if form.extra_notes.errors %}
+                        <div class="fu-errors">{{ form.extra_notes.errors }}</div>
+                        {% endif %}
+                        <div class="fu-hint"><i class="bi bi-info-circle me-1"></i>أي تعليمات أو تنبيهات تظهر لولي الأمر</div>
+                    </div>
+
+                </div>
+
+                <div class="fu-footer">
+                    <button type="submit" class="btn-fu-save">
+                        <i class="bi bi-save"></i>حفظ التعديل
+                    </button>
+                    <a href="{% url 'evaluations:all_followups' %}" class="btn-fu-back">
+                        <i class="bi bi-arrow-right"></i>رجوع
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -111,7 +111,7 @@
         </nav>
 
         {# ════ المتابعة اليومية ════ #}
-        {% if user.is_hall_supervisor or user.is_general_supervisor or user.is_general_manager %}
+        {% comment %} {% if user.is_hall_supervisor or user.is_general_supervisor or user.is_general_manager %}
         <div class="small text-uppercase text-white-50 mt-3 mb-1 px-1">المتابعة اليومية</div>
         <nav class="nav flex-column gap-1">
             <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'evaluations:add_followup' %}">
@@ -130,8 +130,29 @@
                 </a>
             {% endif %}
         </nav>
-        {% endif %}
+        {% endif %} {% endcomment %}
+        
+        {% if user.is_hall_supervisor or user.is_general_supervisor or user.is_general_manager %}
+        <div class="small text-uppercase text-white-50 mt-3 mb-1 px-1">المتابعة اليومية</div>
+        <nav class="nav flex-column gap-1">
+            <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'evaluations:add_followup' %}">
+                <i class="bi bi-journal-plus ms-2"></i>إضافة / تحديث متابعة
+            </a>
 
+            {% if user.is_hall_supervisor %}
+                {% for hall in user.supervising_halls.all %}
+                <a class="nav-link text-white rounded-3 px-3 py-2"
+                href="{% url 'evaluations:hall_followups' hall.pk %}">
+                    <i class="bi bi-clock-history ms-2"></i>متابعات {{ hall.name|truncatechars:20 }}
+                </a>
+                {% endfor %}
+            {% endif %}
+
+            <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'evaluations:all_followups' %}">
+                <i class="bi bi-list-ul ms-2"></i>سجل كل المتابعات
+            </a>
+        </nav>
+        {% endif %}
         {# ════ التقييمات ════ #}
         {% if user.is_teacher or user.is_general_supervisor or user.is_general_manager %}
         <div class="small text-uppercase text-white-50 mt-3 mb-1 px-1">التقييمات</div>
@@ -154,6 +175,8 @@
         {% endif %}
 
         {# ════ الحضور والانصراف ════ #}
+
+        
         {% if user.is_hall_supervisor or user.is_general_supervisor or user.is_general_manager %}
         <div class="small text-uppercase text-white-50 mt-3 mb-1 px-1">الحضور والانصراف</div>
         <nav class="nav flex-column gap-1">
@@ -162,6 +185,9 @@
             </a>
             <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:report' %}">
                 <i class="bi bi-bar-chart-line ms-2"></i>تقرير حضور الطلاب
+            </a>
+            <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:students_summary' %}">
+                <i class="bi bi-people ms-2"></i>إجمالي حضور الطلاب
             </a>
             {% if user.is_general_supervisor or user.is_general_manager %}
                 <a class="nav-link text-white rounded-3 px-3 py-2" href="{% url 'attendance:staff' %}">
@@ -176,7 +202,6 @@
             {% endif %}
         </nav>
         {% endif %}
-
     </div>
 
     {# ════ Footer ════ #}

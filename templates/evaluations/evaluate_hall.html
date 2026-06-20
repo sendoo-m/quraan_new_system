@@ -221,14 +221,14 @@
         <div class="eh-stat-num">{{ total }}</div>
         <div class="eh-stat-lbl">إجمالي الطلاب</div>
     </div>
+
     <div class="eh-stat">
-        <div class="eh-stat-num" id="countDone">
-            {% for r in students_data %}{% if r.evaluated %}1{% endif %}{% endfor %}</div>
+        <div class="eh-stat-num" id="countDone">{{ evaluated_count }}</div>
         <div class="eh-stat-lbl">تم تقييمهم</div>
     </div>
+
     <div class="eh-stat">
-        <div class="eh-stat-num" id="countPending">
-            {% for r in students_data %}{% if not r.evaluated %}1{% endif %}{% endfor %}</div>
+        <div class="eh-stat-num" id="countPending">{{ pending_count }}</div>
         <div class="eh-stat-lbl">لم يُقيَّموا</div>
     </div>
 </div>

@@ -522,7 +522,62 @@ class StaffAttendanceReportView(GeneralSupervisorRequiredMixin, View):
 #  تقرير حضور الطلاب
 # ══════════════════════════════════════════
 
-class AttendanceReportView(GeneralSupervisorRequiredMixin, View):
+# class AttendanceReportView(GeneralSupervisorRequiredMixin, View):
+#     def get(self, request):
+#         today = date.today()
+#         first_day = today.replace(day=1)
+
+#         from_date = parse_date(request.GET.get('from'), first_day)
+#         to_date = parse_date(request.GET.get('to'), today)
+#         hall_id = request.GET.get('hall', '')
+
+#         allowed_halls = get_halls_for_user(request.user)
+
+#         attendances = StudentAttendance.objects.filter(
+#             hall__in=allowed_halls,
+#             date__range=[from_date, to_date]
+#         ).select_related(
+#             'student',
+#             'hall',
+#             'recorded_by'
+#         ).order_by(
+#             '-date',
+#             'hall__name',
+#             'student__first_name',
+#             'student__last_name'
+#         )
+
+#         if hall_id:
+#             attendances = attendances.filter(hall_id=hall_id)
+
+#         paginator = Paginator(attendances, 20)
+#         page = request.GET.get('page', 1)
+#         attendances_page = paginator.get_page(page)
+
+#         base_qs = StudentAttendance.objects.filter(
+#             hall__in=allowed_halls,
+#             date__range=[from_date, to_date]
+#         )
+
+#         if hall_id:
+#             base_qs = base_qs.filter(hall_id=hall_id)
+
+#         context = {
+#             'attendances': attendances_page,
+#             'halls': allowed_halls,
+#             'from_date': from_date,
+#             'to_date': to_date,
+#             'selected_hall': hall_id,
+#             'total': paginator.count,
+#             'present': base_qs.filter(status=StudentAttendance.STATUS_PRESENT).count(),
+#             'absent': base_qs.filter(status=StudentAttendance.STATUS_ABSENT).count(),
+#             'late': base_qs.filter(status=StudentAttendance.STATUS_LATE).count(),
+#             'excused': base_qs.filter(status=StudentAttendance.STATUS_EXCUSED).count(),
+#         }
+
+#         return render(request, 'attendance/report.html', context)
+
+class AttendanceReportView(HallSupervisorRequiredMixin, View):
     def get(self, request):
         today = date.today()
         first_day = today.replace(day=1)
@@ -530,6 +585,9 @@ class AttendanceReportView(GeneralSupervisorRequiredMixin, View):
         from_date = parse_date(request.GET.get('from'), first_day)
         to_date = parse_date(request.GET.get('to'), today)
         hall_id = request.GET.get('hall', '')
+
+        if from_date > to_date:
+            from_date, to_date = to_date, from_date
 
         allowed_halls = get_halls_for_user(request.user)
 
@@ -539,7 +597,8 @@ class AttendanceReportView(GeneralSupervisorRequiredMixin, View):
         ).select_related(
             'student',
             'hall',
-            'recorded_by'
+            'recorded_by',
+            'student__parent',
         ).order_by(
             '-date',
             'hall__name',
@@ -576,6 +635,190 @@ class AttendanceReportView(GeneralSupervisorRequiredMixin, View):
         }
 
         return render(request, 'attendance/report.html', context)
+
+from django.db.models import Count, Q, F, FloatField, ExpressionWrapper, Value
+from django.db.models.functions import Coalesce
+from django.core.paginator import Paginator
+from datetime import date
+
+class StudentAttendanceSummaryView(HallSupervisorRequiredMixin, View):
+    template_name = 'attendance/student_summary.html'
+
+    def get(self, request):
+        today = date.today()
+        first_day = today.replace(day=1)
+
+        from_date = parse_date(request.GET.get('from'), first_day)
+        to_date = parse_date(request.GET.get('to'), today)
+        hall_id = request.GET.get('hall', '')
+        search = request.GET.get('q', '').strip()
+
+        if from_date > to_date:
+            from_date, to_date = to_date, from_date
+
+        allowed_halls = get_halls_for_user(request.user)
+
+        qs = StudentAttendance.objects.filter(
+            hall__in=allowed_halls,
+            date__range=[from_date, to_date]
+        )
+
+        if hall_id:
+            qs = qs.filter(hall_id=hall_id)
+
+        if search:
+            qs = qs.filter(
+                Q(student__first_name__icontains=search) |
+                Q(student__last_name__icontains=search)
+            )
+
+        summary = qs.values(
+            'student_id',
+            'student__first_name',
+            'student__last_name',
+            'student__parent__first_name',
+            'student__parent__last_name',
+            'student__parent__username',
+            'hall__name',
+        ).annotate(
+            present_count=Count('id', filter=Q(status=StudentAttendance.STATUS_PRESENT)),
+            absent_count=Count('id', filter=Q(status=StudentAttendance.STATUS_ABSENT)),
+            late_count=Count('id', filter=Q(status=StudentAttendance.STATUS_LATE)),
+            excused_count=Count('id', filter=Q(status=StudentAttendance.STATUS_EXCUSED)),
+            total_days=Count('id'),
+        ).order_by(
+            '-present_count',
+            'student__first_name',
+            'student__last_name'
+        )
+
+        summary_list = []
+        for row in summary:
+            total_days = row['total_days'] or 0
+            present_count = row['present_count'] or 0
+            attendance_rate = round((present_count / total_days) * 100, 1) if total_days else 0
+
+            row['attendance_rate'] = attendance_rate
+            summary_list.append(row)
+
+        paginator = Paginator(summary_list, 20)
+        page = request.GET.get('page', 1)
+        summary_page = paginator.get_page(page)
+
+        totals = qs.aggregate(
+            total_present=Count('id', filter=Q(status=StudentAttendance.STATUS_PRESENT)),
+            total_absent=Count('id', filter=Q(status=StudentAttendance.STATUS_ABSENT)),
+            total_late=Count('id', filter=Q(status=StudentAttendance.STATUS_LATE)),
+            total_excused=Count('id', filter=Q(status=StudentAttendance.STATUS_EXCUSED)),
+            total_records=Count('id'),
+            total_students=Count('student', distinct=True),
+        )
+
+        context = {
+            'summary': summary_page,
+            'from_date': from_date,
+            'to_date': to_date,
+            'halls': allowed_halls,
+            'selected_hall': hall_id,
+            'search': search,
+            'total_students': totals['total_students'] or 0,
+            'total_records': totals['total_records'] or 0,
+            'total_present': totals['total_present'] or 0,
+            'total_absent': totals['total_absent'] or 0,
+            'total_late': totals['total_late'] or 0,
+            'total_excused': totals['total_excused'] or 0,
+        }
+
+        return render(request, self.template_name, context)
+
+
+class DailyAttendanceListView(HallSupervisorRequiredMixin, View):
+    template_name = 'attendance/daily_attendance_list.html'
+
+    def get(self, request):
+        today = date.today()
+        selected_date = parse_date(request.GET.get('date'), today)
+        hall_id = request.GET.get('hall', '')
+        status = request.GET.get('status', '')
+        search = request.GET.get('q', '')
+
+        allowed_halls = get_halls_for_user(request.user)
+
+        student_records = StudentAttendance.objects.filter(
+            hall__in=allowed_halls,
+            date=selected_date
+        ).select_related(
+            'student',
+            'hall',
+            'recorded_by'
+        ).order_by(
+            'hall__name',
+            'student__first_name',
+            'student__last_name'
+        )
+
+        if hall_id:
+            student_records = student_records.filter(hall_id=hall_id)
+
+        if status:
+            student_records = student_records.filter(status=status)
+
+        if search:
+            student_records = student_records.filter(
+                Q(student__first_name__icontains=search) |
+                Q(student__last_name__icontains=search)
+            )
+
+        staff_records = StaffAttendance.objects.filter(
+            date=selected_date
+        ).select_related(
+            'staff',
+            'recorded_by'
+        ).order_by(
+            'staff__role',
+            'staff__first_name',
+            'staff__last_name'
+        )
+
+        if status:
+            staff_records = staff_records.filter(status=status)
+
+        if search:
+            staff_records = staff_records.filter(
+                Q(staff__first_name__icontains=search) |
+                Q(staff__last_name__icontains=search) |
+                Q(staff__username__icontains=search)
+            )
+
+        student_stats = {
+            'present': student_records.filter(status=StudentAttendance.STATUS_PRESENT).count(),
+            'absent': student_records.filter(status=StudentAttendance.STATUS_ABSENT).count(),
+            'late': student_records.filter(status=StudentAttendance.STATUS_LATE).count(),
+            'excused': student_records.filter(status=StudentAttendance.STATUS_EXCUSED).count(),
+        }
+
+        staff_stats = {
+            'present': staff_records.filter(status=StaffAttendance.STATUS_PRESENT).count(),
+            'absent': staff_records.filter(status=StaffAttendance.STATUS_ABSENT).count(),
+            'late': staff_records.filter(status=StaffAttendance.STATUS_LATE).count(),
+            'excused': staff_records.filter(status=StaffAttendance.STATUS_EXCUSED).count(),
+        }
+
+        context = {
+            'selected_date': selected_date,
+            'today': today,
+            'halls': allowed_halls,
+            'selected_hall': hall_id,
+            'selected_status': status,
+            'search': search,
+            'student_records': student_records,
+            'staff_records': staff_records,
+            'student_stats': student_stats,
+            'staff_stats': staff_stats,
+            'status_choices': StudentAttendance.STATUS_CHOICES,
+        }
+
+        return render(request, self.template_name, context)
     
 # from datetime import date, datetime
 

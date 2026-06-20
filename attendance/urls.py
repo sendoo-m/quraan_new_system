@@ -11,4 +11,7 @@ urlpatterns = [
     path('staff/', views.StaffAttendanceView.as_view(), name='staff'),
     path('staff/mark/', views.StaffAttendanceMarkView.as_view(), name='staff_mark'),
     path('staff/report/', views.StaffAttendanceReportView.as_view(), name='staff_report'),
+    path('student/summary/', views.StudentAttendanceSummaryView.as_view(), name='student_summary'),
+    path('students-summary/', views.StudentAttendanceSummaryView.as_view(), name='students_summary'),
+    path('daily/', views.DailyAttendanceListView.as_view(), name='daily_attendance'),
 ]
